@@ -1,0 +1,8 @@
+[project]
+name = "midnight-performance"
+version = "0.1.0"
+description = "Development-history intelligence evidence contracts"
+requires-python = ">=3.11"
+
+[tool.unittest]
+start-directory = "tests"

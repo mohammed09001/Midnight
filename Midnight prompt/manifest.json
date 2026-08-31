@@ -1,0 +1,2508 @@
+{
+  "created": "28 August 2026",
+  "version": "O1 Execution Pack / New-Midnight Architecture",
+  "products": {
+    "performance": {
+      "product": "Midnight Performance",
+      "roadmap_tasks": 152,
+      "executions": 61,
+      "entries": [
+        {
+          "execution": 1,
+          "file": "Midnight Performance Execution 01.md",
+          "tasks": [
+            1,
+            2,
+            3
+          ],
+          "titles": [
+            "Freeze Midnight Performance as Development-History Intelligence",
+            "Reconcile the Performance Domain Architecture With the New Midnight Model",
+            "Define the New Performance Identity and Correlation Contract"
+          ],
+          "phase": "PHASE I — PRODUCT, DEVELOPMENT-HISTORY, AND EVIDENCE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 2,
+          "file": "Midnight Performance Execution 02.md",
+          "tasks": [
+            4,
+            5,
+            6
+          ],
+          "titles": [
+            "Define the Canonical Performance Observation Model",
+            "Build the Append-Oriented Performance Evidence Ledger",
+            "Implement Privacy, Source-Code Protection, and Sensitive-Data Controls"
+          ],
+          "phase": "PHASE I — PRODUCT, DEVELOPMENT-HISTORY, AND EVIDENCE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 3,
+          "file": "Midnight Performance Execution 03.md",
+          "tasks": [
+            7,
+            8
+          ],
+          "titles": [
+            "Define the New Evidence Authority Hierarchy",
+            "Build Versioned Analysis and Reprocessing Contracts"
+          ],
+          "phase": "PHASE I — PRODUCT, DEVELOPMENT-HISTORY, AND EVIDENCE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 4,
+          "file": "Midnight Performance Execution 04.md",
+          "tasks": [
+            9,
+            10
+          ],
+          "titles": [
+            "Formalize Bring Your Own Coding Harness Observation",
+            "Implement the Codex Performance Observation Adapter"
+          ],
+          "phase": "PHASE II — INVISIBLE CODING-HARNESS CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 5,
+          "file": "Midnight Performance Execution 05.md",
+          "tasks": [
+            11,
+            12
+          ],
+          "titles": [
+            "Implement the Claude Code Performance Observation Adapter",
+            "Implement the OpenCode Performance Observation Adapter"
+          ],
+          "phase": "PHASE II — INVISIBLE CODING-HARNESS CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 6,
+          "file": "Midnight Performance Execution 06.md",
+          "tasks": [
+            13,
+            14,
+            15
+          ],
+          "titles": [
+            "Build Deterministic Agent Execution and Turn Windows",
+            "Build Native Repository Change Capture",
+            "Capture Commands, Tools, Tests, and Verification Evidence"
+          ],
+          "phase": "PHASE II — INVISIBLE CODING-HARNESS CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 7,
+          "file": "Midnight Performance Execution 07.md",
+          "tasks": [
+            16,
+            17
+          ],
+          "titles": [
+            "Build Coding-Harness Capability Drift and Fail-Soft Capture",
+            "Define Prompt Run as the Core Development Experience Unit"
+          ],
+          "phase": "PHASE II — INVISIBLE CODING-HARNESS CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 8,
+          "file": "Midnight Performance Execution 08.md",
+          "tasks": [
+            18,
+            19,
+            20
+          ],
+          "titles": [
+            "Define Performance Repository-Change Evidence Authority",
+            "Build Repository Change Resolution",
+            "Build Semantic Change Classification"
+          ],
+          "phase": "PHASE III — PERFORMANCE-OWNED REPOSITORY CHANGE INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 9,
+          "file": "Midnight Performance Execution 09.md",
+          "tasks": [
+            21,
+            22,
+            23
+          ],
+          "titles": [
+            "Build Change Scope and Surface Metrics",
+            "Build Change Locality and Dispersion Analysis",
+            "Build Structural Impact Analysis"
+          ],
+          "phase": "PHASE III — PERFORMANCE-OWNED REPOSITORY CHANGE INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 10,
+          "file": "Midnight Performance Execution 10.md",
+          "tasks": [
+            24
+          ],
+          "titles": [
+            "Build Prompt-Intent ↔ Repository-Change Evidence Mapping"
+          ],
+          "phase": "PHASE III — PERFORMANCE-OWNED REPOSITORY CHANGE INTELLIGENCE",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 11,
+          "file": "Midnight Performance Execution 11.md",
+          "tasks": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "titles": [
+            "Define the Midnight Watch Runtime Outcome Contract",
+            "Define the Midnight Watch Data Outcome Contract",
+            "Define the Midnight Security Outcome Contract",
+            "Build Cross-Product Outcome Windows"
+          ],
+          "phase": "PHASE IV — CROSS-PRODUCT OUTCOME EVIDENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 12,
+          "file": "Midnight Performance Execution 12.md",
+          "tasks": [
+            29,
+            30,
+            31
+          ],
+          "titles": [
+            "Build Prompt Run ↔ Watch Runtime Issue Association",
+            "Build Prompt Run ↔ Watch Runtime Trace/Event/Regression Association",
+            "Build Prompt Run ↔ Watch Data / Security Outcome Association"
+          ],
+          "phase": "PHASE IV — CROSS-PRODUCT OUTCOME EVIDENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 13,
+          "file": "Midnight Performance Execution 13.md",
+          "tasks": [
+            32,
+            33
+          ],
+          "titles": [
+            "Build Intervening-Change Attribution",
+            "Build Outcome Evidence Quality"
+          ],
+          "phase": "PHASE IV — CROSS-PRODUCT OUTCOME EVIDENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 14,
+          "file": "Midnight Performance Execution 14.md",
+          "tasks": [
+            34,
+            35,
+            36
+          ],
+          "titles": [
+            "Define the Post-Run User Feedback Loop",
+            "Build Structured Feedback Reasons",
+            "Build Feedback Provenance and Revision"
+          ],
+          "phase": "PHASE V — USER FEEDBACK AND ACTIVE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 15,
+          "file": "Midnight Performance Execution 15.md",
+          "tasks": [
+            37,
+            38
+          ],
+          "titles": [
+            "Build Active-Learning Question Selection",
+            "Build Multi-Signal Outcome Labels"
+          ],
+          "phase": "PHASE V — USER FEEDBACK AND ACTIVE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 16,
+          "file": "Midnight Performance Execution 16.md",
+          "tasks": [
+            39,
+            40,
+            41
+          ],
+          "titles": [
+            "Build Prompt Structural Feature Extraction",
+            "Build Prompt Clarity and Specificity Metrics",
+            "Build Requirement and Constraint Extraction"
+          ],
+          "phase": "PHASE VI — PROMPT, REQUIREMENT, AND EXECUTION ANALYSIS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 17,
+          "file": "Midnight Performance Execution 17.md",
+          "tasks": [
+            42,
+            43,
+            44
+          ],
+          "titles": [
+            "Build Prompt-to-Code Alignment",
+            "Build Scope Discipline Analysis",
+            "Build Verification Quality Analysis"
+          ],
+          "phase": "PHASE VI — PROMPT, REQUIREMENT, AND EXECUTION ANALYSIS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 18,
+          "file": "Midnight Performance Execution 18.md",
+          "tasks": [
+            45
+          ],
+          "titles": [
+            "Build Agent Final-Response Consistency Analysis"
+          ],
+          "phase": "PHASE VI — PROMPT, REQUIREMENT, AND EXECUTION ANALYSIS",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 19,
+          "file": "Midnight Performance Execution 19.md",
+          "tasks": [
+            46,
+            47,
+            48,
+            49
+          ],
+          "titles": [
+            "Define the Multi-Dimensional Performance Vector",
+            "Define Requirement Alignment Mathematics",
+            "Define Constraint Compliance Mathematics",
+            "Define Verification Coverage Mathematics"
+          ],
+          "phase": "PHASE VII — ANALYTICAL METRICS AND MATHEMATICAL MODEL",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 20,
+          "file": "Midnight Performance Execution 20.md",
+          "tasks": [
+            50,
+            51,
+            52,
+            53
+          ],
+          "titles": [
+            "Define Change Discipline Mathematics",
+            "Define Outcome and Regression Measures",
+            "Define Confidence and Evidence Completeness",
+            "Build Composite Scores Only as Optional Views"
+          ],
+          "phase": "PHASE VII — ANALYTICAL METRICS AND MATHEMATICAL MODEL",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 21,
+          "file": "Midnight Performance Execution 21.md",
+          "tasks": [
+            54,
+            55,
+            56
+          ],
+          "titles": [
+            "Build the Prompt Experience Dataset",
+            "Build Dataset Versioning and Reproducible Snapshots",
+            "Build Data Quality Validation"
+          ],
+          "phase": "PHASE VIII — DATA ANALYTICS AND DATA SCIENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 22,
+          "file": "Midnight Performance Execution 22.md",
+          "tasks": [
+            57,
+            58,
+            59
+          ],
+          "titles": [
+            "Build Descriptive Analytics",
+            "Build Cohort and Segmentation Analysis",
+            "Build Statistical Comparison Tests"
+          ],
+          "phase": "PHASE VIII — DATA ANALYTICS AND DATA SCIENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 23,
+          "file": "Midnight Performance Execution 23.md",
+          "tasks": [
+            60,
+            61,
+            62
+          ],
+          "titles": [
+            "Build Bootstrap Confidence Intervals",
+            "Build Correlation Analysis",
+            "Build Confounder-Aware Comparative Analysis"
+          ],
+          "phase": "PHASE VIII — DATA ANALYTICS AND DATA SCIENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 24,
+          "file": "Midnight Performance Execution 24.md",
+          "tasks": [
+            63,
+            64,
+            65
+          ],
+          "titles": [
+            "Build Time-Series and Trend Analysis",
+            "Build Data/Concept Drift Detection",
+            "Build Anomaly Detection Baselines"
+          ],
+          "phase": "PHASE VIII — DATA ANALYTICS AND DATA SCIENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 25,
+          "file": "Midnight Performance Execution 25.md",
+          "tasks": [
+            66
+          ],
+          "titles": [
+            "Build Experiment Analysis"
+          ],
+          "phase": "PHASE VIII — DATA ANALYTICS AND DATA SCIENCE",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 26,
+          "file": "Midnight Performance Execution 26.md",
+          "tasks": [
+            67,
+            68,
+            69
+          ],
+          "titles": [
+            "Build Prompt Lineage",
+            "Build Task/Problem Taxonomy",
+            "Build Lexical and Structured Similarity"
+          ],
+          "phase": "PHASE IX — LINEAGE, SIMILARITY, RELATIONSHIP GRAPH, AND EXPERIENCE RETRIEVAL",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 27,
+          "file": "Midnight Performance Execution 27.md",
+          "tasks": [
+            70,
+            71,
+            72
+          ],
+          "titles": [
+            "Build Semantic Similarity",
+            "Build Repository-Change-Aware Similarity",
+            "Build Cross-Domain Outcome Similarity"
+          ],
+          "phase": "PHASE IX — LINEAGE, SIMILARITY, RELATIONSHIP GRAPH, AND EXPERIENCE RETRIEVAL",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 28,
+          "file": "Midnight Performance Execution 28.md",
+          "tasks": [
+            73,
+            74,
+            75
+          ],
+          "titles": [
+            "Build Multi-View Experience Retrieval",
+            "Build Experience Neighborhoods",
+            "Build the Performance Relationship Graph Projection"
+          ],
+          "phase": "PHASE IX — LINEAGE, SIMILARITY, RELATIONSHIP GRAPH, AND EXPERIENCE RETRIEVAL",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 29,
+          "file": "Midnight Performance Execution 29.md",
+          "tasks": [
+            76
+          ],
+          "titles": [
+            "Build Hybrid Relational + Vector + Graph Retrieval"
+          ],
+          "phase": "PHASE IX — LINEAGE, SIMILARITY, RELATIONSHIP GRAPH, AND EXPERIENCE RETRIEVAL",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 30,
+          "file": "Midnight Performance Execution 30.md",
+          "tasks": [
+            77,
+            78,
+            79
+          ],
+          "titles": [
+            "Establish the ML Readiness Gate",
+            "Build Reproducible ML Feature Pipelines",
+            "Build Train/Validation/Test Splitting by Time and Project"
+          ],
+          "phase": "PHASE X — MACHINE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 31,
+          "file": "Midnight Performance Execution 31.md",
+          "tasks": [
+            80,
+            81,
+            82
+          ],
+          "titles": [
+            "Build Classical ML Baselines",
+            "Build Unsupervised Prompt/Experience Clustering",
+            "Build Learned Outcome Association Ranking"
+          ],
+          "phase": "PHASE X — MACHINE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 32,
+          "file": "Midnight Performance Execution 32.md",
+          "tasks": [
+            83,
+            84,
+            85
+          ],
+          "titles": [
+            "Build Learned Regression-Risk Estimation",
+            "Build Model Calibration and Uncertainty",
+            "Build Explainability for Learned Models"
+          ],
+          "phase": "PHASE X — MACHINE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 33,
+          "file": "Midnight Performance Execution 33.md",
+          "tasks": [
+            86,
+            87
+          ],
+          "titles": [
+            "Build Model Registry and Version Lineage",
+            "Build Model Drift and Performance Monitoring"
+          ],
+          "phase": "PHASE X — MACHINE LEARNING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 34,
+          "file": "Midnight Performance Execution 34.md",
+          "tasks": [
+            88
+          ],
+          "titles": [
+            "Build Champion/Challenger Evaluation"
+          ],
+          "phase": "PHASE X — MACHINE LEARNING",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 35,
+          "file": "Midnight Performance Execution 35.md",
+          "tasks": [
+            89,
+            90,
+            91
+          ],
+          "titles": [
+            "Build the Performance Evaluation Framework",
+            "Build Deterministic Evaluators First",
+            "Add Optional LLM-as-a-Judge Evaluators"
+          ],
+          "phase": "PHASE XI — EVALUATION SYSTEM",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 36,
+          "file": "Midnight Performance Execution 36.md",
+          "tasks": [
+            92,
+            93
+          ],
+          "titles": [
+            "Build Human Labeling and Review",
+            "Build Evaluation Agreement Analysis"
+          ],
+          "phase": "PHASE XI — EVALUATION SYSTEM",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 37,
+          "file": "Midnight Performance Execution 37.md",
+          "tasks": [
+            94,
+            95,
+            96
+          ],
+          "titles": [
+            "Build Curated Performance Datasets",
+            "Build Dataset Item Versioning",
+            "Build Offline Prompt Experiments"
+          ],
+          "phase": "PHASE XII — DATASETS, BENCHMARKS, AND EXPERIMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 38,
+          "file": "Midnight Performance Execution 38.md",
+          "tasks": [
+            97,
+            98
+          ],
+          "titles": [
+            "Build Regression Evaluation",
+            "Build Experiment Reproducibility"
+          ],
+          "phase": "PHASE XII — DATASETS, BENCHMARKS, AND EXPERIMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 39,
+          "file": "Midnight Performance Execution 39.md",
+          "tasks": [
+            99,
+            100,
+            101,
+            102
+          ],
+          "titles": [
+            "Define the Performance Memory Architecture and Memory Evidence Ledger",
+            "Define Performance Knowledge Records",
+            "Build Deterministic Memory Promotion",
+            "Build Memory Contradiction and Supersession"
+          ],
+          "phase": "PHASE XIII — PERFORMANCE MEMORY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 40,
+          "file": "Midnight Performance Execution 40.md",
+          "tasks": [
+            103,
+            104
+          ],
+          "titles": [
+            "Build Performance Memory Retrieval",
+            "Build Performance Memory Recovery and Retention"
+          ],
+          "phase": "PHASE XIII — PERFORMANCE MEMORY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 41,
+          "file": "Midnight Performance Execution 41.md",
+          "tasks": [
+            105,
+            106,
+            107
+          ],
+          "titles": [
+            "Build the Midnight Performance Visual Map",
+            "Build Prompt Lineage Visualization",
+            "Build Experience Neighborhood Visualization"
+          ],
+          "phase": "PHASE XIV — VISUAL INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 42,
+          "file": "Midnight Performance Execution 42.md",
+          "tasks": [
+            108,
+            109
+          ],
+          "titles": [
+            "Build Metric and Cohort Dashboards",
+            "Build Cross-Product Navigation"
+          ],
+          "phase": "PHASE XIV — VISUAL INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 43,
+          "file": "Midnight Performance Execution 43.md",
+          "tasks": [
+            110,
+            111,
+            112
+          ],
+          "titles": [
+            "Build Read-Only Ask Me",
+            "Build Draft-Prompt Preflight Analysis",
+            "Build Advisor"
+          ],
+          "phase": "PHASE XV — ASK ME, PREFLIGHT, ADVISOR, AND SUGGESTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 44,
+          "file": "Midnight Performance Execution 44.md",
+          "tasks": [
+            113,
+            114,
+            115
+          ],
+          "titles": [
+            "Build Suggestion",
+            "Build Recommendation Evaluation",
+            "Build Recommendation Guardrails"
+          ],
+          "phase": "PHASE XV — ASK ME, PREFLIGHT, ADVISOR, AND SUGGESTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 45,
+          "file": "Midnight Performance Execution 45.md",
+          "tasks": [
+            116,
+            117,
+            118
+          ],
+          "titles": [
+            "Define the Performance Query API",
+            "Build MCP-Compatible and Host-Native Read Tools",
+            "Build the Optional AI Analysis Provider Interface"
+          ],
+          "phase": "PHASE XVI — API, EXTERNAL AI, ORCHESTRATION CONTRACTS, AND INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 46,
+          "file": "Midnight Performance Execution 46.md",
+          "tasks": [
+            119,
+            120,
+            121
+          ],
+          "titles": [
+            "Build Local/Private AI Analysis Mode",
+            "Build AI Cost, Latency, and Quality Accounting",
+            "Expose Performance Capabilities to the Midnight Intelligence Orchestration Plane"
+          ],
+          "phase": "PHASE XVI — API, EXTERNAL AI, ORCHESTRATION CONTRACTS, AND INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 47,
+          "file": "Midnight Performance Execution 47.md",
+          "tasks": [
+            122
+          ],
+          "titles": [
+            "Build Invisible-by-Default Passive and Active Interaction Policy"
+          ],
+          "phase": "PHASE XVI — API, EXTERNAL AI, ORCHESTRATION CONTRACTS, AND INTERACTION",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 48,
+          "file": "Midnight Performance Execution 48.md",
+          "tasks": [
+            123,
+            124,
+            125
+          ],
+          "titles": [
+            "Define Storage Boundaries by Workload",
+            "Build Analytical Query Storage Strategy",
+            "Build Backpressure and Failure Isolation"
+          ],
+          "phase": "PHASE XVII — STORAGE, SCALE, AND DEPLOYMENT",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 49,
+          "file": "Midnight Performance Execution 49.md",
+          "tasks": [
+            126,
+            127,
+            128
+          ],
+          "titles": [
+            "Build Multi-Tenancy and Project Isolation",
+            "Build Self-Hosted Midnight Performance",
+            "Build Bring Your Own Cloud"
+          ],
+          "phase": "PHASE XVII — STORAGE, SCALE, AND DEPLOYMENT",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 50,
+          "file": "Midnight Performance Execution 50.md",
+          "tasks": [
+            129,
+            130
+          ],
+          "titles": [
+            "Define Optional Midnight-Managed Cloud",
+            "Build Bring Your Own Data/ML Resources"
+          ],
+          "phase": "PHASE XVII — STORAGE, SCALE, AND DEPLOYMENT",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 51,
+          "file": "Midnight Performance Execution 51.md",
+          "tasks": [
+            131,
+            132
+          ],
+          "titles": [
+            "Build the Midnight Performance Threat Model",
+            "Build Evidence Authenticity and Provenance"
+          ],
+          "phase": "PHASE XVIII — SECURITY AND TRUST",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 52,
+          "file": "Midnight Performance Execution 52.md",
+          "tasks": [
+            133,
+            134,
+            135
+          ],
+          "titles": [
+            "Build Dataset and Model Poisoning Defenses",
+            "Build AI and Telemetry Prompt-Injection Boundaries",
+            "Build Privacy-Preserving Analytics Controls"
+          ],
+          "phase": "PHASE XVIII — SECURITY AND TRUST",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 53,
+          "file": "Midnight Performance Execution 53.md",
+          "tasks": [
+            136,
+            137
+          ],
+          "titles": [
+            "Instrument Midnight Performance",
+            "Build Analytical Data Health Monitoring"
+          ],
+          "phase": "PHASE XIX — PERFORMANCE'S OWN OBSERVABILITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 54,
+          "file": "Midnight Performance Execution 54.md",
+          "tasks": [
+            138,
+            139
+          ],
+          "titles": [
+            "Build Deterministic Prompt/Repository Evaluation Corpora",
+            "Build Coding-Harness and Repository-Change Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 55,
+          "file": "Midnight Performance Execution 55.md",
+          "tasks": [
+            140,
+            141
+          ],
+          "titles": [
+            "Build Watch Runtime Integration Qualification",
+            "Build Watch Data Integration Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 56,
+          "file": "Midnight Performance Execution 56.md",
+          "tasks": [
+            142,
+            143
+          ],
+          "titles": [
+            "Build Midnight Security Integration Qualification",
+            "Build User-Feedback Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 57,
+          "file": "Midnight Performance Execution 57.md",
+          "tasks": [
+            144,
+            145
+          ],
+          "titles": [
+            "Build Data Analytics Qualification",
+            "Build ML Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 58,
+          "file": "Midnight Performance Execution 58.md",
+          "tasks": [
+            146,
+            147
+          ],
+          "titles": [
+            "Build Evaluation-System Qualification",
+            "Build Memory Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 59,
+          "file": "Midnight Performance Execution 59.md",
+          "tasks": [
+            148,
+            149
+          ],
+          "titles": [
+            "Build Advisor/Suggestion Qualification",
+            "Build Security and Isolation Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 60,
+          "file": "Midnight Performance Execution 60.md",
+          "tasks": [
+            150,
+            151
+          ],
+          "titles": [
+            "Build Scale, Cost, and Recovery Qualification",
+            "Build Full New-Midnight Ecosystem Qualification"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 61,
+          "file": "Midnight Performance Execution 61.md",
+          "tasks": [
+            152
+          ],
+          "titles": [
+            "Final Architecture and Product-Truth Gate"
+          ],
+          "phase": "PHASE XX — QUALIFICATION AND NEW-MIDNIGHT RELEASE GATES",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        }
+      ]
+    },
+    "security": {
+      "product": "Midnight Security",
+      "roadmap_tasks": 106,
+      "executions": 45,
+      "entries": [
+        {
+          "execution": 1,
+          "file": "Midnight Security Execution 01.md",
+          "tasks": [
+            1,
+            2,
+            3
+          ],
+          "titles": [
+            "Freeze the Midnight Security Product Boundary",
+            "Define the Security Domain Architecture",
+            "Define Canonical Security Entities and Invariants"
+          ],
+          "phase": "PHASE I — PRODUCT, DOMAIN, EVIDENCE, AND SECURITY ENGINE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 2,
+          "file": "Midnight Security Execution 02.md",
+          "tasks": [
+            4,
+            5,
+            6
+          ],
+          "titles": [
+            "Define Security Identity, Provenance, and Correlation Contracts",
+            "Build the Append-Oriented Security Evidence Ledger",
+            "Build the Canonical Scanner Result and SARIF Boundary"
+          ],
+          "phase": "PHASE I — PRODUCT, DOMAIN, EVIDENCE, AND SECURITY ENGINE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 3,
+          "file": "Midnight Security Execution 03.md",
+          "tasks": [
+            7,
+            8
+          ],
+          "titles": [
+            "Build Rule, Query Pack, Policy, Version, and Suppression Semantics",
+            "Build the Provider-Neutral Security Engine Registry"
+          ],
+          "phase": "PHASE I — PRODUCT, DOMAIN, EVIDENCE, AND SECURITY ENGINE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 4,
+          "file": "Midnight Security Execution 04.md",
+          "tasks": [
+            9,
+            10,
+            11
+          ],
+          "titles": [
+            "Build Project Security Discovery",
+            "Build Technology-Specific Capability Discovery",
+            "Build the Security Scan Planner"
+          ],
+          "phase": "PHASE II — PROJECT DISCOVERY, SCAN PLANNING, SAFE EXECUTION, AND COVERAGE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 5,
+          "file": "Midnight Security Execution 05.md",
+          "tasks": [
+            12,
+            13,
+            14
+          ],
+          "titles": [
+            "Implement Full, Baseline, Incremental, Diff, and Pull-Request Scan Modes",
+            "Build Deterministic Re-Scan and Reproducibility",
+            "Build Untrusted Repository Safety and No-Execution Static Scan"
+          ],
+          "phase": "PHASE II — PROJECT DISCOVERY, SCAN PLANNING, SAFE EXECUTION, AND COVERAGE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 6,
+          "file": "Midnight Security Execution 06.md",
+          "tasks": [
+            15,
+            16
+          ],
+          "titles": [
+            "Build Scanner Sandboxing and Build-Script Isolation",
+            "Build Scan Resource Budgets, Timeouts, Failure Accounting, and Coverage"
+          ],
+          "phase": "PHASE II — PROJECT DISCOVERY, SCAN PLANNING, SAFE EXECUTION, AND COVERAGE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 7,
+          "file": "Midnight Security Execution 07.md",
+          "tasks": [
+            17,
+            18
+          ],
+          "titles": [
+            "Implement the Baseline SAST Engine Family",
+            "Implement CodeQL Semantic Security Analysis"
+          ],
+          "phase": "PHASE III — STATIC APPLICATION SECURITY, SEMANTIC ANALYSIS, AND CODE GRAPHS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 8,
+          "file": "Midnight Security Execution 08.md",
+          "tasks": [
+            19,
+            20
+          ],
+          "titles": [
+            "Build Taint, Data-Flow, Source-to-Sink, Sanitizer, Control-Flow, and Call-Graph Semantics",
+            "Build Core Injection, Input, and Output Security Rule Families"
+          ],
+          "phase": "PHASE III — STATIC APPLICATION SECURITY, SEMANTIC ANALYSIS, AND CODE GRAPHS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 9,
+          "file": "Midnight Security Execution 09.md",
+          "tasks": [
+            21,
+            22
+          ],
+          "titles": [
+            "Build Custom Security Rules and Project Policy-as-Code",
+            "Build the Security Code Property Graph Projection With Joern"
+          ],
+          "phase": "PHASE III — STATIC APPLICATION SECURITY, SEMANTIC ANALYSIS, AND CODE GRAPHS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 10,
+          "file": "Midnight Security Execution 10.md",
+          "tasks": [
+            23,
+            24
+          ],
+          "titles": [
+            "Build Graph-Based Taint, Reachability, Cross-Language, and Binary Analysis",
+            "Build Language- and Framework-Aware Security Models"
+          ],
+          "phase": "PHASE III — STATIC APPLICATION SECURITY, SEMANTIC ANALYSIS, AND CODE GRAPHS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 11,
+          "file": "Midnight Security Execution 11.md",
+          "tasks": [
+            25
+          ],
+          "titles": [
+            "Integrate Specialized Language Analyzers"
+          ],
+          "phase": "PHASE III — STATIC APPLICATION SECURITY, SEMANTIC ANALYSIS, AND CODE GRAPHS",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 12,
+          "file": "Midnight Security Execution 12.md",
+          "tasks": [
+            26,
+            27,
+            28
+          ],
+          "titles": [
+            "Build Broken Access Control and Authorization Analysis",
+            "Build Database Permission, RLS, Tenant Isolation, and Least-Privilege Security Analysis",
+            "Build API Authorization, Schema, Mass-Assignment, and Resource-Abuse Analysis"
+          ],
+          "phase": "PHASE IV — ACCESS CONTROL, AUTHENTICATION, API, WEB, AND BUSINESS-LOGIC SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 13,
+          "file": "Midnight Security Execution 13.md",
+          "tasks": [
+            29,
+            30
+          ],
+          "titles": [
+            "Build CSRF, CORS, Security Header, CSP, HSTS, and Cookie Security",
+            "Build Password, MFA, Enumeration, Brute-Force, and Credential-Stuffing Security"
+          ],
+          "phase": "PHASE IV — ACCESS CONTROL, AUTHENTICATION, API, WEB, AND BUSINESS-LOGIC SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 14,
+          "file": "Midnight Security Execution 14.md",
+          "tasks": [
+            31,
+            32
+          ],
+          "titles": [
+            "Build Session, Token, JWT, OAuth, and OpenID Connect Security",
+            "Build Webhook, Replay, Payment, Idempotency, Race, and TOCTOU Security"
+          ],
+          "phase": "PHASE IV — ACCESS CONTROL, AUTHENTICATION, API, WEB, AND BUSINESS-LOGIC SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 15,
+          "file": "Midnight Security Execution 15.md",
+          "tasks": [
+            33,
+            34
+          ],
+          "titles": [
+            "Build Service-to-Service, Network, mTLS, and Workload-Identity Security",
+            "Build GraphQL, REST, and gRPC Security Rule Families"
+          ],
+          "phase": "PHASE IV — ACCESS CONTROL, AUTHENTICATION, API, WEB, AND BUSINESS-LOGIC SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 16,
+          "file": "Midnight Security Execution 16.md",
+          "tasks": [
+            35
+          ],
+          "titles": [
+            "Build Advanced Parsing, Injection, Deserialization, and HTTP-Protocol Weaknesses"
+          ],
+          "phase": "PHASE IV — ACCESS CONTROL, AUTHENTICATION, API, WEB, AND BUSINESS-LOGIC SECURITY",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 17,
+          "file": "Midnight Security Execution 17.md",
+          "tasks": [
+            36,
+            37,
+            38
+          ],
+          "titles": [
+            "Build Gitleaks-Based Secret Discovery and History Scanning",
+            "Build TruffleHog Verified Secret Detection",
+            "Build Secret Rotation, Revocation, API-Key Scoping, and Service-Account Security"
+          ],
+          "phase": "PHASE V — SECRETS, SENSITIVE DATA, PRIVACY, CRYPTOGRAPHY, AND CREDENTIAL SAFETY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 18,
+          "file": "Midnight Security Execution 18.md",
+          "tasks": [
+            39,
+            40,
+            41
+          ],
+          "titles": [
+            "Build Sensitive Data Discovery and Privacy Data-Flow Analysis",
+            "Build Sensitive Information, Debug, Source-Map, and Production Leakage Checks",
+            "Build Logging Security, Audit Logging, Tamper Resistance, and Log-Injection Analysis"
+          ],
+          "phase": "PHASE V — SECRETS, SENSITIVE DATA, PRIVACY, CRYPTOGRAPHY, AND CREDENTIAL SAFETY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 19,
+          "file": "Midnight Security Execution 19.md",
+          "tasks": [
+            42,
+            43,
+            44
+          ],
+          "titles": [
+            "Build Cryptography, TLS, Certificate, Randomness, and Key-Management Analysis",
+            "Build Production Credential Separation and Environment Isolation",
+            "Build Backup Security, Restore Testing, Retention, and Secure Deletion Checks"
+          ],
+          "phase": "PHASE V — SECRETS, SENSITIVE DATA, PRIVACY, CRYPTOGRAPHY, AND CREDENTIAL SAFETY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 20,
+          "file": "Midnight Security Execution 20.md",
+          "tasks": [
+            45,
+            46,
+            47
+          ],
+          "titles": [
+            "Build Dependency Inventory, SCA, CVE, and OSV Vulnerability Matching",
+            "Build Software Inventory and SBOM Generation",
+            "Build OSV-SCALIBR Extractor, Detector, Enricher, and Annotator Integration"
+          ],
+          "phase": "PHASE VI — DEPENDENCIES, SBOM, SOFTWARE SUPPLY CHAIN, CI/CD, AND ARTIFACT PROVENANCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 21,
+          "file": "Midnight Security Execution 21.md",
+          "tasks": [
+            48,
+            49,
+            50
+          ],
+          "titles": [
+            "Build Dependency Reachability and Transitive Risk Analysis",
+            "Build Malicious Package, Typosquatting, Dependency Confusion, and Package-Integrity Analysis",
+            "Build Dependency and Action Pinning With Reproducible-Build Controls"
+          ],
+          "phase": "PHASE VI — DEPENDENCIES, SBOM, SOFTWARE SUPPLY CHAIN, CI/CD, AND ARTIFACT PROVENANCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 22,
+          "file": "Midnight Security Execution 22.md",
+          "tasks": [
+            51,
+            52,
+            53
+          ],
+          "titles": [
+            "Build Repository Security Posture With OpenSSF Scorecard Concepts",
+            "Build Signed Commit, Artifact Signing, SLSA, and Build-Provenance Intelligence",
+            "Build CI/CD Security and GitHub Actions Analysis"
+          ],
+          "phase": "PHASE VI — DEPENDENCIES, SBOM, SOFTWARE SUPPLY CHAIN, CI/CD, AND ARTIFACT PROVENANCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 23,
+          "file": "Midnight Security Execution 23.md",
+          "tasks": [
+            54,
+            55
+          ],
+          "titles": [
+            "Integrate zizmor for GitHub Actions Supply-Chain Security",
+            "Build Container Image, Filesystem, and Container Secret Scanning"
+          ],
+          "phase": "PHASE VI — DEPENDENCIES, SBOM, SOFTWARE SUPPLY CHAIN, CI/CD, AND ARTIFACT PROVENANCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 24,
+          "file": "Midnight Security Execution 24.md",
+          "tasks": [
+            56,
+            57,
+            58
+          ],
+          "titles": [
+            "Build Infrastructure-as-Code Security With Checkov",
+            "Build KICS Custom IaC Misconfiguration Queries",
+            "Build Cloud Misconfiguration, IAM, and Public Storage Detection"
+          ],
+          "phase": "PHASE VII — INFRASTRUCTURE AS CODE, CLOUD, CONTAINER, NETWORK, AND RUNTIME SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 25,
+          "file": "Midnight Security Execution 25.md",
+          "tasks": [
+            59,
+            60,
+            61
+          ],
+          "titles": [
+            "Build Container Hardening and CIS Benchmark Mapping",
+            "Build Runtime Security Sensor Integration Without Becoming Watch",
+            "Build Network Segmentation, Ingress/Egress, Allowlisting, and Cloud Resource Relationship Analysis"
+          ],
+          "phase": "PHASE VII — INFRASTRUCTURE AS CODE, CLOUD, CONTAINER, NETWORK, AND RUNTIME SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 26,
+          "file": "Midnight Security Execution 26.md",
+          "tasks": [
+            62,
+            63
+          ],
+          "titles": [
+            "Build Infrastructure Security Drift Detection",
+            "Build Infrastructure Remediation and Verification"
+          ],
+          "phase": "PHASE VII — INFRASTRUCTURE AS CODE, CLOUD, CONTAINER, NETWORK, AND RUNTIME SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 27,
+          "file": "Midnight Security Execution 27.md",
+          "tasks": [
+            64,
+            65,
+            66
+          ],
+          "titles": [
+            "Integrate OWASP ZAP for Passive and Active DAST",
+            "Build Authenticated and Unauthenticated DAST Profiles",
+            "Integrate Nuclei Template-Based Vulnerability Scanning"
+          ],
+          "phase": "PHASE VIII — DAST, EXTERNAL ATTACK SURFACE, PROTOCOL SECURITY, AND ADVERSARIAL TESTING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 28,
+          "file": "Midnight Security Execution 28.md",
+          "tasks": [
+            67,
+            68
+          ],
+          "titles": [
+            "Build Post-Deployment Security Scan and Continuous Validation",
+            "Build DNS, WebSocket, Subdomain, Default-Credential, and Exposed-Interface Checks"
+          ],
+          "phase": "PHASE VIII — DAST, EXTERNAL ATTACK SURFACE, PROTOCOL SECURITY, AND ADVERSARIAL TESTING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 29,
+          "file": "Midnight Security Execution 29.md",
+          "tasks": [
+            69,
+            70
+          ],
+          "titles": [
+            "Build Security Fuzzing, Property-Based, Mutation, and Penetration-Test Integration",
+            "Build Static-to-Dynamic Finding Correlation"
+          ],
+          "phase": "PHASE VIII — DAST, EXTERNAL ATTACK SURFACE, PROTOCOL SECURITY, AND ADVERSARIAL TESTING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 30,
+          "file": "Midnight Security Execution 30.md",
+          "tasks": [
+            71
+          ],
+          "titles": [
+            "Build Attack Surface Inventory and External Security Asset Model"
+          ],
+          "phase": "PHASE VIII — DAST, EXTERNAL ATTACK SURFACE, PROTOCOL SECURITY, AND ADVERSARIAL TESTING",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 31,
+          "file": "Midnight Security Execution 31.md",
+          "tasks": [
+            72,
+            73,
+            74
+          ],
+          "titles": [
+            "Build Threat Modeling With DFD, STRIDE, Abuse/Misuse Cases, and Threat Actors",
+            "Build CWE, CVE, CVSS, and Vulnerability Taxonomy Normalization",
+            "Build EPSS, KEV, Exploit Availability, and Threat-Intelligence Enrichment"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 32,
+          "file": "Midnight Security Execution 32.md",
+          "tasks": [
+            75,
+            76
+          ],
+          "titles": [
+            "Build VEX and OpenVEX Exploitability Statements",
+            "Build the Security Graph and Attack-Path Model"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 33,
+          "file": "Midnight Security Execution 33.md",
+          "tasks": [
+            77,
+            78
+          ],
+          "titles": [
+            "Build Reachability-, Exploitability-, and Sensitive-Data-Aware Severity",
+            "Build Canonical Finding Fingerprinting, Deduplication, and Correlation"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 34,
+          "file": "Midnight Security Execution 34.md",
+          "tasks": [
+            79,
+            80
+          ],
+          "titles": [
+            "Build the Security Finding Lifecycle",
+            "Build Remediation Tracking, Patch Management, Re-Detection, and Fix Verification"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 35,
+          "file": "Midnight Security Execution 35.md",
+          "tasks": [
+            81,
+            82,
+            83
+          ],
+          "titles": [
+            "Build Security Baseline, Posture, Drift, and Hardening Loops",
+            "Build Risk Acceptance, Exceptions, Compensating Controls, Ownership, SLA, Debt, MTTD, and MTTR",
+            "Build Security Quality Gates, Merge Blocking, and Pre-Ship Gates"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 36,
+          "file": "Midnight Security Execution 36.md",
+          "tasks": [
+            84,
+            85
+          ],
+          "titles": [
+            "Build Secure-Design and Secure-Coding Control Families",
+            "Build Framework Mapping: ASVS, OWASP, API Top 10, CIS, NIST SSDF, and MITRE"
+          ],
+          "phase": "PHASE IX — THREAT MODELING, VULNERABILITY INTELLIGENCE, RISK, FINDING LIFECYCLE, AND HARDENING",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 37,
+          "file": "Midnight Security Execution 37.md",
+          "tasks": [
+            86,
+            87,
+            88
+          ],
+          "titles": [
+            "Build AI/GenAI Attack-Surface Discovery",
+            "Build Prompt Injection, Indirect Injection, Sensitive Disclosure, Poisoning, System-Prompt Leakage, and Unbounded Consumption Checks",
+            "Build Improper Output Handling and AI-to-SQL/Shell/HTML Safety"
+          ],
+          "phase": "PHASE X — AI, AGENT, RAG, MCP, AND AI-GENERATED SOFTWARE SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 38,
+          "file": "Midnight Security Execution 38.md",
+          "tasks": [
+            89,
+            90,
+            91
+          ],
+          "titles": [
+            "Build Excessive Agency, Tool Permission, Filesystem, Network, Shell, and Human-Approval Analysis",
+            "Build Agent and Tool Sandboxing, Loop Limits, Token Budgets, and AI Cost-Abuse Controls",
+            "Build RAG Authorization, Data Isolation, Vector Tenant Isolation, and Embedding Weakness Analysis"
+          ],
+          "phase": "PHASE X — AI, AGENT, RAG, MCP, AND AI-GENERATED SOFTWARE SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 39,
+          "file": "Midnight Security Execution 39.md",
+          "tasks": [
+            92,
+            93,
+            94
+          ],
+          "titles": [
+            "Build MCP Security, Tool Trust, Permission Scoping, and Tool-Poisoning Analysis",
+            "Build Cross-Agent Trust, Agent Identity, Audit Trail, and Action Provenance",
+            "Build AI-Generated Code, Dependency, Configuration, Migration, Infrastructure, and Vibe-Coding Review"
+          ],
+          "phase": "PHASE X — AI, AGENT, RAG, MCP, AND AI-GENERATED SOFTWARE SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 40,
+          "file": "Midnight Security Execution 40.md",
+          "tasks": [
+            95,
+            96,
+            97
+          ],
+          "titles": [
+            "Define the Midnight Security ↔ Midnight Watch Contract",
+            "Build Security Runtime-Evidence Correlation",
+            "Define the Midnight Security ↔ Midnight Performance Contract"
+          ],
+          "phase": "PHASE XI — MIDNIGHT WATCH / PERFORMANCE INTEGRATION, SECURITY MEMORY, AND INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 41,
+          "file": "Midnight Security Execution 41.md",
+          "tasks": [
+            98,
+            99
+          ],
+          "titles": [
+            "Build History-Aware Security Remediation Prompt Generation",
+            "Build Security Memory Evidence and Knowledge Records"
+          ],
+          "phase": "PHASE XI — MIDNIGHT WATCH / PERFORMANCE INTEGRATION, SECURITY MEMORY, AND INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 42,
+          "file": "Midnight Security Execution 42.md",
+          "tasks": [
+            100
+          ],
+          "titles": [
+            "Build Security Query API, Read-Only Agent Access, and Reporting Surface"
+          ],
+          "phase": "PHASE XI — MIDNIGHT WATCH / PERFORMANCE INTEGRATION, SECURITY MEMORY, AND INTERACTION",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 43,
+          "file": "Midnight Security Execution 43.md",
+          "tasks": [
+            101,
+            102
+          ],
+          "titles": [
+            "Build Security Unit, Integration, End-to-End, Fuzz, Property, and Mutation Test Harnesses",
+            "Build Precision, Recall, False-Positive/Negative, Coverage, and Confidence Evaluation"
+          ],
+          "phase": "PHASE XII — TESTING, DEPLOYMENT, EVALUATION, RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 44,
+          "file": "Midnight Security Execution 44.md",
+          "tasks": [
+            103,
+            104
+          ],
+          "titles": [
+            "Build Self-Hosted/BYOC Deployment, Storage Boundaries, Tenant Isolation, and Security Threat Model",
+            "Build Scale, Cost, Resource, and Failure-Injection Benchmarks"
+          ],
+          "phase": "PHASE XII — TESTING, DEPLOYMENT, EVALUATION, RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 45,
+          "file": "Midnight Security Execution 45.md",
+          "tasks": [
+            105,
+            106
+          ],
+          "titles": [
+            "Build Standalone Midnight Security Qualification",
+            "Build Watch/Performance Integration Qualification and Final Security Release Gate"
+          ],
+          "phase": "PHASE XII — TESTING, DEPLOYMENT, EVALUATION, RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        }
+      ]
+    },
+    "watch_runtime": {
+      "product": "Midnight Watch Runtime",
+      "roadmap_tasks": 86,
+      "executions": 33,
+      "entries": [
+        {
+          "execution": 1,
+          "file": "Midnight Watch Execution 01.md",
+          "tasks": [
+            1,
+            2,
+            3
+          ],
+          "titles": [
+            "Freeze Midnight Watch Runtime Under the Midnight Watch Umbrella",
+            "Reconcile the Existing Watch Foundation With the New Midnight Architecture",
+            "Define Watch Runtime Domain Semantics and Entity Boundaries"
+          ],
+          "phase": "PHASE I — WATCH RUNTIME PRODUCT, EVIDENCE, SDK, AND INGESTION FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 2,
+          "file": "Midnight Watch Execution 02.md",
+          "tasks": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "titles": [
+            "Harden Watch Runtime Identity and Cross-Product Reference Contracts",
+            "Harden the Canonical Watch Evidence Envelope",
+            "Harden the Append-Oriented Watch Evidence Ledger",
+            "Harden Privacy, PII Scrubbing, and Sensitive-Data Boundaries"
+          ],
+          "phase": "PHASE I — WATCH RUNTIME PRODUCT, EVIDENCE, SDK, AND INGESTION FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 3,
+          "file": "Midnight Watch Execution 03.md",
+          "tasks": [
+            8,
+            9,
+            10
+          ],
+          "titles": [
+            "Define the Watch SDK and Receiver Architecture",
+            "Implement the First Runtime SDK",
+            "Build Safe Client-Side Queueing and Transport"
+          ],
+          "phase": "PHASE I — WATCH RUNTIME PRODUCT, EVIDENCE, SDK, AND INGESTION FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 4,
+          "file": "Midnight Watch Execution 04.md",
+          "tasks": [
+            11,
+            12,
+            13
+          ],
+          "titles": [
+            "Build the Watch Ingestion Gateway",
+            "Add Relay-Style Edge Processing Boundaries",
+            "Build Runtime Error Occurrence Processing"
+          ],
+          "phase": "PHASE I — WATCH RUNTIME PRODUCT, EVIDENCE, SDK, AND INGESTION FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 5,
+          "file": "Midnight Watch Execution 05.md",
+          "tasks": [
+            14,
+            15,
+            16
+          ],
+          "titles": [
+            "Build Stack-Trace Normalization and Frame Classification",
+            "Build Debug Artifact and Source-Map Management",
+            "Build Symbolication and Source Resolution"
+          ],
+          "phase": "PHASE II — ERROR PROCESSING, SYMBOLICATION, GROUPING, AND ISSUE INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 6,
+          "file": "Midnight Watch Execution 06.md",
+          "tasks": [
+            17,
+            18,
+            19
+          ],
+          "titles": [
+            "Build Deterministic Error Fingerprinting",
+            "Build Issue Grouping and Grouping Diagnostics",
+            "Build Similar-Issue Analysis Without Auto-Merging"
+          ],
+          "phase": "PHASE II — ERROR PROCESSING, SYMBOLICATION, GROUPING, AND ISSUE INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 7,
+          "file": "Midnight Watch Execution 07.md",
+          "tasks": [
+            20,
+            21
+          ],
+          "titles": [
+            "Build the Watch Issue Lifecycle",
+            "Build Issue Priority and Impact Signals"
+          ],
+          "phase": "PHASE II — ERROR PROCESSING, SYMBOLICATION, GROUPING, AND ISSUE INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 8,
+          "file": "Midnight Watch Execution 08.md",
+          "tasks": [
+            22,
+            23,
+            24
+          ],
+          "titles": [
+            "Build Midnight Log Ingestion",
+            "Build Log Parsing and Normalization",
+            "Build Bounded Log Search and Context Retrieval"
+          ],
+          "phase": "PHASE III — LOGS, EVENTS, TRACES, METRICS, RELEASES, AND DEPLOYMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 9,
+          "file": "Midnight Watch Execution 09.md",
+          "tasks": [
+            25,
+            26,
+            27
+          ],
+          "titles": [
+            "Build Midnight Runtime Event Intelligence",
+            "Build the Runtime Event Timeline",
+            "Build Distributed Trace and Span Ingestion"
+          ],
+          "phase": "PHASE III — LOGS, EVENTS, TRACES, METRICS, RELEASES, AND DEPLOYMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 10,
+          "file": "Midnight Watch Execution 10.md",
+          "tasks": [
+            28,
+            29,
+            30
+          ],
+          "titles": [
+            "Build Trace Processing and Service Relationships",
+            "Build Runtime Performance Issue Detection",
+            "Build Metrics Ingestion and Aggregation"
+          ],
+          "phase": "PHASE III — LOGS, EVENTS, TRACES, METRICS, RELEASES, AND DEPLOYMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 11,
+          "file": "Midnight Watch Execution 11.md",
+          "tasks": [
+            31,
+            32
+          ],
+          "titles": [
+            "Build Release Identity and Release Health",
+            "Build Deployment Intelligence"
+          ],
+          "phase": "PHASE III — LOGS, EVENTS, TRACES, METRICS, RELEASES, AND DEPLOYMENTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 12,
+          "file": "Midnight Watch Execution 12.md",
+          "tasks": [
+            33,
+            34,
+            35
+          ],
+          "titles": [
+            "Build Runtime Correlation Engine",
+            "Build the Watch Runtime Relationship Graph Projection",
+            "Build the Signal Engine"
+          ],
+          "phase": "PHASE IV — CORRELATION, SIGNALS, ALERTS, AND INVESTIGATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 13,
+          "file": "Midnight Watch Execution 13.md",
+          "tasks": [
+            36,
+            37,
+            38
+          ],
+          "titles": [
+            "Build the Alert Rule Engine",
+            "Build Notification Integrations",
+            "Build Investigation as a First-Class Workflow"
+          ],
+          "phase": "PHASE IV — CORRELATION, SIGNALS, ALERTS, AND INVESTIGATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 14,
+          "file": "Midnight Watch Execution 14.md",
+          "tasks": [
+            39
+          ],
+          "titles": [
+            "Build Investigation Context"
+          ],
+          "phase": "PHASE IV — CORRELATION, SIGNALS, ALERTS, AND INVESTIGATION",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 15,
+          "file": "Midnight Watch Execution 15.md",
+          "tasks": [
+            40,
+            41,
+            42
+          ],
+          "titles": [
+            "Build Watch Memory Evidence Ledger",
+            "Define Watch Memory Knowledge Records",
+            "Build Deterministic Memory Promotion"
+          ],
+          "phase": "PHASE V — WATCH RUNTIME MEMORY AND RELATIONSHIP INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 16,
+          "file": "Midnight Watch Execution 16.md",
+          "tasks": [
+            43,
+            44,
+            45
+          ],
+          "titles": [
+            "Build Watch Memory Contradiction and Supersession Handling",
+            "Build Watch Memory Retrieval",
+            "Build Watch Memory Retention, Backup, and Recovery"
+          ],
+          "phase": "PHASE V — WATCH RUNTIME MEMORY AND RELATIONSHIP INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 17,
+          "file": "Midnight Watch Execution 17.md",
+          "tasks": [
+            46
+          ],
+          "titles": [
+            "Build the Watch Memory Visual Map"
+          ],
+          "phase": "PHASE V — WATCH RUNTIME MEMORY AND RELATIONSHIP INTELLIGENCE",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 18,
+          "file": "Midnight Watch Execution 18.md",
+          "tasks": [
+            47,
+            48,
+            49
+          ],
+          "titles": [
+            "Build the Midnight Error Visual Map",
+            "Build the Midnight Log Visual Map",
+            "Build the Midnight Event Visual Map"
+          ],
+          "phase": "PHASE VI — VISUAL LENSES, QUERY SURFACES, OPEN TELEMETRY, AND DATA-QUALITY CONTROLS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 19,
+          "file": "Midnight Watch Execution 19.md",
+          "tasks": [
+            50,
+            51,
+            52
+          ],
+          "titles": [
+            "Build the Trace and Runtime Performance Visual Map",
+            "Build Cross-Map Navigation",
+            "Define the Midnight Watch Query API"
+          ],
+          "phase": "PHASE VI — VISUAL LENSES, QUERY SURFACES, OPEN TELEMETRY, AND DATA-QUALITY CONTROLS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 20,
+          "file": "Midnight Watch Execution 20.md",
+          "tasks": [
+            53,
+            54,
+            55
+          ],
+          "titles": [
+            "Add OpenTelemetry-Compatible Ingestion and Export",
+            "Build Data Outcomes and Drop Accounting",
+            "Build Sampling and Cardinality Controls"
+          ],
+          "phase": "PHASE VI — VISUAL LENSES, QUERY SURFACES, OPEN TELEMETRY, AND DATA-QUALITY CONTROLS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 21,
+          "file": "Midnight Watch Execution 21.md",
+          "tasks": [
+            56,
+            57,
+            58
+          ],
+          "titles": [
+            "Build Storage Boundaries by Workload",
+            "Build Retention and Storage Tiers",
+            "Build Backpressure and Failure Isolation"
+          ],
+          "phase": "PHASE VI — VISUAL LENSES, QUERY SURFACES, OPEN TELEMETRY, AND DATA-QUALITY CONTROLS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 22,
+          "file": "Midnight Watch Execution 22.md",
+          "tasks": [
+            59,
+            60,
+            61
+          ],
+          "titles": [
+            "Build Multi-Tenancy and Project Isolation",
+            "Build Self-Hosted Midnight Watch",
+            "Build Bring Your Own Cloud"
+          ],
+          "phase": "PHASE VII — DEPLOYMENT, RELIABILITY, PRIVACY, SECURITY, EVALUATION, AND READ-ONLY INTELLIGENCE ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 23,
+          "file": "Midnight Watch Execution 23.md",
+          "tasks": [
+            62,
+            63,
+            64
+          ],
+          "titles": [
+            "Define Optional Midnight-Managed Cloud",
+            "Build Bring Your Own Resource Adapters",
+            "Build Watch's Own Observability"
+          ],
+          "phase": "PHASE VII — DEPLOYMENT, RELIABILITY, PRIVACY, SECURITY, EVALUATION, AND READ-ONLY INTELLIGENCE ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 24,
+          "file": "Midnight Watch Execution 24.md",
+          "tasks": [
+            65,
+            66
+          ],
+          "titles": [
+            "Build Security and Threat Modeling",
+            "Build Deterministic Error/Log/Event/Trace Evaluation Corpora"
+          ],
+          "phase": "PHASE VII — DEPLOYMENT, RELIABILITY, PRIVACY, SECURITY, EVALUATION, AND READ-ONLY INTELLIGENCE ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 25,
+          "file": "Midnight Watch Execution 25.md",
+          "tasks": [
+            67,
+            68,
+            69
+          ],
+          "titles": [
+            "Build Watch Memory Evaluation Corpora",
+            "Add Human Feedback as Separate Evidence",
+            "Evaluate Learned Methods Only Against Deterministic Baselines"
+          ],
+          "phase": "PHASE VII — DEPLOYMENT, RELIABILITY, PRIVACY, SECURITY, EVALUATION, AND READ-ONLY INTELLIGENCE ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 26,
+          "file": "Midnight Watch Execution 26.md",
+          "tasks": [
+            70
+          ],
+          "titles": [
+            "Build Read-Only Human, AI, and Agent Access to Watch Runtime Intelligence"
+          ],
+          "phase": "PHASE VII — DEPLOYMENT, RELIABILITY, PRIVACY, SECURITY, EVALUATION, AND READ-ONLY INTELLIGENCE ACCESS",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 27,
+          "file": "Midnight Watch Execution 27.md",
+          "tasks": [
+            71,
+            72,
+            73
+          ],
+          "titles": [
+            "Define the Watch Runtime ↔ Watch Data Contract",
+            "Build Cross-Watch Runtime/Data Correlation and Navigation",
+            "Define the Midnight Performance Evidence Contract"
+          ],
+          "phase": "PHASE VIII — THE NEW MIDNIGHT WATCH UMBRELLA AND CROSS-PRODUCT CONTRACTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 28,
+          "file": "Midnight Watch Execution 28.md",
+          "tasks": [
+            74,
+            75,
+            76
+          ],
+          "titles": [
+            "Define the Midnight Security Evidence Contract",
+            "Expose Watch Runtime Capabilities to the Midnight Intelligence Orchestration Plane",
+            "Build Invisible-by-Default Watch Interaction Policy"
+          ],
+          "phase": "PHASE VIII — THE NEW MIDNIGHT WATCH UMBRELLA AND CROSS-PRODUCT CONTRACTS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 29,
+          "file": "Midnight Watch Execution 29.md",
+          "tasks": [
+            77,
+            78,
+            79
+          ],
+          "titles": [
+            "Build Versioning and Replay for Derived Intelligence",
+            "Build Migration and Upgrade Safety",
+            "Build Scale and Cost Benchmarks"
+          ],
+          "phase": "PHASE IX — VERSIONING, MIGRATION, SCALE, AND FAILURE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 30,
+          "file": "Midnight Watch Execution 30.md",
+          "tasks": [
+            80
+          ],
+          "titles": [
+            "Build Failure-Injection and Recovery Tests"
+          ],
+          "phase": "PHASE IX — VERSIONING, MIGRATION, SCALE, AND FAILURE QUALIFICATION",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 31,
+          "file": "Midnight Watch Execution 31.md",
+          "tasks": [
+            81,
+            82
+          ],
+          "titles": [
+            "Build Standalone Watch Runtime Qualification",
+            "Build Combined Watch Runtime + Watch Data Qualification"
+          ],
+          "phase": "PHASE X — PRODUCT AND ECOSYSTEM QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 32,
+          "file": "Midnight Watch Execution 32.md",
+          "tasks": [
+            83,
+            84
+          ],
+          "titles": [
+            "Build Watch Runtime + Midnight Security Qualification",
+            "Build Watch Runtime + Midnight Performance Qualification"
+          ],
+          "phase": "PHASE X — PRODUCT AND ECOSYSTEM QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 33,
+          "file": "Midnight Watch Execution 33.md",
+          "tasks": [
+            85,
+            86
+          ],
+          "titles": [
+            "Build Full New-Midnight Ecosystem Qualification",
+            "Final Watch Runtime Architecture, Privacy, Reliability, and Recovery Qualification"
+          ],
+          "phase": "PHASE X — PRODUCT AND ECOSYSTEM QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        }
+      ]
+    },
+    "watch_data": {
+      "product": "Midnight Watch Data",
+      "roadmap_tasks": 68,
+      "executions": 26,
+      "entries": [
+        {
+          "execution": 1,
+          "file": "Midnight Watch Data Execution 01.md",
+          "tasks": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "titles": [
+            "Freeze Midnight Watch Data Under the Midnight Watch Umbrella",
+            "Define the Watch Data Domain Architecture",
+            "Define Canonical Watch Data Entities and Invariants",
+            "Define Stable Identity and Correlation Contracts"
+          ],
+          "phase": "PHASE I — PRODUCT, DOMAIN, AND EVIDENCE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 2,
+          "file": "Midnight Watch Data Execution 02.md",
+          "tasks": [
+            5,
+            6,
+            7
+          ],
+          "titles": [
+            "Build the Canonical Watch Data Evidence Envelope",
+            "Build the Append-Oriented Watch Data Evidence Ledger",
+            "Build Versioning, Provenance, and Reprocessing Contracts"
+          ],
+          "phase": "PHASE I — PRODUCT, DOMAIN, AND EVIDENCE FOUNDATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 3,
+          "file": "Midnight Watch Data Execution 03.md",
+          "tasks": [
+            8,
+            9,
+            10
+          ],
+          "titles": [
+            "Build the Watch Data Access and Permission Model",
+            "Build Access Transparency and Collection Dry-Run",
+            "Define the Provider-Neutral Data Adapter Contract"
+          ],
+          "phase": "PHASE II — TRUST, ACCESS, POSTGRESQL, AND SUPABASE CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 4,
+          "file": "Midnight Watch Data Execution 04.md",
+          "tasks": [
+            11,
+            12
+          ],
+          "titles": [
+            "Implement the PostgreSQL Metadata Adapter",
+            "Implement Supabase PostgreSQL as a First-Class Deployment Profile"
+          ],
+          "phase": "PHASE II — TRUST, ACCESS, POSTGRESQL, AND SUPABASE CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 5,
+          "file": "Midnight Watch Data Execution 05.md",
+          "tasks": [
+            13,
+            14
+          ],
+          "titles": [
+            "Build Local Collector, Transport, and Failure Isolation",
+            "Build Privacy, Redaction, and Query-Text Admission Controls"
+          ],
+          "phase": "PHASE II — TRUST, ACCESS, POSTGRESQL, AND SUPABASE CAPTURE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 6,
+          "file": "Midnight Watch Data Execution 06.md",
+          "tasks": [
+            15,
+            16,
+            17
+          ],
+          "titles": [
+            "Build Canonical Schema Snapshots",
+            "Build Data Asset and Relationship Extraction",
+            "Build the Initial Data Relationship Graph Projection"
+          ],
+          "phase": "PHASE III — DATA STRUCTURE, RELATIONSHIPS, QUERY IDENTITY, AND ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 7,
+          "file": "Midnight Watch Data Execution 07.md",
+          "tasks": [
+            18,
+            19,
+            20
+          ],
+          "titles": [
+            "Add Lineage-Compatible Data Operation Semantics",
+            "Add Declared Dependency Ingestion for dbt and Similar Artifacts",
+            "Build PostgreSQL-Native Query Parsing and Normalization"
+          ],
+          "phase": "PHASE III — DATA STRUCTURE, RELATIONSHIPS, QUERY IDENTITY, AND ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 8,
+          "file": "Midnight Watch Data Execution 08.md",
+          "tasks": [
+            21,
+            22
+          ],
+          "titles": [
+            "Build Stable Query Fingerprints and Query Families",
+            "Build Data Access and Predicate Intelligence"
+          ],
+          "phase": "PHASE III — DATA STRUCTURE, RELATIONSHIPS, QUERY IDENTITY, AND ACCESS",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 9,
+          "file": "Midnight Watch Data Execution 09.md",
+          "tasks": [
+            23,
+            24,
+            25
+          ],
+          "titles": [
+            "Build Time-Bucketed Query Runtime Observations",
+            "Build Workload Windows and Query-Family Evolution",
+            "Build Practical Slow, Frequent, and High-Impact Query Detection"
+          ],
+          "phase": "PHASE IV — QUERY RUNTIME, WORKLOAD, PLAN, AND DATABASE BEHAVIOR INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 10,
+          "file": "Midnight Watch Data Execution 10.md",
+          "tasks": [
+            26,
+            27,
+            28
+          ],
+          "titles": [
+            "Build Query Plan Capture and Canonical Plan Records",
+            "Build Query Plan Interpretation and Plan Change Intelligence",
+            "Build Connection, Transaction, Lock, and Wait Intelligence"
+          ],
+          "phase": "PHASE IV — QUERY RUNTIME, WORKLOAD, PLAN, AND DATABASE BEHAVIOR INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 11,
+          "file": "Midnight Watch Data Execution 11.md",
+          "tasks": [
+            29,
+            30,
+            31
+          ],
+          "titles": [
+            "Build Table, Index, Vacuum, Replication, and Storage Health Evidence",
+            "Build Query CPU and I/O Resource Intelligence",
+            "Build PostgreSQL Engine-Log Derived Data Evidence"
+          ],
+          "phase": "PHASE IV — QUERY RUNTIME, WORKLOAD, PLAN, AND DATABASE BEHAVIOR INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 12,
+          "file": "Midnight Watch Data Execution 12.md",
+          "tasks": [
+            32,
+            33,
+            34
+          ],
+          "titles": [
+            "Build Deterministic Schema Diff",
+            "Build Schema Drift and Expected-State Comparison",
+            "Build Migration and Schema-Risk Analysis"
+          ],
+          "phase": "PHASE V — CHANGE, DRIFT, REGRESSION, RELIABILITY, AND COST INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 13,
+          "file": "Midnight Watch Data Execution 13.md",
+          "tasks": [
+            35,
+            36,
+            37
+          ],
+          "titles": [
+            "Build Data-Access Change Detection",
+            "Build Data Runtime Regression Detection",
+            "Build Database Growth and Capacity Trend Intelligence"
+          ],
+          "phase": "PHASE V — CHANGE, DRIFT, REGRESSION, RELIABILITY, AND COST INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 14,
+          "file": "Midnight Watch Data Execution 14.md",
+          "tasks": [
+            38
+          ],
+          "titles": [
+            "Build Data Cost Intelligence"
+          ],
+          "phase": "PHASE V — CHANGE, DRIFT, REGRESSION, RELIABILITY, AND COST INTELLIGENCE",
+          "rationale": "Standalone execution because the Task is comparatively heavy, boundary-sensitive, or qualification-oriented."
+        },
+        {
+          "execution": 15,
+          "file": "Midnight Watch Data Execution 15.md",
+          "tasks": [
+            39,
+            40,
+            41
+          ],
+          "titles": [
+            "Define the Optimization Hypothesis Model",
+            "Build Hypothetical Index Simulation",
+            "Build the Index Recommendation Pipeline"
+          ],
+          "phase": "PHASE VI — OPTIMIZATION HYPOTHESES, RECOMMENDATIONS, AND VERIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 16,
+          "file": "Midnight Watch Data Execution 16.md",
+          "tasks": [
+            42,
+            43
+          ],
+          "titles": [
+            "Build Non-Index Optimization Recommendations",
+            "Build Before/After Verification Windows"
+          ],
+          "phase": "PHASE VI — OPTIMIZATION HYPOTHESES, RECOMMENDATIONS, AND VERIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 17,
+          "file": "Midnight Watch Data Execution 17.md",
+          "tasks": [
+            44,
+            45
+          ],
+          "titles": [
+            "Build Safe Database Experimentation Adapters",
+            "Build Data Validation and Comparison Evidence"
+          ],
+          "phase": "PHASE VI — OPTIMIZATION HYPOTHESES, RECOMMENDATIONS, AND VERIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 18,
+          "file": "Midnight Watch Data Execution 18.md",
+          "tasks": [
+            46,
+            47,
+            48
+          ],
+          "titles": [
+            "Build the Watch Data Memory Evidence Ledger",
+            "Define Watch Data Knowledge Records",
+            "Build Deterministic Memory Promotion"
+          ],
+          "phase": "PHASE VII — WATCH DATA MEMORY AND LONG-TERM RELATIONSHIP INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 19,
+          "file": "Midnight Watch Data Execution 19.md",
+          "tasks": [
+            49,
+            50,
+            51
+          ],
+          "titles": [
+            "Build Memory Contradiction, Supersession, and Temporal Validity",
+            "Build Watch Data Memory Retrieval",
+            "Expand the Relationship Graph With Memory and Change Lineage"
+          ],
+          "phase": "PHASE VII — WATCH DATA MEMORY AND LONG-TERM RELATIONSHIP INTELLIGENCE",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 20,
+          "file": "Midnight Watch Data Execution 20.md",
+          "tasks": [
+            52,
+            53,
+            54
+          ],
+          "titles": [
+            "Define the Watch Runtime ↔ Watch Data Contract",
+            "Build Cross-Watch Data/Runtime Correlation",
+            "Define the Midnight Performance Evidence Contract"
+          ],
+          "phase": "PHASE VIII — CROSS-WATCH INTEGRATION, PERFORMANCE, SECURITY, API, AND USER INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 21,
+          "file": "Midnight Watch Data Execution 21.md",
+          "tasks": [
+            55,
+            56,
+            57
+          ],
+          "titles": [
+            "Define the Midnight Security Evidence Contract",
+            "Build the Watch Data Query API and Read-Only Tool Surface",
+            "Build Invisible-by-Default Interaction and User-Invoked Intelligence"
+          ],
+          "phase": "PHASE VIII — CROSS-WATCH INTEGRATION, PERFORMANCE, SECURITY, API, AND USER INTERACTION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 22,
+          "file": "Midnight Watch Data Execution 22.md",
+          "tasks": [
+            58,
+            59,
+            60
+          ],
+          "titles": [
+            "Build the Watch Data Visual Lenses",
+            "Build Optional AI Explanation and Recommendation Assistance",
+            "Define Storage Boundaries and Retention by Workload"
+          ],
+          "phase": "PHASE IX — VISUAL INTELLIGENCE, AI ASSISTANCE, DEPLOYMENT, STORAGE, AND SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 23,
+          "file": "Midnight Watch Data Execution 23.md",
+          "tasks": [
+            61,
+            62
+          ],
+          "titles": [
+            "Build Self-Hosted, Hybrid, BYOC, and Optional Managed Deployment",
+            "Build Watch Data Threat Model, Tenant Isolation, and Safety Hardening"
+          ],
+          "phase": "PHASE IX — VISUAL INTELLIGENCE, AI ASSISTANCE, DEPLOYMENT, STORAGE, AND SECURITY",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 24,
+          "file": "Midnight Watch Data Execution 24.md",
+          "tasks": [
+            63,
+            64
+          ],
+          "titles": [
+            "Build Deterministic Watch Data Evaluation Corpora",
+            "Build Memory and Graph Qualification Corpora"
+          ],
+          "phase": "PHASE X — EVALUATION, SCALE, FAILURE RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 25,
+          "file": "Midnight Watch Data Execution 25.md",
+          "tasks": [
+            65,
+            66
+          ],
+          "titles": [
+            "Build Scale and Database-Impact Benchmarks",
+            "Build Failure-Injection, Replay, Migration, and Recovery Tests"
+          ],
+          "phase": "PHASE X — EVALUATION, SCALE, FAILURE RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        },
+        {
+          "execution": 26,
+          "file": "Midnight Watch Data Execution 26.md",
+          "tasks": [
+            67,
+            68
+          ],
+          "titles": [
+            "Build Standalone Watch Data Qualification",
+            "Build Combined Midnight Watch and Final Architecture Qualification"
+          ],
+          "phase": "PHASE X — EVALUATION, SCALE, FAILURE RECOVERY, AND RELEASE QUALIFICATION",
+          "rationale": "Grouped because the Tasks are sequentially adjacent inside the same roadmap phase and form one coherent implementation/verification slice."
+        }
+      ]
+    }
+  }
+}
