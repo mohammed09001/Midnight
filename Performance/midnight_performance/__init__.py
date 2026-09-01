@@ -64,6 +64,14 @@ from .model_assurance import CalibrationBin, FeatureContribution, LocalExplanati
 from .model_registry import ApprovalState, CohortPerformance, DeploymentState, ModelMonitoringReport, ModelRegistration, ModelRegistry, MonitoringPolicy, apply_monitoring, deploy, monitor_model, set_approval
 from .champion_challenger import ChallengePolicy, ChallengerReport, CohortComparison, DatasetComparison, EvaluationDataset, evaluate_challenger
 from .evaluation import DeterministicEvaluator, EvaluationResult, EvaluatorKind, JudgeConfiguration, JudgeResponse, deterministic_evaluators, evaluate_deterministically, evaluate_with_judge
+from .qualification import EvaluationCorpus, FrozenEvent, FrozenPromptRun, CorpusResult, evaluate_frozen_run, QualificationState, HarnessQualification, qualify_harness
+from .watch_qualification import DataFailure, DataQualification, RuntimeFailure, RuntimeQualification, RuntimeQualificationInput, WatchDataEvidence, WatchQualificationState, qualify_data, qualify_runtime
+from .security_feedback_qualification import FeedbackFailure, FeedbackQualification, SecurityFeedbackQualificationState, SecurityDevelopmentContext, SecurityFailure, SecurityQualification, SecurityQualificationInput, bounded_security_context, qualify_feedback, qualify_security
+from .analytics_ml_qualification import AnalyticsQualification, MLQualification, MLQualificationEvidence, qualify_analytics, qualify_ml
+from .evaluation_memory_qualification import EvaluationQualification, MemoryQualification, qualify_evaluators, qualify_memory
+from .advisor_security_qualification import AdvisorQualification, AdvisorQualificationEvidence, SecurityIsolationEvidence, SecurityIsolationQualification, qualify_advisor, qualify_security_isolation
+from .scale_ecosystem_qualification import EcosystemEvidence, EcosystemQualification, ScaleRecoveryEvidence, ScaleRecoveryQualification, qualify_ecosystem, qualify_scale_recovery
+from .architecture_truth_gate import ArchitectureTruthEvidence, ArchitectureTruthGate, audit_architecture_truth
 from .review import AgreementReport, ReviewLabel, ReviewStore, analyze_agreement
 from .curated import CuratedDataset, CuratedItem, OfflineExperiment
 from .experiment_regression import RegressionMetric, RegressionReport, ReproducibilityManifest, evaluate_regression
@@ -158,6 +166,14 @@ __all__ = [
     "ApprovalState", "CohortPerformance", "DeploymentState", "ModelMonitoringReport", "ModelRegistration", "ModelRegistry", "MonitoringPolicy", "apply_monitoring", "deploy", "monitor_model", "set_approval",
     "ChallengePolicy", "ChallengerReport", "CohortComparison", "DatasetComparison", "EvaluationDataset", "evaluate_challenger",
     "DeterministicEvaluator", "EvaluationResult", "EvaluatorKind", "JudgeConfiguration", "JudgeResponse", "deterministic_evaluators", "evaluate_deterministically", "evaluate_with_judge",
+    "EvaluationCorpus", "FrozenEvent", "FrozenPromptRun", "CorpusResult", "evaluate_frozen_run", "QualificationState", "HarnessQualification", "qualify_harness",
+    "DataFailure", "DataQualification", "RuntimeFailure", "RuntimeQualification", "RuntimeQualificationInput", "WatchDataEvidence", "WatchQualificationState", "qualify_data", "qualify_runtime",
+    "FeedbackFailure", "FeedbackQualification", "SecurityFeedbackQualificationState", "SecurityDevelopmentContext", "SecurityFailure", "SecurityQualification", "SecurityQualificationInput", "bounded_security_context", "qualify_feedback", "qualify_security",
+    "AnalyticsQualification", "MLQualification", "MLQualificationEvidence", "qualify_analytics", "qualify_ml",
+    "EvaluationQualification", "MemoryQualification", "qualify_evaluators", "qualify_memory",
+    "AdvisorQualification", "AdvisorQualificationEvidence", "SecurityIsolationEvidence", "SecurityIsolationQualification", "qualify_advisor", "qualify_security_isolation",
+    "EcosystemEvidence", "EcosystemQualification", "ScaleRecoveryEvidence", "ScaleRecoveryQualification", "qualify_ecosystem", "qualify_scale_recovery",
+    "ArchitectureTruthEvidence", "ArchitectureTruthGate", "audit_architecture_truth",
     "AgreementReport", "ReviewLabel", "ReviewStore", "analyze_agreement",
     "CuratedDataset", "CuratedItem", "OfflineExperiment",
     "RegressionMetric", "RegressionReport", "ReproducibilityManifest", "evaluate_regression",
