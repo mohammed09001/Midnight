@@ -53,7 +53,7 @@ from .outcome_similarity import cross_domain_outcome_similarity
 from .relationship_graph import (
     EdgeKind, GraphEdge, PerformanceGraph,
     add_contradiction_edges, add_remediation_edge, add_similarity_edge, add_supersession_edges,
-    build_graph, graph_reference_overlap, memory_neighbors, traverse,
+    build_graph, compose_graph, graph_reference_overlap, memory_neighbors, traverse,
 )
 from .relationship_graph import merge as merge_graphs
 from .similarity import Experience, SimilarityMatch, SimilaritySignal, match, retrieve
@@ -81,7 +81,7 @@ from .dashboard import Dashboard, DashboardMetric
 from .advisor import AskResult, PreflightReport, advise, ask_read_only, preflight
 from .recommendation import Recommendation, RecommendationEvidence, PromptSuggestion, OutcomeMeasure, RecommendationEvaluation, evaluate_recommendation, suggest, suggest_prompt
 from .neighborhoods import BUCKETS, Neighborhood, NeighborhoodMember, build_neighborhood
-from .visual_intelligence import ExperienceNeighborhoodVisualization, LineageRevisionEdge, LineageRevisionNode, NeighborhoodVisualNode, PerformanceVisualMap, PromptLineageVisualization, VISUAL_PROJECTION_VERSION, VisualEdge, VisualNode, as_query_projection, build_experience_neighborhood_visualization, build_performance_visual_map, build_prompt_lineage_visualization
+from .visual_intelligence import ExperienceNeighborhoodVisualization, LineageRevisionEdge, LineageRevisionNode, NeighborhoodVisualNode, PerformanceVisualMap, PromptLineageVisualization, VISUAL_PROJECTION_VERSION, VisualEdge, VisualNode, VisualNodeMetadata, as_query_projection, build_experience_neighborhood_visualization, build_performance_visual_map, build_performance_visual_map_from_inputs, build_prompt_lineage_visualization
 from .verification_quality import VerificationKind, VerificationQuality, assess_verification
 from .report_consistency import ReportIssue, ProseClaim, ReportFinding, ReportConsistency, assess_report
 from .vector import CANONICAL_DIMENSIONS, Dimension, PerformanceVector, build_vector, dimension_from_metrics, dimension_from_scope, dimension_from_verification_quality, unknown_dimension
@@ -158,7 +158,7 @@ __all__ = [
     "cross_domain_outcome_similarity",
     "EdgeKind", "GraphEdge", "PerformanceGraph",
     "add_contradiction_edges", "add_remediation_edge", "add_similarity_edge", "add_supersession_edges",
-    "build_graph", "graph_reference_overlap", "memory_neighbors", "traverse", "merge_graphs",
+    "build_graph", "compose_graph", "graph_reference_overlap", "memory_neighbors", "traverse", "merge_graphs",
     "Experience", "SimilarityMatch", "SimilaritySignal", "match", "retrieve",
     "HybridQuery", "HybridResult", "RetrievalContribution", "RetrievalEntry", "RetrievalPath", "retrieve_hybrid",
     "BaselineEvidence", "FeatureAvailability", "FeatureInput", "FeaturePipeline", "FeatureSource", "FeatureSpec", "MLReadinessPolicy", "MLReadinessReport", "PartitionSplit", "ReadinessCheck", "ReadinessStatus", "SplitExample", "assess_ml_readiness", "split_by_time_and_project",
@@ -184,7 +184,7 @@ __all__ = [
     "AskResult", "PreflightReport", "advise", "ask_read_only", "preflight",
     "Recommendation", "RecommendationEvidence", "PromptSuggestion", "OutcomeMeasure", "RecommendationEvaluation", "evaluate_recommendation", "suggest", "suggest_prompt",
     "BUCKETS", "Neighborhood", "NeighborhoodMember", "build_neighborhood",
-    "VISUAL_PROJECTION_VERSION", "VisualNode", "VisualEdge", "PerformanceVisualMap", "build_performance_visual_map", "LineageRevisionNode", "LineageRevisionEdge", "PromptLineageVisualization", "build_prompt_lineage_visualization", "NeighborhoodVisualNode", "ExperienceNeighborhoodVisualization", "build_experience_neighborhood_visualization", "as_query_projection",
+    "VISUAL_PROJECTION_VERSION", "VisualNode", "VisualNodeMetadata", "VisualEdge", "PerformanceVisualMap", "build_performance_visual_map", "build_performance_visual_map_from_inputs", "LineageRevisionNode", "LineageRevisionEdge", "PromptLineageVisualization", "build_prompt_lineage_visualization", "NeighborhoodVisualNode", "ExperienceNeighborhoodVisualization", "build_experience_neighborhood_visualization", "as_query_projection",
     "VerificationKind", "VerificationQuality", "assess_verification",
     "ReportIssue", "ProseClaim", "ReportFinding", "ReportConsistency", "assess_report",
     "CANONICAL_DIMENSIONS", "Dimension", "PerformanceVector", "build_vector", "dimension_from_metrics", "dimension_from_scope", "dimension_from_verification_quality", "unknown_dimension",

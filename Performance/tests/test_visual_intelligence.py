@@ -1,5 +1,7 @@
 import unittest
 from datetime import datetime, timezone
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from midnight_performance import (
     ClaimKind, EdgeKind, EntityKind, ExternalReference, FeedbackRecord, FeedbackReason,
@@ -7,6 +9,9 @@ from midnight_performance import (
     build_graph, build_lineage, build_neighborhood, build_performance_visual_map,
     build_prompt_lineage_visualization, as_query_projection, analyze_prompt, classify_taxonomy,
     deterministic_identity, Experience, PromptRun, Neighborhood, NeighborhoodMember, SimilarityMatch,
+    ChangeEvidence, VerificationEvidence, VerificationSource, VisualNodeMetadata,
+    build_performance_visual_map_from_inputs, EvidenceLedger, PrivacyGuard, PrivacyPolicy,
+    PerformanceQueryAPI, QueryAuthorization,
 )
 
 
@@ -41,6 +46,61 @@ class VisualIntelligenceTests(unittest.TestCase):
         self.assertIn("unknown, not zero", view.edges[0].uncertainty)
         with self.assertRaises(ValueError):
             build_prompt_lineage_visualization((parent, child), ())
+
+    def test_lineage_serializes_semantic_outcomes_without_repr(self):
+        features, _ = analyze_prompt("Must authenticate.\nVerify login.")
+        parent = PromptRevision("v1", None, features, datetime(2026, 8, 28, tzinfo=timezone.utc))
+        child = PromptRevision("v2", "v1", features, datetime(2026, 8, 29, tzinfo=timezone.utc))
+        view = build_prompt_lineage_visualization(
+            (parent, child), build_lineage((parent, child), {"v1": (1, 5), "v2": (3, 5)}),
+            change_evidence={"v2": ChangeEvidence(("new.py",), ("edited.py",), ("old.py",))},
+            verifications={"v2": (VerificationEvidence("check", VerificationSource.EXECUTED, "passed", 10, 0, "ok"),)},
+        )
+        record = view.as_records()[0]
+        self.assertEqual(record["schema_version"], "2")
+        self.assertEqual(record["revisions"][1]["repository_outcome"]["deleted"], ("old.py",))
+        self.assertEqual(record["revisions"][1]["verification_outcome"][0]["status"], "passed")
+        self.assertIsInstance(record["edges"][0]["outcome_shift"], dict)
+        self.assertNotIn("ComparisonResult(", str(record))
+
+    def test_composition_builds_real_typed_map_and_rejects_foreign_metadata(self):
+        run = PromptRun("run", "v1", agent_run_ids=("agent",), change_set_ids=("change",), gaps=())
+        file_entity = deterministic_identity(EntityKind.FILE_CHANGE, "src/auth.py")
+        view = build_performance_visual_map_from_inputs(
+            (run,), resolved_entities={"change": (file_entity,)}, dataset_ids={"run": ("dataset",)},
+            experiment_ids={"run": ("experiment",)}, memory_references={"run": (ExternalReference("memory", "record", "m1"),)}, agent_session_ids={"agent": ("session",)}, agent_turn_ids={"agent": ("turn",)},
+        )
+        self.assertTrue({EntityKind.FILE_CHANGE, EntityKind.DATASET_ITEM, EntityKind.EXPERIMENT_RUN, EntityKind.MEMORY_RECORD, EntityKind.AGENT_SESSION, EntityKind.AGENT_TURN} <= {n.entity_kind for n in view.nodes})
+        self.assertEqual(view, build_performance_visual_map_from_inputs((run,), resolved_entities={"change": (file_entity,)}, dataset_ids={"run": ("dataset",)}, experiment_ids={"run": ("experiment",)}, memory_references={"run": (ExternalReference("memory", "record", "m1"),)}, agent_session_ids={"agent": ("session",)}, agent_turn_ids={"agent": ("turn",)}))
+        foreign = deterministic_identity(EntityKind.FILE_CHANGE, "foreign")
+        with self.assertRaises(ValueError):
+            build_performance_visual_map(PerformanceGraph(()), node_metadata={foreign: VisualNodeMetadata()})
+        unresolved = build_performance_visual_map_from_inputs((run,))
+        self.assertIn("change:unavailable:repository_entity_resolution", unresolved.gaps)
+        self.assertIn("run:unavailable:memory_references", unresolved.gaps)
+
+    def test_visual_node_metadata_is_projected_and_serialized(self):
+        run = PromptRun("run", "v1")
+        graph = build_graph(run)
+        node = next(item for item in graph.nodes if item.kind is EntityKind.PROMPT_RUN)
+        metadata = VisualNodeMetadata("run label", ClaimKind.DERIVED, ("ledger:event-1",), datetime(2026, 8, 28, tzinfo=timezone.utc), "project-a", gaps=("partial:label",))
+        view = build_performance_visual_map(graph, node_metadata={node: metadata})
+        record = next(item for item in view.as_records()[0]["nodes"] if item["id"] == node.canonical)
+        self.assertEqual((record["label"], record["provenance"], record["project_context"]), ("run label", ("ledger:event-1",), "project-a"))
+        with self.assertRaises(ValueError):
+            VisualNodeMetadata(claim_kind=ClaimKind.OBSERVED)
+
+    def test_visual_projection_uses_existing_query_authorization(self):
+        project = deterministic_identity(EntityKind.PROJECT, "one")
+        with TemporaryDirectory() as temporary:
+            ledger = EvidenceLedger(Path(temporary) / "evidence.jsonl", project, PrivacyGuard(PrivacyPolicy()))
+            view = build_performance_visual_map(PerformanceGraph(()))
+            api = PerformanceQueryAPI(ledger, projections={"visual": as_query_projection("visual", view)})
+            authorization = QueryAuthorization(project)
+            self.assertEqual(api.projection(authorization, "visual").version, "1")
+            self.assertEqual(api.list_projections(authorization), (("visual", "1"),))
+            with self.assertRaises(PermissionError):
+                api.projection(QueryAuthorization(deterministic_identity(EntityKind.PROJECT, "other")), "visual")
 
     def test_neighborhood_visualization_preserves_buckets_explanations_and_self_gap(self):
         query = self._experience("query")

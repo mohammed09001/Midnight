@@ -62,6 +62,8 @@ def build_graph(
     *,
     tool_observation_ids: Mapping[str, tuple[str, ...]] | None = None,
     command_observation_ids: Mapping[str, tuple[str, ...]] | None = None,
+    agent_session_ids: Mapping[str, tuple[str, ...]] | None = None,
+    agent_turn_ids: Mapping[str, tuple[str, ...]] | None = None,
     memory_references: tuple[ExternalReference, ...] = (),
 ) -> PerformanceGraph:
     """Reify one PromptRun's already-typed references as graph edges; deterministic node identities make rebuilds reproduce the same graph.
@@ -72,6 +74,8 @@ def build_graph(
     """
     tool_observation_ids = tool_observation_ids or {}
     command_observation_ids = command_observation_ids or {}
+    agent_session_ids = agent_session_ids or {}
+    agent_turn_ids = agent_turn_ids or {}
     prompt_run_node = _node(EntityKind.PROMPT_RUN, prompt_run.prompt_run_id)
     edges: list[GraphEdge] = []
     gaps = list(prompt_run.gaps)
@@ -80,6 +84,10 @@ def build_graph(
     for agent_run_id in prompt_run.agent_run_ids:
         agent_run_node = _node(EntityKind.AGENT_RUN, agent_run_id)
         edges.append(_reference(prompt_run_node, agent_run_node, agent_run_id))
+        for session_id in agent_session_ids.get(agent_run_id, ()):
+            edges.append(_reference(agent_run_node, _node(EntityKind.AGENT_SESSION, session_id), session_id))
+        for turn_id in agent_turn_ids.get(agent_run_id, ()):
+            edges.append(_reference(agent_run_node, _node(EntityKind.AGENT_TURN, turn_id), turn_id))
         for tool_id in tool_observation_ids.get(agent_run_id, ()):
             edges.append(_reference(agent_run_node, _node(EntityKind.TOOL_OBSERVATION, tool_id), tool_id))
         for command_id in command_observation_ids.get(agent_run_id, ()):
@@ -116,6 +124,70 @@ def merge(graphs: tuple[PerformanceGraph, ...]) -> PerformanceGraph:
     edges = tuple(dict.fromkeys(edge for graph in graphs for edge in graph.edges))
     gaps = tuple(sorted({gap for graph in graphs for gap in graph.gaps}))
     return PerformanceGraph(edges, gaps)
+
+
+def compose_graph(
+    prompt_runs: tuple[PromptRun, ...],
+    *,
+    tool_observation_ids: Mapping[str, tuple[str, ...]] | None = None,
+    command_observation_ids: Mapping[str, tuple[str, ...]] | None = None,
+    agent_session_ids: Mapping[str, tuple[str, ...]] | None = None,
+    agent_turn_ids: Mapping[str, tuple[str, ...]] | None = None,
+    memory_references: Mapping[str, tuple[ExternalReference, ...]] | None = None,
+    resolved_entities: Mapping[str, tuple[Identity, ...]] | None = None,
+    dataset_ids: Mapping[str, tuple[str, ...]] | None = None,
+    experiment_ids: Mapping[str, tuple[str, ...]] | None = None,
+) -> PerformanceGraph:
+    """Compose typed Performance references into the existing rebuildable graph.
+
+    This is deliberately a graph-owner operation, rather than a Visual
+    Intelligence shortcut.  Keys are PromptRun ids; repository entities are
+    accepted only as typed identities and must be attached to a represented
+    Change Set.
+    """
+    tool_observation_ids = tool_observation_ids or {}
+    command_observation_ids = command_observation_ids or {}
+    agent_session_ids = agent_session_ids or {}
+    agent_turn_ids = agent_turn_ids or {}
+    memory_references = memory_references or {}
+    resolved_entities = resolved_entities or {}
+    dataset_ids = dataset_ids or {}
+    experiment_ids = experiment_ids or {}
+    run_ids = [run.prompt_run_id for run in prompt_runs]
+    if len(run_ids) != len(set(run_ids)):
+        raise ValueError("duplicate prompt run ids in graph composition")
+    known = set(run_ids)
+    for name, source in (("memory", memory_references), ("datasets", dataset_ids), ("experiments", experiment_ids)):
+        if not set(source) <= known:
+            raise ValueError(f"{name} references must belong to represented prompt runs")
+    change_sets = {change_id for run in prompt_runs for change_id in run.change_set_ids}
+    if not set(resolved_entities) <= change_sets:
+        raise ValueError("resolved entities must belong to represented change sets")
+    allowed_entities = {EntityKind.FILE_CHANGE, EntityKind.CODE_REGION, EntityKind.SYMBOL, EntityKind.REPOSITORY, EntityKind.REPOSITORY_SNAPSHOT}
+    if any(entity.kind not in allowed_entities for entities in resolved_entities.values() for entity in entities):
+        raise ValueError("resolved repository entities must have a repository entity kind")
+    edges: list[GraphEdge] = []
+    gaps: list[str] = []
+    for run in prompt_runs:
+        graph = build_graph(run, tool_observation_ids=tool_observation_ids, command_observation_ids=command_observation_ids, agent_session_ids=agent_session_ids, agent_turn_ids=agent_turn_ids, memory_references=memory_references.get(run.prompt_run_id, ()))
+        edges.extend(graph.edges)
+        gaps.extend(graph.gaps)
+        if run.prompt_run_id not in memory_references:
+            gaps.append(f"{run.prompt_run_id}:unavailable:memory_references")
+        run_node = _node(EntityKind.PROMPT_RUN, run.prompt_run_id)
+        for dataset_id in dataset_ids.get(run.prompt_run_id, ()):
+            edges.append(_reference(run_node, _node(EntityKind.DATASET_ITEM, dataset_id), dataset_id))
+        for experiment_id in experiment_ids.get(run.prompt_run_id, ()):
+            edges.append(_reference(run_node, _node(EntityKind.EXPERIMENT_RUN, experiment_id), experiment_id))
+        for change_set_id in run.change_set_ids:
+            entities = resolved_entities.get(change_set_id)
+            if entities is None:
+                gaps.append(f"{change_set_id}:unavailable:repository_entity_resolution")
+                continue
+            change_node = _node(EntityKind.CHANGE_SET, change_set_id)
+            for entity in entities:
+                edges.append(_reference(change_node, entity, entity.canonical))
+    return PerformanceGraph(tuple(dict.fromkeys(edges)), tuple(sorted(set(gaps))))
 
 
 def add_similarity_edge(graph: PerformanceGraph, query_prompt_run_id: str, candidate_prompt_run_id: str, *, score: float, evidence: tuple[str, ...], claim_kind: ClaimKind, method: str, method_version: str, uncertainty: str) -> PerformanceGraph:
