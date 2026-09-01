@@ -81,6 +81,7 @@ from .dashboard import Dashboard, DashboardMetric
 from .advisor import AskResult, PreflightReport, advise, ask_read_only, preflight
 from .recommendation import Recommendation, RecommendationEvidence, PromptSuggestion, OutcomeMeasure, RecommendationEvaluation, evaluate_recommendation, suggest, suggest_prompt
 from .neighborhoods import BUCKETS, Neighborhood, NeighborhoodMember, build_neighborhood
+from .visual_intelligence import ExperienceNeighborhoodVisualization, LineageRevisionEdge, LineageRevisionNode, NeighborhoodVisualNode, PerformanceVisualMap, PromptLineageVisualization, VISUAL_PROJECTION_VERSION, VisualEdge, VisualNode, as_query_projection, build_experience_neighborhood_visualization, build_performance_visual_map, build_prompt_lineage_visualization
 from .verification_quality import VerificationKind, VerificationQuality, assess_verification
 from .report_consistency import ReportIssue, ProseClaim, ReportFinding, ReportConsistency, assess_report
 from .vector import CANONICAL_DIMENSIONS, Dimension, PerformanceVector, build_vector, dimension_from_metrics, dimension_from_scope, dimension_from_verification_quality, unknown_dimension
@@ -183,6 +184,7 @@ __all__ = [
     "AskResult", "PreflightReport", "advise", "ask_read_only", "preflight",
     "Recommendation", "RecommendationEvidence", "PromptSuggestion", "OutcomeMeasure", "RecommendationEvaluation", "evaluate_recommendation", "suggest", "suggest_prompt",
     "BUCKETS", "Neighborhood", "NeighborhoodMember", "build_neighborhood",
+    "VISUAL_PROJECTION_VERSION", "VisualNode", "VisualEdge", "PerformanceVisualMap", "build_performance_visual_map", "LineageRevisionNode", "LineageRevisionEdge", "PromptLineageVisualization", "build_prompt_lineage_visualization", "NeighborhoodVisualNode", "ExperienceNeighborhoodVisualization", "build_experience_neighborhood_visualization", "as_query_projection",
     "VerificationKind", "VerificationQuality", "assess_verification",
     "ReportIssue", "ProseClaim", "ReportFinding", "ReportConsistency", "assess_report",
     "CANONICAL_DIMENSIONS", "Dimension", "PerformanceVector", "build_vector", "dimension_from_metrics", "dimension_from_scope", "dimension_from_verification_quality", "unknown_dimension",

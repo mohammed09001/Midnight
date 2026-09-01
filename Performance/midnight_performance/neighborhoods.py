@@ -28,6 +28,7 @@ class NeighborhoodMember:
 class Neighborhood:
     query_prompt_run_id: str; members: tuple[NeighborhoodMember, ...]
     method: str; method_version: str; claim_kind: ClaimKind; uncertainty: str
+    gaps: tuple[str, ...] = ()
 
     def __post_init__(self):
         if not self.query_prompt_run_id.strip(): raise ValueError("neighborhood requires the query prompt run id")
@@ -51,12 +52,15 @@ def build_neighborhood(query: Experience, candidates: tuple[Experience, ...], *,
     """Rank candidates with the same multi-view retrieval used elsewhere, then bucket by outcome; each bucket is capped independently so a common outcome cannot crowd out a rare one."""
     if top_k_per_bucket < 1:
         raise ValueError("top_k_per_bucket must be positive")
+    if not 0 <= min_score <= 1:
+        raise ValueError("min_score must be between zero and one")
     by_id = {item.prompt_run_id: item for item in candidates}
     if len(by_id) != len(candidates):
         raise ValueError("candidate experiences must have unique prompt run ids")
+    omitted_self = tuple(item.prompt_run_id for item in candidates if item.prompt_run_id == query.prompt_run_id)
     scored = sorted(
-        (item for item in (match(query, candidate, weights=weights) for candidate in candidates) if item.score is not None and item.score >= min_score),
-        key=lambda item: item.score, reverse=True,
+        (item for item in (match(query, candidate, weights=weights) for candidate in candidates if candidate.prompt_run_id != query.prompt_run_id) if item.score is not None and item.score >= min_score),
+        key=lambda item: (-item.score, item.prompt_run_id),
     )
     counts = {bucket: 0 for bucket in BUCKETS}
     members: list[NeighborhoodMember] = []
@@ -70,4 +74,5 @@ def build_neighborhood(query: Experience, candidates: tuple[Experience, ...], *,
     empty = tuple(bucket for bucket in BUCKETS if counts[bucket] == 0)
     if empty:
         parts.append(f"no qualifying neighbors in: {list(empty)}")
-    return Neighborhood(query.prompt_run_id, tuple(members), _METHOD, _VERSION, ClaimKind.DERIVED, "; ".join(parts))
+    gaps = tuple(f"excluded:self_candidate:{item}" for item in omitted_self)
+    return Neighborhood(query.prompt_run_id, tuple(members), _METHOD, _VERSION, ClaimKind.DERIVED, "; ".join(parts), gaps)
