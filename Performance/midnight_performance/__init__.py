@@ -43,6 +43,21 @@ from .outcome_quality import AttributionAlternatives, OutcomeQuality
 from .feedback import Judgment, FeedbackReason, FeedbackRecord, should_request_feedback
 from .learning import QuestionCandidate, select_question, MultiSignalLabel
 from .prompt_analysis import RequirementType, ExtractedRequirement, PromptFeatures, PromptMetrics, analyze_prompt
+from .intent_contract import INTENT_CONTRACT_VERSION, IntentContract, IntentElement, IntentKind, SourceSpan, extract_intent_contract
+from .traceability import TRACEABILITY_VERSION, PARSER_VERSION, CodeElement, CodeElementKind, RequirementUnit, TraceCandidate, TraceLink, TraceState, build_requirement_units, resolve_code_elements, retrieve_candidates, link_from_candidate, reprocess_links, unrequested_code_links
+from .structural_diff import STRUCTURAL_DIFF_VERSION, BlastRadius, ChangedSurface, StructuralDiff, StructuralEdit, StructuralEditKind, StructuralElement, SurfaceKind, blast_radius, changed_surfaces, structural_diff
+from .semantic_change import SEMANTIC_CHANGE_VERSION, SemanticChangeEvent, SemanticLabel, classify_semantic_change
+from .behavior_analysis import BEHAVIOR_ANALYSIS_VERSION, BehaviorAlignment, BehaviorClause, BehaviorContract, BehaviorStatus, OracleKind, SpecificationHypothesis, align_behavior, behavior_contract, infer_specification, refine_hypothesis
+from .verification_intelligence import VERIFICATION_INTELLIGENCE_VERSION, BehaviorVerificationEvidence, BehavioralDivergence, CoverageKind, OracleAssessment, OracleSource, OracleStrength, VerificationCoverage, assess_oracle, coverage_for, detect_divergence
+from .trajectory import TRAJECTORY_VERSION, ActionCategory, EventKind, JourneyFinding, JourneyPhase, Trajectory, TrajectoryEvent, build_trajectory, categorize, detect_antipatterns, segment as segment_trajectory
+from .journey_intelligence import JOURNEY_INTELLIGENCE_VERSION, FrictionMetrics, Intervention, InterventionKind, JourneyQuality, assess_journey, friction, interventions
+from .decision_intelligence import DECISION_INTELLIGENCE_VERSION, DecisionEpisode, DecisionQuality, DecisionState, SurfaceLineage, assess_decision, decision_episode, surface_lineage
+from .historical_intelligence import HISTORICAL_INTELLIGENCE_VERSION, LessonCandidate, RecurringSurface, ReworkKind, ReworkLink, lesson_candidate, recurring_surface, rework_link
+from .personal_learning import PERSONAL_LEARNING_VERSION, ExperienceRecord, MatchedExperience, NextTimeSuggestion, PerformanceProfile, match_history, profile, suggest_next_time
+from .decision_story import DECISION_STORY_VERSION, DecisionStory, RequirementEvidence, StoryFinding, StorySection, build_story
+from .improvement_qualification import IMPROVEMENT_QUALIFICATION_VERSION, ImprovementFixture, ProductTruthCheck, ProductTruthReport, QualificationResult, final_product_truth, improvement_corpus, qualify_fixture
+from .ambiguity_analysis import AMBIGUITY_ANALYSIS_VERSION, AmbiguityFinding, AmbiguityKind, AmbiguityReport, MinimumInformationNeed, ResolutionStatus, analyze_ambiguity
+from .improvement_gate import IMPROVEMENT_GATE_VERSION, CapabilityEvidence, CapabilityState, ImprovementArchitectureGate, ImprovementCapabilityGap, DEFAULT_IMPROVEMENT_INVARIANTS, establish_improvement_gate
 from .prompt_lineage import PromptRevision, PromptLineageLink, build_lineage, link_revisions
 from .alignment import AlignmentStatus, RequirementAlignment, AlignmentResult, align
 from .scope_discipline import TaskType, FindingKind, DisciplineFinding, ScopeDiscipline, assess_scope
@@ -68,14 +83,14 @@ from .qualification import EvaluationCorpus, FrozenEvent, FrozenPromptRun, Corpu
 from .watch_qualification import DataFailure, DataQualification, RuntimeFailure, RuntimeQualification, RuntimeQualificationInput, WatchDataEvidence, WatchQualificationState, qualify_data, qualify_runtime
 from .security_feedback_qualification import FeedbackFailure, FeedbackQualification, SecurityFeedbackQualificationState, SecurityDevelopmentContext, SecurityFailure, SecurityQualification, SecurityQualificationInput, bounded_security_context, qualify_feedback, qualify_security
 from .analytics_ml_qualification import AnalyticsQualification, MLQualification, MLQualificationEvidence, qualify_analytics, qualify_ml
-from .evaluation_memory_qualification import EvaluationQualification, MemoryQualification, qualify_evaluators, qualify_memory
+from .evaluation_memory_qualification import EvaluationQualification, MemoryIntegrationQualification, qualify_evaluators, qualify_memory_integration
 from .advisor_security_qualification import AdvisorQualification, AdvisorQualificationEvidence, SecurityIsolationEvidence, SecurityIsolationQualification, qualify_advisor, qualify_security_isolation
 from .scale_ecosystem_qualification import EcosystemEvidence, EcosystemQualification, ScaleRecoveryEvidence, ScaleRecoveryQualification, qualify_ecosystem, qualify_scale_recovery
 from .architecture_truth_gate import ArchitectureTruthEvidence, ArchitectureTruthGate, audit_architecture_truth
 from .review import AgreementReport, ReviewLabel, ReviewStore, analyze_agreement
 from .curated import CuratedDataset, CuratedItem, OfflineExperiment
 from .experiment_regression import RegressionMetric, RegressionReport, ReproducibilityManifest, evaluate_regression
-from .memory import KnowledgeRecord, MemoryDomain, MemoryEvidence, promote, supersede
+from .memory import MemoryDomain, MemoryEvidence
 from .memory_retrieval import MemoryHit, retain, retrieve_memory
 from .dashboard import Dashboard, DashboardMetric
 from .advisor import AskResult, PreflightReport, advise, ask_read_only, preflight
@@ -109,8 +124,27 @@ from .confounders import DEFAULT_MIN_STRATUM, StratifiedComparison, StratumCompa
 from .experiment import ExperimentArm, ExperimentDefinition, ExperimentDesign, ExperimentResult, run_experiment
 from .observation_model import EvidenceSourceKind, ObservationEnvelope, ObservationLayer, ObservationType, from_opentelemetry, to_opentelemetry
 from .provenance import repository_claim_contradictions, seal, verify
+from .memory_bridge import (
+    MEMORY_CONTRACT_VERSION,
+    MemoryContractError,
+    MemoryUnavailableError,
+    build_context_envelope,
+    build_propose_envelope,
+    call_memory_cli,
+    call_memory_cli_with_retry,
+    LessonDeliveryResult,
+    MemoryReadResult,
+    citation_from_memory_record,
+    identity_from_project_key,
+    lesson_from_qualified_claim,
+    lesson_from_sealed_envelope,
+    project_key_for_identity,
+    propose_lesson_or_degrade,
+    read_memory_context_or_none,
+    read_performance_context,
+)
 from .threat_model import Threat, ThreatControl, bound_untrusted_text, threat_model
-from .privacy import ContentCategory, PrivacyGuard, PrivacyPolicy, PrivacyViolation, RetentionClass
+from .privacy import ContentCategory, PrivacyGuard, PrivacyPolicy, PrivacyViolation, RetentionClass, redact_sensitive_text
 
 __all__ = [
     "ClaimKind",
@@ -149,6 +183,21 @@ __all__ = [
     "Judgment", "FeedbackReason", "FeedbackRecord", "should_request_feedback",
     "QuestionCandidate", "select_question", "MultiSignalLabel",
     "RequirementType", "ExtractedRequirement", "PromptFeatures", "PromptMetrics", "analyze_prompt",
+    "INTENT_CONTRACT_VERSION", "IntentContract", "IntentElement", "IntentKind", "SourceSpan", "extract_intent_contract",
+    "TRACEABILITY_VERSION", "PARSER_VERSION", "CodeElement", "CodeElementKind", "RequirementUnit", "TraceCandidate", "TraceLink", "TraceState", "build_requirement_units", "resolve_code_elements", "retrieve_candidates", "link_from_candidate", "reprocess_links", "unrequested_code_links",
+    "STRUCTURAL_DIFF_VERSION", "BlastRadius", "ChangedSurface", "StructuralDiff", "StructuralEdit", "StructuralEditKind", "StructuralElement", "SurfaceKind", "blast_radius", "changed_surfaces", "structural_diff",
+    "SEMANTIC_CHANGE_VERSION", "SemanticChangeEvent", "SemanticLabel", "classify_semantic_change",
+    "BEHAVIOR_ANALYSIS_VERSION", "BehaviorAlignment", "BehaviorClause", "BehaviorContract", "BehaviorStatus", "OracleKind", "SpecificationHypothesis", "align_behavior", "behavior_contract", "infer_specification", "refine_hypothesis",
+    "VERIFICATION_INTELLIGENCE_VERSION", "BehaviorVerificationEvidence", "BehavioralDivergence", "CoverageKind", "OracleAssessment", "OracleSource", "OracleStrength", "VerificationCoverage", "assess_oracle", "coverage_for", "detect_divergence",
+    "TRAJECTORY_VERSION", "ActionCategory", "EventKind", "JourneyFinding", "JourneyPhase", "Trajectory", "TrajectoryEvent", "build_trajectory", "categorize", "detect_antipatterns", "segment_trajectory",
+    "JOURNEY_INTELLIGENCE_VERSION", "FrictionMetrics", "Intervention", "InterventionKind", "JourneyQuality", "assess_journey", "friction", "interventions",
+    "DECISION_INTELLIGENCE_VERSION", "DecisionEpisode", "DecisionQuality", "DecisionState", "SurfaceLineage", "assess_decision", "decision_episode", "surface_lineage",
+    "HISTORICAL_INTELLIGENCE_VERSION", "LessonCandidate", "RecurringSurface", "ReworkKind", "ReworkLink", "lesson_candidate", "recurring_surface", "rework_link",
+    "PERSONAL_LEARNING_VERSION", "ExperienceRecord", "MatchedExperience", "NextTimeSuggestion", "PerformanceProfile", "match_history", "profile", "suggest_next_time",
+    "DECISION_STORY_VERSION", "DecisionStory", "RequirementEvidence", "StoryFinding", "StorySection", "build_story",
+    "IMPROVEMENT_QUALIFICATION_VERSION", "ImprovementFixture", "ProductTruthCheck", "ProductTruthReport", "QualificationResult", "final_product_truth", "improvement_corpus", "qualify_fixture",
+    "AMBIGUITY_ANALYSIS_VERSION", "AmbiguityFinding", "AmbiguityKind", "AmbiguityReport", "MinimumInformationNeed", "ResolutionStatus", "analyze_ambiguity",
+    "IMPROVEMENT_GATE_VERSION", "CapabilityEvidence", "CapabilityState", "ImprovementArchitectureGate", "ImprovementCapabilityGap", "DEFAULT_IMPROVEMENT_INVARIANTS", "establish_improvement_gate",
     "PromptRevision", "PromptLineageLink", "build_lineage", "link_revisions",
     "AlignmentStatus", "RequirementAlignment", "AlignmentResult", "align",
     "TaskType", "FindingKind", "DisciplineFinding", "ScopeDiscipline", "assess_scope",
@@ -171,14 +220,14 @@ __all__ = [
     "DataFailure", "DataQualification", "RuntimeFailure", "RuntimeQualification", "RuntimeQualificationInput", "WatchDataEvidence", "WatchQualificationState", "qualify_data", "qualify_runtime",
     "FeedbackFailure", "FeedbackQualification", "SecurityFeedbackQualificationState", "SecurityDevelopmentContext", "SecurityFailure", "SecurityQualification", "SecurityQualificationInput", "bounded_security_context", "qualify_feedback", "qualify_security",
     "AnalyticsQualification", "MLQualification", "MLQualificationEvidence", "qualify_analytics", "qualify_ml",
-    "EvaluationQualification", "MemoryQualification", "qualify_evaluators", "qualify_memory",
+    "EvaluationQualification", "MemoryIntegrationQualification", "qualify_evaluators", "qualify_memory_integration",
     "AdvisorQualification", "AdvisorQualificationEvidence", "SecurityIsolationEvidence", "SecurityIsolationQualification", "qualify_advisor", "qualify_security_isolation",
     "EcosystemEvidence", "EcosystemQualification", "ScaleRecoveryEvidence", "ScaleRecoveryQualification", "qualify_ecosystem", "qualify_scale_recovery",
     "ArchitectureTruthEvidence", "ArchitectureTruthGate", "audit_architecture_truth",
     "AgreementReport", "ReviewLabel", "ReviewStore", "analyze_agreement",
     "CuratedDataset", "CuratedItem", "OfflineExperiment",
     "RegressionMetric", "RegressionReport", "ReproducibilityManifest", "evaluate_regression",
-    "KnowledgeRecord", "MemoryDomain", "MemoryEvidence", "promote", "supersede",
+    "MemoryDomain", "MemoryEvidence",
     "MemoryHit", "retain", "retrieve_memory",
     "Dashboard", "DashboardMetric",
     "AskResult", "PreflightReport", "advise", "ask_read_only", "preflight",
@@ -225,10 +274,17 @@ __all__ = [
     "PrivacyPolicy",
     "PrivacyViolation",
     "RetentionClass",
+    "redact_sensitive_text",
     "deterministic_identity",
     "from_opentelemetry",
     "new_identity",
     "to_opentelemetry",
     "repository_claim_contradictions", "seal", "verify", "Threat", "ThreatControl", "bound_untrusted_text", "threat_model",
     "UntrustedContext", "UntrustedContextSource",
+    "identity_from_project_key", "project_key_for_identity",
+    "MEMORY_CONTRACT_VERSION", "MemoryContractError", "MemoryUnavailableError",
+    "build_context_envelope", "build_propose_envelope", "call_memory_cli", "call_memory_cli_with_retry",
+    "lesson_from_sealed_envelope", "lesson_from_qualified_claim",
+    "LessonDeliveryResult", "propose_lesson_or_degrade", "read_memory_context_or_none",
+    "MemoryReadResult", "read_performance_context", "citation_from_memory_record",
 ]

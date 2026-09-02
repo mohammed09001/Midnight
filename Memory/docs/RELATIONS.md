@@ -1,4 +1,4 @@
-# Library Memory Engine — Typed Memory Relationships (v1.7.0)
+# Midnight Memory — Typed Memory Relationships (v1.7.0)
 
 Implemented in `src/engine/relations.ts` (+ `contracts/types.ts` relation
 vocabulary, `validation.ts`). Task 21, Phase IV.

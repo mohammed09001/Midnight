@@ -79,7 +79,7 @@ test("T22: entity projection extracts explicit applies_to links across the taxon
     }
     // Versioning surface present.
     assert.equal(projection.schemaVersion, "1");
-    assert.ok(projection.version.startsWith("1.25.0.p"), "version carries the contract version + build counter");
+    assert.ok(projection.version.startsWith("1.27.0.p"), "version carries the contract version + build counter");
     assert.ok(!Number.isNaN(Date.parse(projection.builtAt)));
     assert.ok(!Number.isNaN(Date.parse(projection.entities[0]!.firstSeenAt)));
   } finally {

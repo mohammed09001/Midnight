@@ -1,5 +1,5 @@
 /**
- * Public module surface of the Library Memory Engine.
+ * Public module surface of the Midnight Memory Engine.
  *
  * This is the ONLY supported import path for other packages/engines.
  * MemoryStore is deliberately NOT exported: the canonical store is private
@@ -171,6 +171,23 @@ export type {
   PerformanceProposalResult,
   PerformanceRejection,
 } from "./engine/performance.ts";
+export {
+  PERFORMANCE_ENGINE,
+  PERFORMANCE_SOURCE_KIND,
+  PERFORMANCE_DEFAULT_CALLER,
+  MAX_PERFORMANCE_LESSONS_PER_BATCH,
+  MAX_PERFORMANCE_EVIDENCE_PER_LESSON,
+} from "./engine/performance.ts";
+export {
+  projectKeyFromPerformanceIdentity,
+  performanceIdentityFromProjectKey,
+  parsePerformanceIdentity,
+  PERFORMANCE_IDENTITY_KINDS,
+} from "./engine/performanceIdentity.ts";
+export type {
+  ParsedPerformanceIdentity,
+  PerformanceIdentityKind,
+} from "./engine/performanceIdentity.ts";
 export type {
   StudyProposal,
   StudyProposalResult,

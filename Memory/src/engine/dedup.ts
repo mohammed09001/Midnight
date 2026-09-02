@@ -18,7 +18,7 @@
  *
  * Provider-free: near-duplicate similarity is token-based and deterministic.
  * Research: mem0's embedding-based dedup ADAPTED in intent but the embedding
- * provider dependency is REJECTED here — a small Library-owned token/Jaccard
+ * provider dependency is REJECTED here — a small Memory-owned token/Jaccard
  * matcher is clearer and self-hosted (main @ 2026-08-30).
  */
 import type { EvidenceRef, MemoryCandidate } from "../contracts/types.ts";

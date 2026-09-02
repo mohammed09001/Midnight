@@ -1,4 +1,4 @@
-# Library Memory Engine — Stable Identities and Scopes (v1.0.0)
+# Midnight Memory — Stable Identities and Scopes (v1.1.0)
 
 Implemented in `src/engine/ids.ts`; migrations 2–3 in `src/engine/store.ts`.
 Contract version: **1.0.0**.
@@ -35,14 +35,33 @@ Contract version: **1.0.0**.
    projectKey + displayName returns the existing identity; a different display
    name for the same key is `MEMORY_CONFLICT`.
 
+## Performance project identity mapping (v1.1.0, additive)
+
+Performance's canonical identity string (`mp:v<version>:<kind>:<uuid>`,
+`Identity.canonical` in `midnight_performance/contracts.py`) contains colons,
+which a Memory projectKey cannot (`[\w][\w.-]*`). `src/engine/performanceIdentity.ts`
+provides a bijective colon-to-dot mapping (`mp:v1:project:<uuid>` ->
+`mp.v1.project.<uuid>`), scoped to `PROJECT`/`WORKSPACE` identities only —
+every other Performance entity kind, and every malformed input, is a typed
+rejection (`MEMORY_VALIDATION_FAILED`), never a guess. `Performance/midnight_performance/memory_bridge.py`
+mirrors this mapping in Python; a shared fixture (a fixed UUID) is asserted
+identically in both languages' tests to prove wire-value agreement.
+
+This is purely additive: scope-id derivation (`scopeIdFromProjectKey`) is
+unaffected — it hashes whatever projectKey string it receives, mapped or not.
+No new persistence is introduced: the mapped string IS the projectKey
+`createScope` already persists verbatim, and the original Performance
+identity is always recoverable via the inverse mapping, so nothing new needs
+to be stored to preserve it.
+
 ## Research note (ULID)
 
 - **Source:** `github.com/ulid/spec` (master branch, fetched 2026-08-30).
 - **Pattern extracted:** 26-char Crockford base32 (alphabet excluding
   I/L/O/U), 48-bit timestamp + 80-bit randomness, monotonic same-ms increment.
-- **Decision: ADAPT.** Library-owned implementation (no dependency). Two
+- **Decision: ADAPT.** Memory-owned implementation (no dependency). Two
   documented deviations: (a) same-ms overflow advances the clock one
-  millisecond instead of throwing (availability over strictness — Library
+  millisecond instead of throwing (availability over strictness — Memory's
   requirement: identity generation must never fail a write); (b) scope ids
   are deterministic base32-encoded SHA-256 digests (128 bits), which satisfy
   the character shape but are hash-derived, not canonical ULIDs.

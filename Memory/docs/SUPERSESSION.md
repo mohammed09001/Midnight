@@ -1,4 +1,4 @@
-# Library Memory Engine — Supersession Without Destructive Overwrite (v1.3.0)
+# Midnight Memory — Supersession Without Destructive Overwrite (v1.3.0)
 
 Implemented in `src/engine/records.ts` (`supersedeRecordImpl`), exposed via
 history in `src/engine/temporal.ts`. Inspiration: dolt's attributed history

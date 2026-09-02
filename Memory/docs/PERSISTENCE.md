@@ -1,9 +1,9 @@
-# Library Memory Engine — Append-Oriented Persistence (v1.2.0)
+# Midnight Memory — Append-Oriented Persistence (v1.2.0)
 
 Implemented in `src/engine/store.ts` (+ migration 5), `src/engine/records.ts`.
 Pattern note: mem0's ADD-only accumulation ("memories accumulate; nothing is
 overwritten", main @ 2026-08-30) adapted WITHOUT its LLM/embedding provider
-dependency — Library's accumulation is supersession + immutable revisions on
+dependency — Memory's accumulation is supersession + immutable revisions on
 a self-hosted SQLite store (Apache-2.0 upstream, concepts only).
 
 ## Model

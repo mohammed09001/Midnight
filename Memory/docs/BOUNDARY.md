@@ -1,13 +1,32 @@
-# Library Memory Engine — Frozen Product Boundary (v1.6.0)
+# Midnight Memory — Frozen Product Boundary (v1.26.0)
 
-Contract version: **1.6.0** (`MEMORY_ENGINE_CONTRACT_VERSION`, `src/contracts/version.ts`).
+Contract version: **1.26.0** (`MEMORY_ENGINE_CONTRACT_VERSION`, `src/contracts/version.ts`).
 This document freezes the Memory Engine product boundary. The code enforces it;
 this document is the canonical statement of it. Versioning: additive changes
 bump minor, breaking changes bump major.
 
+## 0. Canonical Ownership Statement
+
+Memory is the **canonical owner of durable, accepted, cross-session/project
+knowledge**: MemoryRecords and their evidence, provenance, authority tier,
+epistemic class, temporal validity, contradiction/supersession lineage, and
+retention state — all admitted and retained only under Memory's own evidence,
+authority, privacy, temporal, contradiction, supersession, retention, and
+promotion rules (docs/AUTHORITY.md, docs/INTAKE.md, docs/PROMOTION.md).
+
+Memory explicitly does **not** own raw Performance evidence or generic agent
+execution history. Prompt runs, agent runs, tool/command observations,
+repository changes, verification results, feedback, outcomes, Performance
+Episodes, and agent transcripts remain canonical to Midnight Performance's own
+evidence ledger. Memory only ever holds bounded, evidence-backed **lessons**
+derived from that history, referencing the originating Performance evidence
+by id — never a copy of the raw evidence itself (docs/PERFORMANCE.md). The
+full missing/malformed/expired/duplicated/inaccessible/retired evidence-
+reference behavior matrix is frozen in docs/EVIDENCE_REFERENCES.md.
+
 ## 1. What the Memory Engine IS
 
-- The **canonical owner of durable Library knowledge**: validated MemoryRecords
+- The **canonical owner of durable Midnight knowledge**: validated MemoryRecords
   (statements with provenance, scope, epistemic class, confidence, temporal
   validity, privacy class), MemoryCandidates, contradiction groups, and
   supersession chains.
@@ -130,27 +149,48 @@ bump minor, breaking changes bump major.
   (`createdAt`/`revisedAt`, `supersededAt`), with current/historical queries
   that never overwrite the past.
 
-## 2. What the Memory Engine is NOT (explicit non-ownership)
+## 2. What the Memory Engine is NOT (explicit non-goals)
 
-Memory records are **not**:
+Memory is explicitly **not**:
 
-- **Raw source evidence** — owned by source engines (Repository_Sync,
-  Study_Document, …). Memory stores evidence **by reference only**
-  (`{engine, ref, note?}`); unknown fields in evidence refs are rejected, so
-  payload bodies cannot be embedded.
-- **Cache** — no cache semantics, no TTL-based truth, no silent expiry of truth.
-- **Context packs** — assembled downstream by the Context Engine from Memory
-  records via the versioned API; Memory never assembles packs.
-- **Embeddings / vector stores / graph projections / entity projections** —
-  derived, rebuildable artifacts. The entity projection (docs/ENTITIES.md), the
-  semantic embedding projection (docs/EMBEDDINGS.md), and the relationship-graph
-  projection (docs/GRAPH.md) are computed on demand from canonical records and
-  never become canonical truth. Their integrity is checkable and repairable
-  without ever touching canonical truth (docs/PROJECTIONS.md). If a future
-  derived store is built, it must be rebuildable from this store and must never
-  become canonical truth.
+- **A Performance ledger** — Performance's evidence ledger (prompt runs, agent
+  runs, tool/command observations, verification, feedback, outcomes,
+  Episodes) is canonical to Performance alone (Section 0); Memory holds only
+  bounded, evidence-backed lessons referencing it by id.
+- **A raw transcript store** — agent transcripts, prompts, model outputs,
+  diffs, and command output are never copied into Memory; source evidence is
+  owned by source engines (Repository_Sync, Study_Document, Performance, …)
+  and stored **by reference only** (`{engine, ref, note?}`); unknown fields in
+  evidence refs are rejected, so payload bodies cannot be embedded.
+- **A context-pack assembler** — packs are assembled downstream by the
+  Context Engine from Memory records via the versioned API; Memory never
+  assembles packs itself.
+- **A vector database** — the semantic embedding projection (docs/EMBEDDINGS.md)
+  is a derived, rebuildable artifact computed on demand from canonical
+  records; it never becomes canonical truth, and Memory functions fully
+  without it.
+- **A graph database** — the relationship-graph projection (docs/GRAPH.md)
+  and the entity projection (docs/ENTITIES.md) are likewise derived,
+  rebuildable artifacts, never canonical truth. All three projections'
+  integrity is checkable and repairable without ever touching canonical
+  truth (docs/PROJECTIONS.md); a corrupted projection is rebuilt from
+  canonical records, never treated as a source of truth in its own right. If
+  a future derived store is built, it must be rebuildable from this store and
+  must never become canonical truth.
+- **An agent orchestrator** — Memory never dispatches, sequences, or manages
+  agent/tool execution; it has no concept of an agent run or session
+  lifecycle beyond the actor attribution on its own records (Section 5).
+  Orchestration is out of scope for every surface (API, CLI, MCP tools).
+- **A generic cache** — no cache semantics, no TTL-based truth, no silent
+  expiry of truth; retention/expiry is an explicit, attributed policy
+  (docs/RETENTION.md), never an implementation-detail eviction.
+- **A sibling-database reader** — Memory never reads Performance's, Study's,
+  or any other sibling engine's private store directly (Section 3); it holds
+  only stable references and calls sibling engines, when it calls them at
+  all, through their own versioned surfaces — never their storage.
 - **Repository truth, Studies, or Performance records** — owned by their
-  source engines. Memory records may *reference* them.
+  source engines (see Section 0's canonical ownership statement for the
+  Performance boundary specifically). Memory records may *reference* them.
 
 ## 3. Interaction rules (Engine Isolation Invariants)
 
@@ -190,3 +230,9 @@ Memory records are **not**:
 Any change to the API surface, event vocabulary, canonical schema fields, or
 identity rules requires a contract version bump and an update to this document
 plus `docs/SCHEMA.md` / `docs/IDENTITIES.md`.
+
+`package.json`'s `"version"` field is deliberately left at pre-1.0 (`0.1.0`)
+and does not track `MEMORY_ENGINE_CONTRACT_VERSION`: the package is
+`"private": true` and unpublished, so its version tracks packaging maturity,
+not the public API contract. `MEMORY_ENGINE_CONTRACT_VERSION` remains the
+sole authoritative surface-versioning signal.

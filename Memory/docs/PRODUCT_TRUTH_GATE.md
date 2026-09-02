@@ -1,4 +1,4 @@
-# Library Memory Engine — Product-Truth Gate (v1.25.0)
+# Midnight Memory — Product-Truth Gate (v1.25.0)
 
 Implemented in `src/engine/gate.ts`. Task 46, Phase VIII — the V1 gate.
 

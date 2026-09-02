@@ -1,4 +1,4 @@
-# Library Memory Engine — Temporal Validity & Historical Truth (v1.1.0)
+# Midnight Memory — Temporal Validity & Historical Truth (v1.1.0)
 
 Implemented in `src/engine/temporal.ts`; migration 4 (`temporal_authority`)
 adds the columns and backfills. Pattern adapted from getzep/graphiti's

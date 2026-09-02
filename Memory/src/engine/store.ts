@@ -1,5 +1,5 @@
 /**
- * Canonical durable store for the Library Memory Engine.
+ * Canonical durable store for the Midnight Memory Engine.
  *
  * SQLite (node:sqlite built into Node.js) in WAL mode. Ownership rules:
  * - This store is the ONLY canonical state of the Memory Engine.

@@ -1,4 +1,4 @@
-# Library Memory Engine — Contradiction/Supersession Qualification (v1.23.0)
+# Midnight Memory — Contradiction/Supersession Qualification (v1.23.0)
 
 Implemented in `src/engine/qualification.ts`. Task 44, Phase VIII.
 

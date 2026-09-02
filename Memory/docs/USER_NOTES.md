@@ -1,4 +1,4 @@
-# Library Memory Engine — Project User Notes (v1.16.0)
+# Midnight Memory — Project User Notes (v1.16.0)
 
 Implemented in `src/engine/userNotes.ts` (+ `user_decision` source kind /
 `user_decision` authority tier). Task 32, Phase V.

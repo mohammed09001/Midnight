@@ -61,6 +61,17 @@ _SENSITIVE = re.compile(
 _EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 
 
+def redact_sensitive_text(text: str) -> str:
+    """Apply the same secret/email redaction PrivacyGuard uses for payload
+    fields, to plain caller-authored text. Reused as the last line of
+    defense at the Performance-Memory boundary
+    (memory_bridge.lesson_from_sealed_envelope /
+    lesson_from_qualified_claim) — content minimization must not rely on
+    caller discipline alone."""
+    text = _SENSITIVE.sub("[REDACTED]", text)
+    return _EMAIL.sub("[REDACTED_EMAIL]", text)
+
+
 @dataclass(frozen=True, slots=True)
 class PrivacyGuard:
     policy: PrivacyPolicy
@@ -86,8 +97,7 @@ class PrivacyGuard:
     @staticmethod
     def _redact(value: object) -> object:
         if isinstance(value, str):
-            value = _SENSITIVE.sub("[REDACTED]", value)
-            return _EMAIL.sub("[REDACTED_EMAIL]", value)
+            return redact_sensitive_text(value)
         if isinstance(value, Mapping):
             return {
                 key: "[REDACTED]" if re.search(r"(?i)(api[_-]?key|password|secret|token|credential)", str(key)) else PrivacyGuard._redact(item)

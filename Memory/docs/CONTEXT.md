@@ -1,4 +1,4 @@
-# Library Memory Engine — Context → Memory Retrieval (v1.15.0)
+# Midnight Memory — Context → Memory Retrieval (v1.17.0)
 
 Implemented in `src/engine/context.ts`. Task 31, Phase V.
 
@@ -45,6 +45,19 @@ Every returned record is wrapped with:
 `authority` (structural, never content-fluency based), `sourceKind`,
 `validity {at, currentlyValid}`, `evidenceCount`, `confidence`.
 
+**v1.17.0 additive** (Task 13, Execution 05 — Performance-oriented retrieval):
+- `contradiction: {groupId, status, groupSize}` — contradiction-group
+  membership/status, reused verbatim from `memory.explain`
+  (`getContradictionGroupOrNull`, docs/CONTRADICTIONS.md); `null` fields when
+  the record has no contradiction group.
+- `evidenceGaps: string[]` — deterministic evidence-completeness/freshness
+  findings, reused verbatim from `memory.explain`'s `evidenceGapsOf`
+  (`src/engine/relations.ts`, now exported).
+- `trace: SearchMatchReason[]` — one `{filter, reason}` entry per applied
+  context filter the record actually satisfied, mirroring `memory.search`'s
+  `SearchTrace`/`memory.current`'s `CurrentTrace` pattern exactly (same
+  `SearchMatchReason` type, reused, not reinvented).
+
 Deterministic context ordering: currently valid first, then authority tier,
 then recency.
 
@@ -56,6 +69,24 @@ then recency.
 | Invalid `at` / `time` | `MEMORY_VALIDATION_FAILED` |
 | `minConfidence` outside [0,1] | `MEMORY_VALIDATION_FAILED` |
 | `size` out of range | clamped to 1..100 |
+
+## Cross-language transport
+
+`memory.context` is also the read direction of the Performance-Memory
+bridge (docs/PERFORMANCE.md): `Performance/midnight_performance/memory_bridge.py`'s
+`build_context_envelope`/`call_memory_cli` reuse this same bounded, scoped,
+provenance-rich operation for Performance to read prior Memory knowledge —
+no Performance-specific read operation was added.
+
+**Citation by reference (Task 15, Execution 05):** when a Performance
+analysis consults a record read through `memory.context`, it cites the
+specific `recordId#rev<N>` — never a copy of the content — via Performance's
+own `ExternalReference` type (`citation_from_memory_record`,
+`memory_bridge.py`). Because Memory's revision rows are immutable and
+append-only, `memory.history` can always reproduce that exact cited content
+later, even after the record is revised or superseded — a later Memory
+change never silently rewrites what a historical Performance citation
+points at.
 
 ## Agent neutrality / game independence
 

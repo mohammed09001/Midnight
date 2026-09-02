@@ -1,4 +1,4 @@
-# Library Memory Engine — Canonical Record Schema (v1.5.0)
+# Midnight Memory — Canonical Record Schema (v1.5.0)
 
 Implemented in `src/contracts/types.ts` (contract), `src/engine/validation.ts`
 (enforcement), migrations in `src/engine/store.ts`. Contract version: **1.0.0**.
@@ -17,7 +17,7 @@ Implemented in `src/contracts/types.ts` (contract), `src/engine/validation.ts`
 | `provenance` | `{actor:{kind,name,agentType?}, method, capturedAt, sourceKind, derivedFrom?}` | Who/how/when; `sourceKind` drives authority (docs/AUTHORITY.md); `derivedFrom` required for agent summaries |
 | `epistemicClass` | `observed \| derived \| inferred \| recommendation \| unknown` | Epistemic discipline: source evidence, derived fact, agent inference, recommendation and UNKNOWN remain distinguishable |
 | `confidence` | number ∈ [0,1] | Required, finite |
-| `evidenceRefs` | ≤ 32 × `{engine, ref, note?}` | **By reference ONLY** — unknown fields rejected; engines: repository_sync, repository_search, study_document, study_lineage_versioning, project_projection, context, library_synchronization, performance, analysis, memory, external |
+| `evidenceRefs` | ≤ 32 × `{engine, ref, note?}` | **By reference ONLY** — unknown fields rejected; engines: repository_sync, repository_search, study_document, study_lineage_versioning, project_projection, context, midnight_synchronization, performance, analysis, memory, external |
 | `relationHints` | ≤ 32 × `{type, target, note?, provenance?}` | type ∈ `related \| depends_on \| supports \| contradicts \| derived_from \| applies_to \| learned_from` (Task 21, docs/RELATIONS.md); target is a record id, `engine:<name>:<ref>`, or `entity:<kind>:<name>` (Task 22); `provenance {actor, method, capturedAt}` optional attribution |
 | `tags` | ≤ 32 strings ≤ 64 chars each | Non-empty |
 | `privacyClass` | `public \| internal \| sensitive` | `secret` is REFUSED pre-write (`MEMORY_PRIVACY_VIOLATION`); secrets live in the secure credential layer |

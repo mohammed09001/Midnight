@@ -1,4 +1,4 @@
-# Library Memory Engine — Index Rebuild & Corruption Recovery (v1.10.0)
+# Midnight Memory — Index Rebuild & Corruption Recovery (v1.10.0)
 
 Implemented in `src/engine/projections.ts`. Task 26, Phase IV.
 

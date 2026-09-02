@@ -1,4 +1,4 @@
-# Library Memory Engine — Health & Retrieval Quality (v1.20.0)
+# Midnight Memory — Health & Retrieval Quality (v1.20.0)
 
 Implemented in `src/engine/health.ts`. Task 40, Phase VII.
 

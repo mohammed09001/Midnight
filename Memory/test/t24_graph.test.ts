@@ -81,7 +81,7 @@ test("T24: graph projection builds record/entity/external nodes and typed edges"
     assert.equal(relatedEdge.provenance!.method, "linked");
     // Versioning surface present.
     assert.equal(graph.schemaVersion, "1");
-    assert.ok(graph.version.startsWith("1.25.0.p"));
+    assert.ok(graph.version.startsWith("1.27.0.p"));
     assert.ok(!Number.isNaN(Date.parse(graph.builtAt)));
   } finally {
     engine.close();

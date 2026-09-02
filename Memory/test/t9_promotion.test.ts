@@ -113,9 +113,15 @@ test("T9: repeated_evidence_backed_lesson — repetition by distinct evidence or
   try {
     engine.createScope("lib", "Library");
     // Two DISTINCT evidence refs on one candidate → repeat signal.
+    // epistemicClass: "derived" (not the candidateInput default "inferred")
+    // — Task 16 excludes inferred/recommendation from this policy, so a
+    // grounded, non-speculative class is needed to exercise the
+    // distinct-evidence/repeat-count mechanics in isolation; see the
+    // dedicated "excludes recommendation/inferred" test below for that gate.
     const multiEvidence = engine.addCandidate(
       candidateInput("lib", {
         subject: "Multi-evidence lesson",
+        epistemicClass: "derived",
         evidenceRefs: [
           { engine: "study_document", ref: "doc:a" },
           { engine: "repository_sync", ref: "repo:b" },
@@ -129,6 +135,7 @@ test("T9: repeated_evidence_backed_lesson — repetition by distinct evidence or
     const first = engine.addCandidate(
       candidateInput("lib", {
         subject: "Repeated lesson",
+        epistemicClass: "derived",
         evidenceRefs: [{ engine: "external", ref: "note:1" }],
       }),
     );
@@ -137,6 +144,7 @@ test("T9: repeated_evidence_backed_lesson — repetition by distinct evidence or
     const second = engine.addCandidate(
       candidateInput("lib", {
         subject: "Repeated lesson",
+        epistemicClass: "derived",
         evidenceRefs: [{ engine: "external", ref: "note:2" }],
         reason: "seen again in a different session",
         idempotencyKey: "run-2",
@@ -277,6 +285,95 @@ test("T9: promotion of a non-open candidate stays a conflict; unknown policy rej
         }),
       (err: unknown) => err instanceof ConflictError,
     );
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// ---- Task 16 (Execution 06): weak epistemic classes cannot be promoted --
+// ---- via repetition alone -------------------------------------------------
+
+test("T9: repeated_evidence_backed_lesson excludes recommendation/inferred — repetition cannot upgrade a speculative claim", () => {
+  const { engine, dir } = tempEngine("weak-epistemic-excluded");
+  try {
+    engine.createScope("lib", "Library");
+    for (const epistemicClass of ["recommendation", "inferred"] as const) {
+      const candidate = engine.addCandidate(
+        candidateInput("lib", {
+          subject: `Speculative ${epistemicClass}`,
+          epistemicClass,
+          sourceKind: "performance_evidence",
+          actor: { kind: "engine", name: "performance" },
+          evidenceRefs: [
+            { engine: "performance", ref: "perf:1" },
+            { engine: "performance", ref: "perf:2" },
+          ],
+        }),
+      );
+      const assessment = engine.evaluatePromotion(candidate.candidateId);
+      assert.equal(assessment.eligible, false, `${epistemicClass} must not be auto-eligible`);
+      assert.deepEqual(assessment.matchedPolicies, []);
+      assert.ok(
+        assessment.reasons.some((r) => r.includes("repeated_evidence_backed_lesson") && r.includes(epistemicClass)),
+        "reason names the excluded epistemic class",
+      );
+    }
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T9: repeated_evidence_backed_lesson is unaffected for observed/derived — no regression", () => {
+  const { engine, dir } = tempEngine("weak-epistemic-no-regression");
+  try {
+    engine.createScope("lib", "Library");
+    for (const epistemicClass of ["observed", "derived"] as const) {
+      const candidate = engine.addCandidate(
+        candidateInput("lib", {
+          subject: `Grounded ${epistemicClass}`,
+          epistemicClass,
+          sourceKind: "performance_evidence",
+          actor: { kind: "engine", name: "performance" },
+          evidenceRefs: [
+            { engine: "performance", ref: "perf:1" },
+            { engine: "performance", ref: "perf:2" },
+          ],
+        }),
+      );
+      const assessment = engine.evaluatePromotion(candidate.candidateId);
+      assert.equal(assessment.eligible, true, `${epistemicClass} should still auto-match`);
+      assert.ok(assessment.matchedPolicies.includes("repeated_evidence_backed_lesson"));
+    }
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T9: a recommendation-class candidate is still promotable via explicit_user_decision", () => {
+  const { engine, dir } = tempEngine("weak-epistemic-escape-hatch");
+  try {
+    engine.createScope("lib", "Library");
+    const candidate = engine.addCandidate(
+      candidateInput("lib", {
+        subject: "Speculative recommendation",
+        epistemicClass: "recommendation",
+        sourceKind: "performance_evidence",
+        actor: { kind: "engine", name: "performance" },
+        evidenceRefs: [
+          { engine: "performance", ref: "perf:1" },
+          { engine: "performance", ref: "perf:2" },
+        ],
+      }),
+    );
+    const record = engine.promoteCandidate(candidate.candidateId, {
+      actor: { kind: "human", name: "kim" },
+      policy: "explicit_user_decision",
+    });
+    assert.equal(record.status, "active");
+    assert.equal(record.epistemicClass, "recommendation");
   } finally {
     engine.close();
     rmSync(dir, { recursive: true, force: true });

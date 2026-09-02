@@ -253,7 +253,7 @@ function isCurrentlyValid(record: MemoryRecord, at: string): boolean {
 }
 
 /** Task 20: deterministic evidence-completeness/freshness findings. */
-function evidenceGapsOf(record: MemoryRecord, at: string): string[] {
+export function evidenceGapsOf(record: MemoryRecord, at: string): string[] {
   const gaps: string[] = [];
   if (record.evidenceRefs.length === 0) {
     gaps.push("no evidenceRefs: this record has no traceable source evidence");

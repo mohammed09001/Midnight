@@ -9,7 +9,7 @@
  *
  * Pattern note (mem0 research, main @ 2026-08-30): mem0 stores
  * agent-generated facts "with equal weight" via LLM-judged operations.
- * Library deliberately rejects that: agent output enters through the
+ * Memory deliberately rejects that: agent output enters through the
  * candidate intake and needs a non-agent, deterministic policy match.
  */
 import { ConflictError, PromotionForbiddenError } from "../contracts/errors.ts";
@@ -73,10 +73,21 @@ export function evaluatePromotionImpl(
   // 3. repeated_evidence_backed_lesson — the same lesson proposed or known
   //    repeatedly: enough DISTINCT evidence refs on the candidate, or the
   //    same normalized subject+content seen often enough in this scope.
+  //    Task 16 (Execution 06): repetition alone must not upgrade a
+  //    structurally weak claim into a promotion-eligible one — "inferred"
+  //    and "recommendation" epistemic classes are speculative/predicted by
+  //    definition and stay ineligible for this policy no matter how many
+  //    sources or repeats accumulate. They remain promotable only via
+  //    explicit_user_decision (genuine human review, unconditional).
   const distinctEvidence = new Set(
     candidate.evidenceRefs.map((r) => `${r.engine}:${r.ref}`),
   ).size;
-  if (distinctEvidence >= config.minDistinctEvidence) {
+  const weakEpistemic = candidate.epistemicClass === "inferred" || candidate.epistemicClass === "recommendation";
+  if (weakEpistemic) {
+    reasons.push(
+      `repeated_evidence_backed_lesson: not matched (epistemicClass '${candidate.epistemicClass}' is speculative/predicted — repetition cannot promote it; requires explicit_user_decision)`,
+    );
+  } else if (distinctEvidence >= config.minDistinctEvidence) {
     matched.push("repeated_evidence_backed_lesson");
     reasons.push(
       `repeated_evidence_backed_lesson: ${distinctEvidence} distinct evidence ref(s) ≥ ${config.minDistinctEvidence}`,

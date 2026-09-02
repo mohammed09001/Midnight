@@ -20,7 +20,7 @@
  *
  * Research: getzep/graphiti's "graph as a rebuildable projection over
  * temporal facts" intent is ADAPTED (main @ 2026-08-30); the graph database /
- * LLM-extraction dependency is REJECTED — Library's graph is a deterministic,
+ * LLM-extraction dependency is REJECTED — Memory's graph is a deterministic,
  * self-hosted projection over its own canonical relationships.
  */
 import { NotFoundError, ValidationError } from "../contracts/errors.ts";

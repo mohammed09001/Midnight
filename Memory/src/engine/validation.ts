@@ -70,7 +70,7 @@ const EVIDENCE_ENGINES: readonly EvidenceEngine[] = [
   "study_lineage_versioning",
   "project_projection",
   "context",
-  "library_synchronization",
+  "midnight_synchronization",
   "performance",
   "analysis",
   "memory",
@@ -330,8 +330,19 @@ export function validateRecordCore(input: {
     if (input.evidenceRefs.length > LIMITS.maxEvidenceRefs) {
       fail(`evidenceRefs exceeds ${LIMITS.maxEvidenceRefs} entries`);
     }
+    // Task 6 (Execution 02): reject an exact-duplicate {engine, ref} pair
+    // within one array. Keyed on the PAIR, never `ref` alone — two different
+    // engines legitimately sharing the same literal ref string must not
+    // collide (e.g. Performance's "1" and Study's "1" are distinct evidence).
+    const seenPairs = new Set<string>();
     for (const [i, ref] of input.evidenceRefs.entries()) {
-      evidenceRefs.push(validateEvidenceRef(ref, `evidenceRefs[${i}]`));
+      const validated = validateEvidenceRef(ref, `evidenceRefs[${i}]`);
+      const pairKey = `${validated.engine} ${validated.ref}`;
+      if (seenPairs.has(pairKey)) {
+        fail(`evidenceRefs[${i}] duplicates the {engine, ref} of an earlier entry`);
+      }
+      seenPairs.add(pairKey);
+      evidenceRefs.push(validated);
     }
   }
 

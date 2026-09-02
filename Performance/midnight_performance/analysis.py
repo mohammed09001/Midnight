@@ -7,6 +7,7 @@ import hashlib
 import json
 from typing import Callable, Iterable, Mapping
 
+from .contracts import ExternalReference
 from .observation_model import ObservationEnvelope
 
 
@@ -32,15 +33,29 @@ class AnalysisResult:
     descriptor: AnalysisDescriptor
     input_fingerprint: str
     output: Mapping[str, object]
+    # Task 15 (Execution 05): by-reference citations of specific Memory
+    # record revisions this analysis consulted, never a copy of Memory
+    # content and never Memory canonical ownership. Deliberately NOT part
+    # of input_fingerprint's hash — reproducibility of the analysis itself
+    # stays governed solely by Performance's own ledger evidence; citations
+    # are provenance metadata about what else was consulted, not an input.
+    memory_references: tuple[ExternalReference, ...] = ()
 
 
 class Reprocessor:
     """Runs pure analysis against replayed evidence without mutating the ledger."""
 
-    def run(self, descriptor: AnalysisDescriptor, evidence: Iterable[ObservationEnvelope], analyzer: Callable[[tuple[ObservationEnvelope, ...]], Mapping[str, object]]) -> AnalysisResult:
+    def run(
+        self,
+        descriptor: AnalysisDescriptor,
+        evidence: Iterable[ObservationEnvelope],
+        analyzer: Callable[[tuple[ObservationEnvelope, ...]], Mapping[str, object]],
+        *,
+        memory_references: tuple[ExternalReference, ...] = (),
+    ) -> AnalysisResult:
         inputs = tuple(evidence)
         fingerprint = self._inputs_fingerprint(inputs)
-        return AnalysisResult(descriptor, fingerprint, dict(analyzer(inputs)))
+        return AnalysisResult(descriptor, fingerprint, dict(analyzer(inputs)), memory_references)
 
     @staticmethod
     def _inputs_fingerprint(inputs: tuple[ObservationEnvelope, ...]) -> str:

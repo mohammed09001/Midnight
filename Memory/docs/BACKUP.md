@@ -1,4 +1,4 @@
-# Library Memory Engine — Backup, Restore & Integrity Checks (v1.20.0)
+# Midnight Memory — Backup, Restore & Integrity Checks (v1.20.0)
 
 Implemented in `src/engine/backup.ts`. Task 39, Phase VII.
 
@@ -15,7 +15,7 @@ canonical records.
 
 ```jsonc
 {
-  "format": "library-memory-backup",
+  "format": "midnight-memory-backup",
   "schemaVersion": 1,
   "contractVersion": "1.20.0",
   "createdAt": "…",
@@ -24,6 +24,11 @@ canonical records.
             "revisions": [], "candidates": [], "searchSessions": [] }
 }
 ```
+
+Compatibility: bundles written with the pre-rename format string
+(`library-memory-backup`) are still accepted by `verifyBackup`/`restoreBundle`
+(read-only, with a deprecation notice) — new backups are always written as
+`midnight-memory-backup`.
 
 ## API
 

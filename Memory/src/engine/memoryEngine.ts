@@ -1,6 +1,6 @@
 /**
  * MemoryEngine — the single public API surface (product boundary) of the
- * Library Memory Engine.
+ * Midnight Memory Engine.
  *
  * Boundary rules enforced here (see docs/BOUNDARY.md):
  * - All durable state lives in the MemoryStore; no in-memory shadow state.
@@ -61,9 +61,21 @@ import { MemoryStore } from "./store.ts";
 
 export const DEFAULT_STORE_RELATIVE_PATH = "data/memory-engine.db";
 
+/**
+ * Repo-local by default; override with MIDNIGHT_MEMORY_STORE for deployments.
+ * The legacy LIBRARY_MEMORY_STORE var is still honored (deprecated) when
+ * MIDNIGHT_MEMORY_STORE is unset, so a pre-existing deployment env doesn't
+ * silently fall back to the default path.
+ */
 export function defaultStorePath(): string {
-  // Repo-local by default; override with LIBRARY_MEMORY_STORE for deployments.
-  return process.env["LIBRARY_MEMORY_STORE"] ?? DEFAULT_STORE_RELATIVE_PATH;
+  const primary = process.env["MIDNIGHT_MEMORY_STORE"];
+  if (primary !== undefined) return primary;
+  const legacy = process.env["LIBRARY_MEMORY_STORE"];
+  if (legacy !== undefined) {
+    process.stderr.write("warning: LIBRARY_MEMORY_STORE is deprecated; use MIDNIGHT_MEMORY_STORE instead\n");
+    return legacy;
+  }
+  return DEFAULT_STORE_RELATIVE_PATH;
 }
 
 export interface MemoryEngineOptions {

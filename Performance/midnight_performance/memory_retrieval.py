@@ -1,4 +1,13 @@
-"""Rebuildable Memory retrieval and retention views."""
+"""Rebuildable Memory retrieval and retention views.
+
+Execution 04 (Task 11): `retrieve_memory`/`retain` operate ONLY on a
+caller-supplied, in-process, ephemeral `MemoryEvidence` tuple — never a
+store, never a ledger read, never canonical Midnight Memory. Despite the
+name, this is not a query path into Memory; it is a local relevance/
+provenance filter over evidence the caller already holds. Reading durable
+knowledge back from canonical Memory goes through
+`memory_bridge.read_memory_context_or_none`.
+"""
 from __future__ import annotations
 from dataclasses import dataclass
 from .memory import MemoryEvidence

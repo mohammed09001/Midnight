@@ -1,4 +1,4 @@
-# Library Memory Engine — Crash/Rebuild/Deletion Qualification (v1.24.0)
+# Midnight Memory — Crash/Rebuild/Deletion Qualification (v1.24.0)
 
 Implemented in `src/engine/recovery.ts`. Task 45, Phase VIII.
 

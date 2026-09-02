@@ -11,7 +11,7 @@
  * policy and are always attributable.
  *
  * Tool `inputSchema` uses JSON Schema (object root) per the MCP tools shape.
- * Zero runtime dependencies: the registry is a bounded Library-owned surface;
+ * Zero runtime dependencies: the registry is a bounded Memory-owned surface;
  * the MCP stdio adapter (src/tools/mcpServer.ts) speaks the JSON-RPC subset.
  */
 import type { MemoryEngine } from "../engine/memoryEngine.ts";

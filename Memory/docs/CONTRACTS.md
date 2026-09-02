@@ -1,4 +1,4 @@
-# Library Memory Engine — Versioned Inter-Engine Contracts (v1.6.0)
+# Midnight Memory — Versioned Inter-Engine Contracts (v1.6.0)
 
 Implemented in `src/contracts/operations.ts` (registry), `src/engine/dispatcher.ts`
 (single envelope owner), `src/engine/relations.ts` (related/explain),
@@ -78,6 +78,39 @@ bump major and reject callers with `MEMORY_CONTRACT_MISMATCH`.
 | `memory.trust` | `{}` *(1.20.0 additive)* | `{status}` — content-trust boundary (stored content is untrusted data, never policy) (Task 38, docs/TRUST.md) |
 | `memory.backup` | `{action?: create\|verify\|verifyReferences, bundle?}` *(1.20.0 additive)* | `{bundle}` / `{verified}` / `{report}` — canonical backup (checksum), verification, reference integrity (Task 39, docs/BACKUP.md) |
 | `memory.health` | `{}` *(1.20.0 additive)* | `{metrics}` — operational health + retrieval-quality report (Task 40, docs/HEALTH.md) |
+
+## 1.27.0 contract notes (additive)
+
+- Task 13 (Execution 05 — bounded Performance-oriented Memory retrieval):
+  `memory.context`'s response gains three additive per-record fields —
+  `contradiction {groupId, status, groupSize}`, `evidenceGaps: string[]`,
+  and `trace: SearchMatchReason[]` — all reused verbatim from existing
+  `memory.explain`/`memory.search` machinery (`getContradictionGroupOrNull`,
+  the now-exported `evidenceGapsOf`, and the `SearchMatchReason` type),
+  giving Performance analysis the same explainability/uncertainty signal
+  Memory already exposes elsewhere. No request-shape change; no new
+  operation. Purely additive; existing callers reading only the previously
+  existing fields are unaffected. See docs/CONTEXT.md.
+
+## 1.26.0 contract notes (additive)
+
+- Midnight Memory Execution 01 (Task 2 — reconcile Library-origin naming):
+  the engine's public identity is renamed from its pre-Midnight "Library"
+  branding to Midnight Memory. `MEMORY_ENGINE_ID` is now
+  `"midnight.memory-engine"` (was `"library.memory-engine"`); the MCP
+  `serverInfo.name` is `"midnight-memory"` (was `"library-memory"`); the
+  canonical backup format string is `"midnight-memory-backup"` (was
+  `"library-memory-backup"`); the `EvidenceEngine` literal
+  `"library_synchronization"` is renamed `"midnight_synchronization"` (it
+  had zero producing call sites — a pure branding rename, no behavior
+  change). Both renamed surfaces keep a deprecated read-compatible fallback:
+  `defaultStorePath()` still honors `LIBRARY_MEMORY_STORE` when
+  `MIDNIGHT_MEMORY_STORE` is unset (deprecation-logged to stderr), and
+  `verifyBackup`/`restoreBundle` still accept a legacy
+  `"library-memory-backup"` bundle read-only (deprecation-logged; new
+  backups are always written as `"midnight-memory-backup"`). No operation
+  signatures changed; no new contract-dispatch operations; existing callers
+  unaffected beyond the identity-string values themselves.
 
 ## 1.25.0 contract notes (additive)
 

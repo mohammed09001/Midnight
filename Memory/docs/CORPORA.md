@@ -1,4 +1,4 @@
-# Library Memory Engine — Frozen Qualification Corpora (v1.22.0)
+# Midnight Memory — Frozen Qualification Corpora (v1.22.0)
 
 Implemented in `src/engine/corpora.ts`. Task 42, Phase VIII.
 

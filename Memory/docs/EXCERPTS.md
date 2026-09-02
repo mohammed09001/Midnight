@@ -1,4 +1,4 @@
-# Library Memory Engine — Context-Safe Memory Excerpts (v1.18.0)
+# Midnight Memory — Context-Safe Memory Excerpts (v1.18.0)
 
 Implemented in `src/engine/excerpts.ts`. Task 36, Phase VI.
 

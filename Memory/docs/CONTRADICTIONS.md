@@ -1,4 +1,4 @@
-# Library Memory Engine — Contradiction Detection & Resolution (v1.3.0)
+# Midnight Memory — Contradiction Detection & Resolution (v1.3.0)
 
 Implemented in `src/engine/contradictions.ts`; migration 6 adds group
 status/resolution. Research: deterministic detection + preserved history

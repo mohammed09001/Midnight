@@ -23,7 +23,7 @@
  *
  * Research: mem0 entity-linking and getzep/graphiti's entity extraction are
  * ADAPTED in intent (stable entity identity, incremental graph links) but the
- * LLM/embedding-driven extraction is REJECTED — Library extraction is a
+ * LLM/embedding-driven extraction is REJECTED — Memory's extraction is a
  * deterministic, self-hosted projection over canonical relations.
  */
 import { MEMORY_ENGINE_CONTRACT_VERSION } from "../contracts/version.ts";

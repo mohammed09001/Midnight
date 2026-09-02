@@ -1,4 +1,4 @@
-# Library Memory Engine — Optional Relationship-Graph Projection (v1.9.0)
+# Midnight Memory — Optional Relationship-Graph Projection (v1.9.0)
 
 Implemented in `src/engine/graph.ts`. Task 24, Phase IV.
 

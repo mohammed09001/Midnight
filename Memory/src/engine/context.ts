@@ -24,13 +24,16 @@ import { ValidationError } from "../contracts/errors.ts";
 import type {
   AuthorityAssessment,
   AuthorityTier,
+  ContradictionStatus,
   MemoryRecord,
   RecordKind,
   SourceKind,
 } from "../contracts/types.ts";
 import { authorityOf } from "./authority.ts";
+import { getContradictionGroupOrNull } from "./contradictions.ts";
 import { AUTHORITY_TIER_VALUE } from "./ranking.ts";
-import { rowToRecord } from "./records.ts";
+import { rowToRecord, type SearchMatchReason } from "./records.ts";
+import { evidenceGapsOf } from "./relations.ts";
 import { getScopeImpl } from "./scopes.ts";
 import { assertIsoTimestamp } from "./temporal.ts";
 import type { MemoryStore } from "./store.ts";
@@ -75,6 +78,12 @@ export interface ContextRecord {
   validity: { at: string; currentlyValid: boolean };
   evidenceCount: number;
   confidence: number;
+  /** Contradiction-group membership/status, if any (mirrors memory.explain). */
+  contradiction: { groupId: string | null; status: ContradictionStatus | null; groupSize: number | null };
+  /** Deterministic evidence-completeness/freshness findings (memory.explain's evidenceGaps, reused). */
+  evidenceGaps: string[];
+  /** Which applied filters this record satisfied, and why — explainable, never opaque. */
+  trace: SearchMatchReason[];
 }
 
 export interface ContextQueryResult {
@@ -86,6 +95,48 @@ export interface ContextQueryResult {
   at: string;
   time: ContextTimeFilter | null;
   records: ContextRecord[];
+}
+
+/** One reason per applied context filter, citing the record's real matched value (mirrors explainSearchMatch/explainCurrentMatch). */
+function explainContextMatch(query: ContextQuery, record: MemoryRecord, at: string): SearchMatchReason[] {
+  const reasons: SearchMatchReason[] = [
+    { filter: "scope", reason: `scopeId '${record.scopeId}' matches requested scope` },
+    { filter: "at", reason: `validity window evaluated at '${at}'` },
+  ];
+  if (query.kinds !== undefined && query.kinds.length > 0) {
+    reasons.push({ filter: "kinds", reason: `kind '${record.kind}' is in [${query.kinds.join(", ")}]` });
+  }
+  if (query.sourceKinds !== undefined && query.sourceKinds.length > 0) {
+    reasons.push({
+      filter: "sourceKinds",
+      reason: `provenance.sourceKind '${record.provenance.sourceKind}' is in [${query.sourceKinds.join(", ")}]`,
+    });
+  }
+  if (query.minConfidence !== undefined) {
+    reasons.push({
+      filter: "minConfidence",
+      reason: `confidence ${record.confidence} >= ${query.minConfidence}`,
+    });
+  }
+  if (query.minAuthority !== undefined) {
+    reasons.push({
+      filter: "minAuthority",
+      reason: `authority tier meets floor '${query.minAuthority}'`,
+    });
+  }
+  if (query.time?.from !== undefined) {
+    reasons.push({ filter: "time.from", reason: `observedAt '${record.observedAt}' >= '${query.time.from}'` });
+  }
+  if (query.time?.until !== undefined) {
+    reasons.push({ filter: "time.until", reason: `observedAt '${record.observedAt}' < '${query.time.until}'` });
+  }
+  if (query.query !== undefined && query.query.trim().length > 0) {
+    reasons.push({
+      filter: "query",
+      reason: `subject or content contains '${query.query.trim()}'`,
+    });
+  }
+  return reasons;
 }
 
 function currentlyValid(record: MemoryRecord, at: string): boolean {
@@ -171,6 +222,8 @@ export function contextQueryImpl(
   let records: ContextRecord[] = rows.map((row) => {
     const record = rowToRecord(row);
     const authority = authorityOf(record.provenance, record.epistemicClass);
+    const group =
+      record.contradictionGroupId !== null ? getContradictionGroupOrNull(store, record.contradictionGroupId) : null;
     return {
       record,
       authority,
@@ -178,6 +231,13 @@ export function contextQueryImpl(
       validity: { at, currentlyValid: currentlyValid(record, at) },
       evidenceCount: record.evidenceRefs.length,
       confidence: record.confidence,
+      contradiction: {
+        groupId: record.contradictionGroupId,
+        status: group?.status ?? null,
+        groupSize: group?.recordIds.length ?? null,
+      },
+      evidenceGaps: evidenceGapsOf(record, at),
+      trace: explainContextMatch(query, record, at),
     };
   });
 

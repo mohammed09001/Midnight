@@ -1,4 +1,4 @@
-# Library Memory Engine — Search → Memory History (v1.14.0)
+# Midnight Memory — Search → Memory History (v1.14.0)
 
 Implemented in `src/engine/searchHistory.ts` (+ migration 10,
 `memory_search_sessions`). Task 30, Phase V.

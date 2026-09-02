@@ -1,8 +1,11 @@
-# Library Memory Engine — Candidate Intake Pipeline (v1.2.0)
+# Midnight Memory — Candidate Intake Pipeline (v1.2.0)
 
 Implemented in `src/engine/records.ts` (candidate lifecycle),
 `src/engine/scopes.ts` (intake policy), migration 5. Proposals enter a
 candidate stream and NEVER become durable knowledge directly (Task 8).
+Evidence-backed proposals must satisfy the reference behavior matrix in
+docs/EVIDENCE_REFERENCES.md (missing/malformed/expired/duplicated evidence
+refs are all rejected before intake).
 
 ## Intake contract
 

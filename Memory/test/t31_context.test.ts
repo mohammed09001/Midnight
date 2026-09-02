@@ -204,3 +204,77 @@ test("T31: versioned contract — memory.context through the dispatcher", () => 
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// ---- Task 13 (Execution 05): contradiction status, evidence gaps, trace --
+
+test("T31: contradiction status is surfaced on the affected records", () => {
+  const { engine, dir } = tempEngine("contradiction");
+  try {
+    engine.createScope("lib", "Library");
+    const a = engine.addRecord(rec("lib", "Region", "eu-west-1"));
+    const b = engine.addRecord(rec("lib", "Region", "eu-central-1"));
+    engine.registerContradiction("lib", "Region", [a.recordId, b.recordId]);
+    const result = engine.contextQuery({ scope: "lib", size: 10 });
+    const regionRecords = result.records.filter((r) => r.record.subject === "Region");
+    assert.equal(regionRecords.length, 2);
+    for (const r of regionRecords) {
+      assert.equal(r.contradiction.status, "open");
+      assert.equal(r.contradiction.groupSize, 2);
+      assert.ok(r.contradiction.groupId !== null);
+    }
+    // A record with no contradiction group reports null, not a false status.
+    const other = engine.addRecord(rec("lib", "Unrelated", "no conflict here"));
+    const otherResult = engine.contextQuery({ scope: "lib", query: "unrelated", size: 10 });
+    const otherItem = otherResult.records.find((r) => r.record.recordId === other.recordId)!;
+    assert.equal(otherItem.contradiction.groupId, null);
+    assert.equal(otherItem.contradiction.status, null);
+    assert.equal(otherItem.contradiction.groupSize, null);
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T31: evidenceGaps reports missing evidence, reused from memory.explain", () => {
+  const { engine, dir } = tempEngine("evidence-gaps");
+  try {
+    seed(engine);
+    const result = engine.contextQuery({ scope: "lib", query: "guess", size: 10 });
+    const agentGuess = result.records.find((r) => r.record.subject === "Agent guess")!;
+    assert.ok(agentGuess.evidenceGaps.some((g) => g.includes("no evidenceRefs")));
+    const wellEvidenced = result.records.find((r) => r.record.subject === "Rate limit" || r.record.subject === "Caching");
+    if (wellEvidenced !== undefined) {
+      assert.deepEqual(wellEvidenced.evidenceGaps, []);
+    }
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T31: trace cites the applied filters and reflects records actually excluded by them", () => {
+  const { engine, dir } = tempEngine("trace");
+  try {
+    seed(engine);
+    const verified = engine.contextQuery({ scope: "lib", minAuthority: "verified_source", minConfidence: 0.5, size: 10 });
+    assert.ok(verified.records.length >= 1);
+    for (const r of verified.records) {
+      assert.ok(r.trace.some((t) => t.filter === "minAuthority"), "trace names the applied minAuthority filter");
+      assert.ok(r.trace.some((t) => t.filter === "minConfidence"), "trace names the applied minConfidence filter");
+      assert.ok(r.trace.some((t) => t.filter === "scope"));
+    }
+    // Negative/boundary: a filter combination that legitimately excludes a
+    // record proves the trace reflects real applied filters, not a static
+    // list — the low-confidence agent-derived record never appears at all.
+    assert.ok(!verified.records.some((r) => r.record.subject === "Agent guess"));
+    // No minAuthority/minConfidence set -> those trace entries are absent.
+    const unfiltered = engine.contextQuery({ scope: "lib", size: 10 });
+    for (const r of unfiltered.records) {
+      assert.ok(!r.trace.some((t) => t.filter === "minAuthority"));
+      assert.ok(!r.trace.some((t) => t.filter === "minConfidence"));
+    }
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

@@ -1,4 +1,4 @@
-# Library Memory Engine — Analysis → Memory Proposals (v1.13.0)
+# Midnight Memory — Analysis → Memory Proposals (v1.13.0)
 
 Implemented in `src/engine/analysis.ts`. Task 29, Phase V.
 

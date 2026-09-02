@@ -3,7 +3,7 @@
  *
  * Accepts BOUNDED, EVIDENCE-BACKED lessons from the Performance engine
  * through the versioned contract, keeping Performance records EXTERNAL
- * (referenced by evidenceRef `{engine: "performance_evidence", ref}` only —
+ * (referenced by evidenceRef `{engine: "performance", ref}` only —
  * never embedded). Each lesson becomes a Memory CANDIDATE in the intake
  * stream via the canonical candidate pipeline (docs/INTAKE.md) — never a
  * direct record. Promotion remains policy-gated (docs/PROMOTION.md): a lesson
@@ -64,6 +64,8 @@ export interface PerformanceLesson {
   method?: string;
   /** Why this proposal exists (default filled from the evidence refs). */
   reason?: string;
+  /** Task 7 (Execution 03): replay-safe writes. Same key ⇒ same candidate, no duplicate. */
+  idempotencyKey?: string;
 }
 
 export interface PerformanceRejection {
@@ -80,7 +82,7 @@ export interface PerformanceProposalResult {
 /** Validate a lesson's bounded, evidence-backed shape without writing. */
 function validateLesson(
   lesson: PerformanceLesson,
-): { evidenceRefs: string[]; note?: string } | { error: string } {
+): { evidenceRefs: string[]; note?: string; idempotencyKey?: string } | { error: string } {
   if (typeof lesson.subject !== "string" || lesson.subject.trim().length === 0) {
     return { error: "lesson.subject is required" };
   }
@@ -103,7 +105,19 @@ function validateLesson(
     }
     refs.push(ref.trim());
   }
-  return { evidenceRefs: refs, ...(lesson.note !== undefined && lesson.note.length > 0 ? { note: lesson.note } : {}) };
+  if (lesson.idempotencyKey !== undefined) {
+    if (typeof lesson.idempotencyKey !== "string" || lesson.idempotencyKey.trim().length === 0) {
+      return { error: "lesson.idempotencyKey must be a non-empty string when provided" };
+    }
+    if (lesson.idempotencyKey.length > LIMITS.idempotencyKey) {
+      return { error: `lesson.idempotencyKey exceeds ${LIMITS.idempotencyKey} characters` };
+    }
+  }
+  return {
+    evidenceRefs: refs,
+    ...(lesson.note !== undefined && lesson.note.length > 0 ? { note: lesson.note } : {}),
+    ...(lesson.idempotencyKey !== undefined ? { idempotencyKey: lesson.idempotencyKey } : {}),
+  };
 }
 
 /**
@@ -156,6 +170,7 @@ export function proposePerformanceLessonsImpl(
           lesson.reason ??
           `performance lesson backed by ${validation.evidenceRefs.join(", ")}`,
         caller,
+        idempotencyKey: validation.idempotencyKey,
       });
       accepted.push(candidate);
     } catch (err) {

@@ -15,7 +15,7 @@
  * Provider/LLM-free: authority is structural (docs/AUTHORITY.md), not
  * content-based. Pattern ADAPTED from mem0's "importance/relevance"
  * multi-signal retrieval (main @ 2026-08-30) WITHOUT its LLM/embedding
- * scoring dependency (REJECTED here — Library ranking must be deterministic
+ * scoring dependency (REJECTED here — Memory ranking must be deterministic
  * and self-hosted).
  */
 import type { AuthorityAssessment, AuthorityTier, MemoryRecord } from "../contracts/types.ts";

@@ -98,7 +98,7 @@ test("T39: backup includes canonical data + checksum; tampering is detected", ()
     engine.addRecord(rec("lib", "Rate limit", "120 requests per minute"));
     engine.setScopeMutationPolicy("lib", { mode: "restricted", allow: ["human:kim"] });
     const bundle = engine.backup();
-    assert.equal(bundle.format, "library-memory-backup");
+    assert.equal(bundle.format, "midnight-memory-backup");
     assert.ok(bundle.checksum.length === 64);
     assert.ok(bundle.data.scopes.length >= 1);
     assert.ok(bundle.data.records.length >= 1);

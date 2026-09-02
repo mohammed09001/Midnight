@@ -24,7 +24,9 @@ import { ConflictError, ValidationError } from "../contracts/errors.ts";
 import { MEMORY_ENGINE_CONTRACT_VERSION } from "../contracts/version.ts";
 import type { MemoryStore } from "./store.ts";
 
-export const BACKUP_FORMAT = "library-memory-backup" as const;
+export const BACKUP_FORMAT = "midnight-memory-backup" as const;
+/** Pre-rename format string, accepted read-only (never re-emitted by backupImpl). */
+export const LEGACY_BACKUP_FORMAT = "library-memory-backup" as const;
 export const BACKUP_SCHEMA_VERSION = 1 as const;
 
 const SCOPE_COLUMNS = [
@@ -68,7 +70,7 @@ export interface BackupData {
 }
 
 export interface BackupBundle {
-  format: typeof BACKUP_FORMAT;
+  format: typeof BACKUP_FORMAT | typeof LEGACY_BACKUP_FORMAT;
   schemaVersion: typeof BACKUP_SCHEMA_VERSION;
   contractVersion: string;
   createdAt: string;
@@ -118,7 +120,11 @@ export function verifyBackup(bundle: unknown): { valid: boolean; errors: string[
     return { valid: false, errors: ["bundle is not an object"] };
   }
   const b = bundle as Partial<BackupBundle>;
-  if (b.format !== BACKUP_FORMAT) errors.push(`format must be '${BACKUP_FORMAT}'`);
+  if (b.format !== BACKUP_FORMAT && b.format !== LEGACY_BACKUP_FORMAT) {
+    errors.push(`format must be '${BACKUP_FORMAT}' or '${LEGACY_BACKUP_FORMAT}'`);
+  } else if (b.format === LEGACY_BACKUP_FORMAT) {
+    process.stderr.write(`warning: restoring a legacy '${LEGACY_BACKUP_FORMAT}' bundle; new backups are written as '${BACKUP_FORMAT}'\n`);
+  }
   if (b.schemaVersion !== BACKUP_SCHEMA_VERSION) errors.push(`schemaVersion must be ${BACKUP_SCHEMA_VERSION}`);
   if (b.data === undefined || b.data === null || typeof b.data !== "object") {
     errors.push("bundle.data is missing");

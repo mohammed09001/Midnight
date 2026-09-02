@@ -1,9 +1,11 @@
-# Library Memory Engine — Retention, Archival & Deletion (v1.4.0)
+# Midnight Memory — Retention, Archival & Deletion (v1.4.0)
 
 Implemented in `src/engine/retention.ts` (+ `scopes.ts` project deletion),
 migration 7. No external reference was listed for this task; the semantics
-are Library-owned policy definitions honoring the Engine Isolation
-Invariants (append-oriented, nothing silently destroyed).
+are Memory-owned policy definitions honoring the Engine Isolation
+Invariants (append-oriented, nothing silently destroyed). Source-evidence
+expiry (`expiresAt`) is one row of the evidence-reference behavior matrix in
+docs/EVIDENCE_REFERENCES.md.
 
 ## Lifecycle states
 

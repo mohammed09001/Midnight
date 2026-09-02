@@ -1,7 +1,16 @@
 from datetime import datetime, timezone
-from midnight_performance import (AIAnalysisAttempt, ClaimKind, EvaluationResult, EvaluatorKind, MemoryDomain, MemoryEvidence, ReviewLabel, qualify_evaluators, qualify_memory)
+from pathlib import Path
+
+from midnight_performance import (
+    AIAnalysisAttempt, ClaimKind, EvaluationResult, EvaluatorKind,
+    MemoryDomain, MemoryEvidence, ReviewLabel,
+    qualify_evaluators, qualify_memory_integration,
+)
+from midnight_performance.memory_bridge import build_propose_envelope
 
 NOW = datetime(2026, 8, 28, tzinfo=timezone.utc)
+_MEMORY_REPO_PATH = Path(__file__).resolve().parents[2] / "Memory"
+
 
 def test_evaluator_qualification_requires_non_llm_reproducible_evidence():
     deterministic = EvaluationResult("run", "coverage", "1", EvaluatorKind.DETERMINISTIC, .9, (), "ok", 1, ClaimKind.DERIVED)
@@ -12,10 +21,35 @@ def test_evaluator_qualification_requires_non_llm_reproducible_evidence():
     only_judge = qualify_evaluators("run", (judge,), (), True, (), reproducible=True)
     assert "llm_judge_is_sole_evidence" in only_judge.failures
 
-def test_memory_qualification_blocks_ai_only_noise_and_requires_restore():
-    good = (MemoryEvidence("a", MemoryDomain.KNOWLEDGE, ("raw:1",), "tests pass", ClaimKind.OBSERVED), MemoryEvidence("b", MemoryDomain.KNOWLEDGE, ("raw:2",), "tests pass", ClaimKind.DERIVED))
-    result = qualify_memory(good, query="tests", allowed_refs=frozenset({"raw:1", "raw:2"}), backup_restored=True, contradictions_resolved=True, supersession_checked=True, historical_valid=True)
-    assert result.qualified and result.promoted is not None and result.hits
-    noisy = qualify_memory((MemoryEvidence("ai", MemoryDomain.KNOWLEDGE, ("raw:1",), "guess", ClaimKind.INFERRED),), query="guess", allowed_refs=frozenset({"raw:1"}), backup_restored=False, contradictions_resolved=False, supersession_checked=False, historical_valid=False)
-    assert "insufficient_grounded_provenance_for_promotion" in noisy.failures
-    assert {"contradictions_unresolved", "supersession_unchecked", "historical_validity_unverified"} <= set(noisy.failures)
+
+def test_memory_evidence_remains_a_local_non_durable_shape():
+    # MemoryDomain/MemoryEvidence are kept (Execution 04 migration map):
+    # Performance-local, non-durable evidence-candidate shapes only.
+    good = MemoryEvidence("a", MemoryDomain.KNOWLEDGE, ("raw:1",), "tests pass", ClaimKind.OBSERVED)
+    assert good.statement == "tests pass"
+
+
+def test_memory_integration_structural_check_always_passes_with_no_envelope():
+    result = qualify_memory_integration()
+    assert result.no_local_duplicate_authority is True
+    assert result.delivery is None
+    assert result.degraded_mode_truthful is True
+    assert result.qualified is True
+    assert result.failures == ()
+
+
+def test_memory_integration_degraded_mode_is_truthful_when_memory_is_unreachable():
+    envelope = build_propose_envelope("proj", [])
+    result = qualify_memory_integration(
+        envelope=envelope,
+        memory_repo_path=_MEMORY_REPO_PATH,
+        node_executable="definitely-not-a-real-binary-xyz",
+    )
+    assert result.no_local_duplicate_authority is True
+    assert result.delivery is not None
+    assert result.delivery.delivered is False
+    assert result.delivery.degraded_reason is not None
+    # A truthful degraded report still qualifies the gate — it is honest
+    # reporting, not a fabricated success or a swallowed exception.
+    assert result.degraded_mode_truthful is True
+    assert result.qualified is True

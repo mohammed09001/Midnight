@@ -17,7 +17,7 @@
  * Provider-free and deterministic. Pattern ADAPTED from mem0's hybrid
  * multi-signal retrieval (semantic + BM25 + entities) in intent (main @
  * 2026-08-30); the embedding/LLM-dependent semantic signal is REJECTED here
- * — Library fuses only self-hosted, deterministic signals and exposes each.
+ * — Memory fuses only self-hosted, deterministic signals and exposes each.
  */
 import type { MemoryRecord, RelationHint } from "../contracts/types.ts";
 import { buildFtsQuery, lexicalSearchImpl } from "./retrieval.ts";

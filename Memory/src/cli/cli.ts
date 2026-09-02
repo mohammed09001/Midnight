@@ -861,7 +861,7 @@ export function main(argv: string[]): void {
           const req = requireArgs(
             parsed,
             ["scope", "subject", "content"],
-            "performance propose --scope <key> --subject <lesson> --content <text> --evidence perf:<recordId> [--evidence perf:<id2> ...] [--caller engine:performance]",
+            "performance propose --scope <key> --subject <lesson> --content <text> --evidence perf:<recordId> [--evidence perf:<id2> ...] [--caller engine:performance] [--idempotency-key K]",
           );
           const evidenceRefs = parsed.evidencePairs.map((pair) => {
             const colon = pair.indexOf(":");
@@ -882,6 +882,7 @@ export function main(argv: string[]): void {
               confidence: 0.8,
               tags: req.opt("tags") !== undefined ? req.opt("tags")!.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
               actor: actorFromFlags(parsed),
+              idempotencyKey: req.opt("idempotency-key"),
             }],
             caller !== undefined ? { caller: parseCallerKey(caller) } : {},
           );
@@ -1347,7 +1348,8 @@ function usageAndExit(): never {
       "  candidate promote --id ID",
       "",
       "global: --store <path>   store location (default: data/memory-engine.db,",
-      "                        override via LIBRARY_MEMORY_STORE)",
+      "                        override via MIDNIGHT_MEMORY_STORE; legacy",
+      "                        LIBRARY_MEMORY_STORE still honored, deprecated)",
       "actor:  --actor-kind human|agent|engine|tool --actor-name NAME --agent-type TYPE",
     ].join("\n") + "\n",
   );

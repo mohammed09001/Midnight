@@ -1,13 +1,12 @@
-"""Qualification gates for evaluator ensembles and rebuildable Performance Memory."""
+"""Qualification gates for evaluator ensembles and the Memory integration."""
 from __future__ import annotations
 from dataclasses import dataclass
 from statistics import pvariance
 
+from . import memory as _memory_module
 from .ai_accounting import AIAnalysisAttempt, summarize_ai_attempts
-from .contracts import ClaimKind
 from .evaluation import EvaluationResult, EvaluatorKind
-from .memory import KnowledgeRecord, MemoryEvidence, promote
-from .memory_retrieval import MemoryHit, retain, retrieve_memory
+from .memory_bridge import LessonDeliveryResult, propose_lesson_or_degrade
 from .review import AgreementReport, ReviewLabel, analyze_agreement
 
 
@@ -34,22 +33,47 @@ def qualify_evaluators(subject_id: str, evaluations: tuple[EvaluationResult, ...
 
 
 @dataclass(frozen=True, slots=True)
-class MemoryQualification:
-    promoted: KnowledgeRecord | None; hits: tuple[MemoryHit, ...]; retained: tuple[MemoryEvidence, ...]
-    backup_restored: bool; contradictions_resolved: bool; supersession_checked: bool; historical_valid: bool; qualified: bool; failures: tuple[str, ...]
-    uncertainty: str = "Memory is rebuildable from provenance; retrieval is not truth and noisy/AI-only interpretations are not promoted"
+class MemoryIntegrationQualification:
+    """Qualifies the REAL Memory integration (Execution 04, Task 11) —
+    replaces the removed MemoryQualification, which qualified a local
+    promote()/KnowledgeRecord duplicate-authority path that no longer
+    exists. `delivery` is None when no envelope was supplied (structural
+    check only)."""
+
+    no_local_duplicate_authority: bool
+    delivery: LessonDeliveryResult | None
+    degraded_mode_truthful: bool
+    qualified: bool
+    failures: tuple[str, ...]
+    uncertainty: str = "a truthful degraded result is not a promotion; only Memory's own accepted candidate is durable knowledge"
 
 
-def qualify_memory(evidence: tuple[MemoryEvidence, ...], *, query: str, allowed_refs: frozenset[str], backup_restored: bool, contradictions_resolved: bool, supersession_checked: bool, historical_valid: bool) -> MemoryQualification:
-    durable = tuple(item for item in evidence if item.claim_kind in {ClaimKind.OBSERVED, ClaimKind.DERIVED})
-    promoted = promote(durable)
-    retained = retain(durable, allowed_refs=allowed_refs)
-    hits = retrieve_memory(query, retained)
+def qualify_memory_integration(*, envelope: dict | None = None, **bridge_kwargs) -> MemoryIntegrationQualification:
+    """Structural check (no second durable-memory authority survives in
+    `memory.py`) always runs. If `envelope` is given, attempts a real
+    delivery via `propose_lesson_or_degrade` and folds the result in.
+    `degraded_mode_truthful` is True whenever no exception escaped the
+    delivery attempt — i.e. failure was reported, never silently hidden or
+    fabricated as success — which is true both when no envelope was given
+    and when a real (accepted-or-degraded) result came back.
+    """
+    no_local_duplicate_authority = not any(
+        hasattr(_memory_module, name) for name in ("KnowledgeRecord", "promote", "supersede")
+    )
+    delivery: LessonDeliveryResult | None = None
+    degraded_mode_truthful = True
+    if envelope is not None:
+        delivery = propose_lesson_or_degrade(envelope, **bridge_kwargs)
+        # propose_lesson_or_degrade already never raises for a reachable-
+        # but-rejecting or unreachable Memory (verified by Performance/
+        # tests/test_memory_bridge.py); truthfulness means the result
+        # always states clearly whether delivery happened.
+        degraded_mode_truthful = delivery.delivered or delivery.degraded_reason is not None
     failures = []
-    if promoted is None: failures.append("insufficient_grounded_provenance_for_promotion")
-    if len(retained) != len(durable): failures.append("retention_removed_unapproved_provenance")
-    if not backup_restored: failures.append("backup_restore_unverified")
-    if not contradictions_resolved: failures.append("contradictions_unresolved")
-    if not supersession_checked: failures.append("supersession_unchecked")
-    if not historical_valid: failures.append("historical_validity_unverified")
-    return MemoryQualification(promoted, hits, retained, backup_restored, contradictions_resolved, supersession_checked, historical_valid, not failures, tuple(failures))
+    if not no_local_duplicate_authority:
+        failures.append("local_duplicate_memory_authority_present")
+    if not degraded_mode_truthful:
+        failures.append("degraded_mode_not_truthful")
+    return MemoryIntegrationQualification(
+        no_local_duplicate_authority, delivery, degraded_mode_truthful, not failures, tuple(failures)
+    )

@@ -1,4 +1,4 @@
-# Library Memory Engine — Provenance & Evidence Authority (v1.1.0)
+# Midnight Memory — Provenance & Evidence Authority (v1.1.0)
 
 Implemented in `src/engine/authority.ts`, enforced by `src/engine/validation.ts`
 at write time. Contract version: **1.1.0** (additive).

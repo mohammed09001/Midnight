@@ -1,4 +1,4 @@
-# Library Memory Engine — Retrieval Evaluation (v1.23.0)
+# Midnight Memory — Retrieval Evaluation (v1.23.0)
 
 Implemented in `src/engine/evaluation.ts`. Task 43, Phase VIII.
 

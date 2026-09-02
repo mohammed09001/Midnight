@@ -1,5 +1,5 @@
 /**
- * Typed error surface for the Library Memory Engine.
+ * Typed error surface for the Midnight Memory Engine.
  *
  * Failure behavior is explicit: the engine never silently degrades to an
  * in-memory mode or swallows persistence errors. Every material failure is

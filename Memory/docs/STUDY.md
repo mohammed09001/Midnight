@@ -1,4 +1,4 @@
-# Library Memory Engine — Study → Memory Proposals (v1.12.0)
+# Midnight Memory — Study → Memory Proposals (v1.12.0)
 
 Implemented in `src/engine/study.ts`. Task 28, Phase V.
 

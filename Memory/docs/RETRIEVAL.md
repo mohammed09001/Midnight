@@ -1,4 +1,4 @@
-# Library Memory Engine — Deterministic Retrieval Baseline (v1.6.0)
+# Midnight Memory — Deterministic Retrieval Baseline (v1.6.0)
 
 Implemented in `src/engine/retrieval.ts` (+ `records.ts` structured filters,
 `src/engine/ranking.ts`, `src/engine/dedup.ts`, `src/engine/fusion.ts`),

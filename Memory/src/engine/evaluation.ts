@@ -22,7 +22,7 @@
  *
  * Research: IR precision/recall/MRR are textbook metrics (no dependency);
  * mem0/getzep evaluate retrieval with LLM-judged relevance — that judge is
- * REJECTED here (non-deterministic, provider-bound). Library's ground truth
+ * REJECTED here (non-deterministic, provider-bound). Memory's ground truth
  * is frozen subject::content judgments over its own corpus.
  */
 import type { MemoryEngine } from "./memoryEngine.ts";

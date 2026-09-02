@@ -1,7 +1,7 @@
 /**
  * MCP stdio adapter (Task 34).
  *
- * A bounded, Library-owned MCP-compatible server speaking the JSON-RPC 2.0
+ * A bounded, Memory-owned MCP-compatible server speaking the JSON-RPC 2.0
  * subset over stdio (newline-delimited messages per the MCP stdio transport):
  * `initialize`, `notifications/initialized`, `tools/list`, `tools/call`.
  *
@@ -56,7 +56,7 @@ function handleMessage(engine: MemoryEngine, options: McpServerOptions, msg: Jso
     writeResponse(msg.id, {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: {} },
-      serverInfo: { name: "library-memory", version: MEMORY_ENGINE_CONTRACT_VERSION },
+      serverInfo: { name: "midnight-memory", version: MEMORY_ENGINE_CONTRACT_VERSION },
     });
     return;
   }

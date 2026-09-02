@@ -1,4 +1,4 @@
-# Library Memory Engine — CLI & MCP / Host-Native Tools (v1.17.0)
+# Midnight Memory — CLI & MCP / Host-Native Tools (v1.17.0)
 
 Tasks 33–34, Phase VI.
 

@@ -39,7 +39,7 @@ test("T46: the product-truth gate passes all eight clauses with fresh evidence",
     ["ownership", "contracts", "standalone", "terminal", "provenance", "privacy", "explanations", "extensibility"],
   );
   assert.ok(report.clauses.flatMap((c) => c.checks).length >= 20, "every clause carries multiple concrete checks");
-  assert.equal(report.contractVersion, "1.25.0");
+  assert.equal(report.contractVersion, "1.27.0");
 });
 
 test("T46: determinism — two gate runs produce identical reports", () => {

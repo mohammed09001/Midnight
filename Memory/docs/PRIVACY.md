@@ -1,4 +1,4 @@
-# Library Memory Engine — Field-Level Privacy & Project Isolation (v1.19.0)
+# Midnight Memory — Field-Level Privacy & Project Isolation (v1.19.0)
 
 Implemented in `src/engine/privacy.ts` (+ migration 12,
 `memory_scopes.privacy_policy_json`). Task 37, Phase VII.

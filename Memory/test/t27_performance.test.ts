@@ -14,11 +14,19 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { MemoryEngine, dispatch, MEMORY_ENGINE_CONTRACT_VERSION } from "../src/index.ts";
 import {
+  MemoryEngine,
+  dispatch,
+  MEMORY_ENGINE_CONTRACT_VERSION,
+  // Task 7 (Execution 03): these constants are now part of the public
+  // module surface (src/index.ts) — a real external consumer (e.g. the
+  // Python bridge's docs) no longer has to reach into src/engine/performance.ts
+  // directly. Importing them from here, not from the engine module, is
+  // itself the regression guard for that export gap.
+  PERFORMANCE_ENGINE,
   MAX_PERFORMANCE_LESSONS_PER_BATCH,
   MAX_PERFORMANCE_EVIDENCE_PER_LESSON,
-} from "../src/engine/performance.ts";
+} from "../src/index.ts";
 
 function tempEngine(name: string): { engine: MemoryEngine; dir: string } {
   const dir = mkdtempSync(join(tmpdir(), `mem-t27-${name}-`));
@@ -203,4 +211,68 @@ test("T27: proposals survive restart in the intake stream", () => {
     }
   }
   rmSync(dir, { recursive: true, force: true });
+});
+
+// ---- Task 7 (Execution 03): idempotent Performance lesson delivery --------
+
+test("T27: two identical proposals with the same idempotencyKey produce exactly one candidate", () => {
+  const { engine, dir } = tempEngine("idempotent-replay");
+  try {
+    engine.createScope("lib", "Library");
+    const first = engine.proposePerformanceLessons("lib", [
+      { subject: "Retry storms", content: "Backoff caps retry storms", evidenceRefs: ["perf:run-1"], idempotencyKey: "obs:fixed-1" },
+    ]);
+    assert.equal(first.accepted.length, 1);
+    assert.equal(first.accepted[0]!.evidenceRefs[0]!.engine, PERFORMANCE_ENGINE);
+    const second = engine.proposePerformanceLessons("lib", [
+      { subject: "Retry storms", content: "Backoff caps retry storms", evidenceRefs: ["perf:run-1"], idempotencyKey: "obs:fixed-1" },
+    ]);
+    assert.equal(second.accepted.length, 1);
+    // Same idempotencyKey ⇒ same candidate identity, not a second one.
+    assert.equal(second.accepted[0]!.candidateId, first.accepted[0]!.candidateId);
+    const stream = engine.listCandidates({ scope: "lib", status: "open" });
+    assert.equal(stream.length, 1, "replaying the same idempotencyKey must not create a duplicate candidate");
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T27: a reused idempotencyKey does not block the rest of a batch containing a fresh lesson", () => {
+  const { engine, dir } = tempEngine("idempotent-batch");
+  try {
+    engine.createScope("lib", "Library");
+    engine.proposePerformanceLessons("lib", [
+      { subject: "Seen before", content: "x", evidenceRefs: ["perf:1"], idempotencyKey: "obs:dup" },
+    ]);
+    const batch = engine.proposePerformanceLessons("lib", [
+      { subject: "Seen before", content: "x", evidenceRefs: ["perf:1"], idempotencyKey: "obs:dup" },
+      { subject: "Brand new", content: "y", evidenceRefs: ["perf:2"] },
+    ]);
+    assert.equal(batch.accepted.length, 2);
+    assert.equal(batch.rejected.length, 0);
+    const subjects = batch.accepted.map((c) => c.subject).sort();
+    assert.deepEqual(subjects, ["Brand new", "Seen before"]);
+    assert.equal(engine.listCandidates({ scope: "lib", status: "open" }).length, 2);
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T27: an empty idempotencyKey is rejected as malformed, not silently ignored", () => {
+  const { engine, dir } = tempEngine("idempotent-malformed");
+  try {
+    engine.createScope("lib", "Library");
+    const result = engine.proposePerformanceLessons("lib", [
+      { subject: "S", content: "C", evidenceRefs: ["perf:1"], idempotencyKey: "" },
+    ]);
+    assert.equal(result.accepted.length, 0);
+    assert.equal(result.rejected.length, 1);
+    assert.equal(result.rejected[0]!.code, "MEMORY_VALIDATION_FAILED");
+    assert.match(result.rejected[0]!.message, /idempotencyKey/);
+  } finally {
+    engine.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

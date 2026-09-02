@@ -1,4 +1,4 @@
-# Library Memory Engine — Mutation Authorization & Confirmation (v1.17.0)
+# Midnight Memory — Mutation Authorization & Confirmation (v1.17.0)
 
 Implemented in `src/engine/authorization.ts` (+ migration 11,
 `memory_scopes.mutation_policy_json`). Task 35, Phase VI.

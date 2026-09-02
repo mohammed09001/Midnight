@@ -84,7 +84,7 @@ test("T34: MCP stdio adapter — initialize, read-only tools/list, tools/call he
   const child = spawn(process.execPath, ["--experimental-strip-types", CLI_PATH, "mcp", "--store", path], { stdio: ["pipe", "pipe", "inherit"], env: { ...process.env } });
   try {
     const init = await sendMcp(child, { jsonrpc: "2.0", id: 1, method: "initialize", params: {} });
-    assert.equal(init.result.serverInfo.name, "library-memory");
+    assert.equal(init.result.serverInfo.name, "midnight-memory");
     assert.ok(init.result.capabilities.tools !== undefined);
 
     const list = await sendMcp(child, { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });

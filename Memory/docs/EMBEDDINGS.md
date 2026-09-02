@@ -1,4 +1,4 @@
-# Library Memory Engine — Optional Semantic Embedding Projection (v1.8.0)
+# Midnight Memory — Optional Semantic Embedding Projection (v1.8.0)
 
 Implemented in `src/engine/embeddings.ts` (+ migration 9, `memory_embeddings`
 / `memory_embedding_projections` derived tables). Task 23, Phase IV.

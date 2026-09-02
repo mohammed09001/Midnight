@@ -1,4 +1,4 @@
-# Library Memory Engine — Untrusted-Content Boundaries (v1.20.0)
+# Midnight Memory — Untrusted-Content Boundaries (v1.20.0)
 
 Implemented in `src/engine/trust.ts`. Task 38, Phase VII.
 

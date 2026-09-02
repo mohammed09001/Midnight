@@ -68,7 +68,7 @@ export type EvidenceEngine =
   | "study_lineage_versioning"
   | "project_projection"
   | "context"
-  | "library_synchronization"
+  | "midnight_synchronization"
   | "performance"
   | "analysis"
   | "memory"

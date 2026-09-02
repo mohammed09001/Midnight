@@ -1,4 +1,4 @@
-# Library Memory Engine — Revision & Correction Semantics (v1.3.0)
+# Midnight Memory — Revision & Correction Semantics (v1.3.0)
 
 Implemented in `src/engine/records.ts` (`reviseRecordImpl`) with the
 immutable revision log owned by the append-oriented store (docs/PERSISTENCE.md).

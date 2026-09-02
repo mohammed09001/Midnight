@@ -58,7 +58,7 @@ from midnight_performance import (
     ReviewLabel, ReviewStore, analyze_agreement,
     CuratedDataset, CuratedItem, OfflineExperiment,
     RegressionMetric, ReproducibilityManifest, evaluate_regression,
-    MemoryDomain, MemoryEvidence, promote, supersede,
+    MemoryDomain, MemoryEvidence,
     retrieve_memory, retain,
     BUCKETS, Neighborhood, NeighborhoodMember, build_neighborhood,
     VerificationKind, assess_verification,
@@ -1938,10 +1938,16 @@ class PerformanceContractsTests(unittest.TestCase):
         report=evaluate_regression(manifest,(RegressionMetric("score",.9,.8,"a"),RegressionMetric("brier",.1,.2,"b")),lower_is_better=("brier",))
         self.assertEqual({x.cohort for x in report.regressions},{"a","b"})
 
-    def test_memory_promotes_only_multisource_evidence_and_preserves_supersession(self):
+    def test_memory_evidence_is_local_and_no_duplicate_durable_authority_exists(self):
+        # Execution 04 (Task 11): KnowledgeRecord/promote()/supersede() were
+        # removed as duplicate durable-memory ownership — see
+        # Performance/README.md "Memory ownership migration". Durable
+        # promotion now only ever happens through Midnight Memory itself,
+        # via memory_bridge.propose_lesson_or_degrade.
+        import midnight_performance.memory as memory_module
+        for removed in ("KnowledgeRecord", "promote", "supersede"):
+            self.assertFalse(hasattr(memory_module, removed), f"{removed} must not exist locally")
         evidence=(MemoryEvidence("a",MemoryDomain.PROMPT,("run1",),"Use tests",ClaimKind.OBSERVED),MemoryEvidence("b",MemoryDomain.VERIFICATION,("run2",),"Use tests",ClaimKind.OBSERVED))
-        record=promote(evidence); self.assertIsNotNone(record)
-        old,new=supersede(record,record); self.assertEqual(old.status,"superseded")
         self.assertEqual(len(retrieve_memory("use tests",evidence)),2)
         self.assertEqual(len(retain(evidence,allowed_refs=frozenset({"run1"}))),1)
 

@@ -1,7 +1,7 @@
 {
-  "name": "@library/memory-engine",
+  "name": "midnight-memory-engine",
   "version": "0.1.0",
-  "description": "Library Memory Engine - canonical owner of durable Library knowledge. Backend/terminal-first, agent-neutral, game-independent.",
+  "description": "Midnight Memory Engine - canonical owner of durable Midnight knowledge. Backend/terminal-first, agent-neutral, game-independent.",
   "type": "module",
   "private": true,
   "engines": {

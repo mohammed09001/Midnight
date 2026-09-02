@@ -1,10 +1,10 @@
-# @library/memory-engine
+# Midnight Memory
 
-Canonical owner of durable Library knowledge: validated MemoryRecords with
+Canonical owner of durable Midnight knowledge: validated MemoryRecords with
 provenance, scope, epistemic class, confidence, temporal validity, privacy
 class, contradiction groups, and supersession chains.
 
-- **Boundary:** docs/BOUNDARY.md (frozen, contract v1.25.0)
+- **Boundary:** docs/BOUNDARY.md (frozen, contract v1.26.0)
 - **Identities:** docs/IDENTITIES.md
 - **Canonical schema:** docs/SCHEMA.md
 - **Authority:** docs/AUTHORITY.md · **Temporal:** docs/TEMPORAL.md · **Contracts:** docs/CONTRACTS.md
@@ -12,7 +12,7 @@ class, contradiction groups, and supersession chains.
 - **Contradictions:** docs/CONTRADICTIONS.md · **Supersession:** docs/SUPERSESSION.md · **Revisions:** docs/REVISIONS.md
 - **Retention:** docs/RETENTION.md · **Retrieval:** docs/RETRIEVAL.md · **Projections:** docs/PROJECTIONS.md
 - **Relations:** docs/RELATIONS.md · **Entities:** docs/ENTITIES.md · **Embeddings:** docs/EMBEDDINGS.md · **Graph:** docs/GRAPH.md
-- **Performance:** docs/PERFORMANCE.md · **Study:** docs/STUDY.md · **Analysis:** docs/ANALYSIS.md · **Search History:** docs/SEARCH_HISTORY.md · **Context:** docs/CONTEXT.md · **User Notes:** docs/USER_NOTES.md
+- **Performance:** docs/PERFORMANCE.md · **Study:** docs/STUDY.md · **Analysis:** docs/ANALYSIS.md · **Search History:** docs/SEARCH_HISTORY.md · **Context:** docs/CONTEXT.md · **User Notes:** docs/USER_NOTES.md · **Evidence References:** docs/EVIDENCE_REFERENCES.md
 - **Excerpts:** docs/EXCERPTS.md · **Privacy:** docs/PRIVACY.md · **Trust:** docs/TRUST.md · **Backup:** docs/BACKUP.md · **Health:** docs/HEALTH.md · **Tools:** docs/TOOLS.md · **Permissions:** docs/PERMISSIONS.md
 - **Corpora:** docs/CORPORA.md · **Evaluation:** docs/EVALUATION.md · **Lineage Qualification:** docs/LINEAGE_QUALIFICATION.md · **Recovery Qualification:** docs/RECOVERY_QUALIFICATION.md · **V1 Gate:** docs/PRODUCT_TRUTH_GATE.md
 
@@ -23,7 +23,7 @@ dependencies (Node.js ≥ 22.13 built-in `node:sqlite`).
 
 ```powershell
 npm run typecheck                                   # tsc --noEmit (strict)
-npm test                                            # node --test (235 tests)
+npm test                                            # node --test (264 tests)
 npm run cli -- doctor --store data/memory-engine.db # store health
 npm run cli -- record search --scope library101 --q "rate limit"          # BM25 lexical
 npm run cli -- record current --scope library101 --subject "Rate limit"   # current view
@@ -66,7 +66,7 @@ npm run cli -- contract call --operation memory.lexical --request '{"query":"rat
 npm run cli -- events --limit 10
 ```
 
-Store location: `data/memory-engine.db` (gitignored) or `LIBRARY_MEMORY_STORE`
-env var / `--store` flag.
+Store location: `data/memory-engine.db` (gitignored) or `MIDNIGHT_MEMORY_STORE`
+env var (legacy `LIBRARY_MEMORY_STORE` still honored, deprecated) / `--store` flag.
 
 Note: `node:sqlite` prints an experimental warning on Node 22 — expected.

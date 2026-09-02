@@ -1,4 +1,4 @@
-# Library Memory Engine — Entity Linking as a Derived Projection (v1.7.0)
+# Midnight Memory — Entity Linking as a Derived Projection (v1.7.0)
 
 Implemented in `src/engine/entities.ts`. Task 22, Phase IV.
 
