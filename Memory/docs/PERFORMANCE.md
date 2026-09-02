@@ -116,3 +116,46 @@ The adapter is a pure transformation over the existing intake pipeline — no LL
 no Performance store access (records stay external), no game dependency.
 Terminal surface: `performance propose --scope K --subject S --content T
 --evidence perf:ID [--evidence perf:ID2 …] [--idempotency-key K]`.
+
+## See also
+
+docs/CROSS_ENGINE_LINEAGE.md (Task 19) walks one Performance identity
+through the full learning loop — evidence, lesson, candidate, promoted/
+contradicted record, later retrieval, later Performance analysis — proving
+the chain with a real end-to-end test rather than prose correlation.
+
+## Recovery, restart, and backup semantics across the boundary (Task 21)
+
+Qualified end to end in `Performance/tests/test_memory_bridge_recovery.py`,
+reusing Memory's own recovery/backup CLI machinery (docs/RECOVERY_QUALIFICATION.md)
+rather than inventing distributed transactions across the boundary:
+
+- **Torn store / interrupted delivery.** A corrupted store file is caught
+  cleanly at the CLI boundary: `doctor`, `contract call`, and every bridge
+  read/propose path surface a typed `MemoryContractError(code:
+  "MEMORY_STORE_UNAVAILABLE")` — never a hang, never a silent success, never
+  a bare stack trace. This is the same `StoreUnavailableError` Memory's
+  `store.ts` throws internally; the bridge's own error taxonomy
+  (`MemoryUnavailableError` vs `MemoryContractError`) already distinguishes
+  it correctly as "Memory was reached and said no," not "Memory was
+  unreachable."
+- **Performance retries.** Because `MEMORY_STORE_UNAVAILABLE` reaches the
+  bridge as a typed, non-transient `MemoryContractError`,
+  `call_memory_cli_with_retry` correctly does NOT retry it (retrying a torn
+  store cannot succeed). A caller-level retry with the same
+  `idempotencyKey` after an unclear outcome — e.g. Memory restarted between
+  the write and the response — converges to exactly one candidate, reusing
+  the same idempotent-intake guarantee documented above (Task 9).
+- **Backup / restore.** `backup create|restore` stays CLI-only, in the same
+  category as `scope create`/`record add` — deliberately outside the
+  versioned `contract call` envelope (docs/BACKUP.md). A restore performed
+  after a mid-integration crash faithfully recovers everything the last
+  snapshot covered (unchanged citations, no duplication) and is honest
+  about what it doesn't cover — nothing proposed after the snapshot is
+  fabricated back into existence. `projections check` confirms derived
+  projections are healthy immediately after restore.
+- **Evidence-reference expiry.** Expiry (`--evidence-expires-at`,
+  docs/RETENTION.md) is a purely Memory-internal, observational fact.
+  Nothing on the Performance side ever triggers a sweep; expiry is only
+  ever discoverable by reading it back through `read_performance_context`'s
+  `evidenceGaps` field.

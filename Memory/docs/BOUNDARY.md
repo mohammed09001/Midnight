@@ -1,9 +1,15 @@
-# Midnight Memory — Frozen Product Boundary (v1.26.0)
+# Midnight Memory — Frozen Product Boundary (v1.27.0)
 
-Contract version: **1.26.0** (`MEMORY_ENGINE_CONTRACT_VERSION`, `src/contracts/version.ts`).
+Contract version: **1.27.0** (`MEMORY_ENGINE_CONTRACT_VERSION`, `src/contracts/version.ts`).
 This document freezes the Memory Engine product boundary. The code enforces it;
 this document is the canonical statement of it. Versioning: additive changes
 bump minor, breaking changes bump major.
+
+1.27.0 is additive over 1.26.0: `memory.context` gained three per-record
+fields (`contradiction`, `evidenceGaps`, `trace`) for Performance-oriented
+retrieval (Task 13, docs/CONTRACTS.md's "1.27.0 contract notes"). No request
+shape changed and no operation was added, so this boundary's invariants are
+unaffected — only the changelog reference below moves forward.
 
 ## 0. Canonical Ownership Statement
 

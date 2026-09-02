@@ -28,9 +28,12 @@ from midnight_performance import (
     ObservationEnvelope,
     ObservationLayer,
     ObservationType,
+    PromptRun,
     QualifiedClaim,
     Reprocessor,
+    build_graph,
     deterministic_identity,
+    memory_neighbors,
     new_identity,
     redact_sensitive_text,
     seal,
@@ -39,6 +42,7 @@ from midnight_performance import (
 from midnight_performance.memory_bridge import (
     MEMORY_CONTRACT_VERSION,
     LessonDeliveryResult,
+    MalformedMemoryRecordError,
     MemoryContractError,
     MemoryReadResult,
     MemoryUnavailableError,
@@ -239,6 +243,35 @@ def subprocess_run_record_revise(record_id: str, *, store_path: str, content: st
             "node", "--experimental-strip-types", cli_path,
             "record", "revise", "--id", record_id, "--content", content, "--reason", reason,
             "--actor-kind", "human", "--actor-name", "kim", "--store", store_path,
+        ],
+        capture_output=True, text=True, timeout=30,
+    )
+
+
+def subprocess_run_contradiction_register(project_key: str, *, store_path: str, subject: str, record_ids: list[str]):
+    import subprocess
+
+    cli_path = str(_MEMORY_REPO_PATH / "src" / "cli" / "cli.ts")
+    argv = [
+        "node", "--experimental-strip-types", cli_path,
+        "contradiction", "register", "--scope", project_key, "--subject", subject,
+        "--store", store_path,
+    ]
+    for record_id in record_ids:
+        argv += ["--arg", f"record={record_id}"]
+    return subprocess.run(argv, capture_output=True, text=True, timeout=30)
+
+
+def subprocess_run_contradiction_resolve(group_id: str, *, store_path: str, winner: str, reason: str, action: str = "supersede"):
+    import subprocess
+
+    cli_path = str(_MEMORY_REPO_PATH / "src" / "cli" / "cli.ts")
+    return subprocess.run(
+        [
+            "node", "--experimental-strip-types", cli_path,
+            "contradiction", "resolve", "--id", group_id, "--action", action,
+            "--winner", winner, "--reason", reason, "--actor-kind", "human", "--actor-name", "kim",
+            "--store", store_path,
         ],
         capture_output=True, text=True, timeout=30,
     )
@@ -1004,6 +1037,276 @@ class MemoryPromotionAuthorityTests(unittest.TestCase):
         response = call_memory_cli(promote_envelope, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
         self.assertTrue(response["ok"])
         self.assertEqual(response["result"]["record"]["status"], "active")
+
+
+class MemoryBridgeMalformedResponseTests(unittest.TestCase):
+    """Task 20: a wrong-shape response must fail typed, never crash with a
+    bare KeyError/AttributeError."""
+
+    @unittest.skipUnless(_NODE_AVAILABLE, "node not available in this environment")
+    def test_wrong_shape_record_dict_raises_a_typed_error_not_a_key_error(self):
+        store_dir = mkdtemp()
+        store_path = str(Path(store_dir) / "memory.db")
+        project_key = "mp.v1.project.f0f0f0f0-1111-4111-8111-f0f0f0f0f0f0"
+        create = subprocess_run_scope_create(project_key, store_path=store_path)
+        self.assertEqual(create.returncode, 0, create.stderr)
+        added = subprocess_run_record_add(
+            project_key, store_path=store_path, subject="Malformed-shape record", content="content",
+        )
+        self.assertEqual(added.returncode, 0, added.stderr)
+
+        result = read_performance_context(project_key, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(result.available)
+        record = dict(result.records[0])
+        record["record"] = dict(record["record"])
+        del record["record"]["revision"]
+
+        with self.assertRaises(MalformedMemoryRecordError):
+            citation_from_memory_record(record)
+
+    def test_well_formed_but_missing_accepted_field_degrades_cleanly_not_a_crash(self):
+        envelope = build_propose_envelope("proj", [{"subject": "S", "content": "C", "evidenceRefs": ["x"]}])
+        with mock.patch(
+            "midnight_performance.memory_bridge.call_memory_cli_with_retry",
+            return_value={"ok": True, "result": {}},
+        ):
+            result = propose_lesson_or_degrade(envelope)
+        self.assertFalse(result.delivered)
+        self.assertIsNone(result.candidate_id)
+        self.assertEqual(result.degraded_reason, "no candidate accepted")
+
+
+class MemoryBridgeContradictionVisibilityTests(unittest.TestCase):
+    """Task 20: a real contradiction group must be visible over the read
+    path, not just structurally present-but-empty (the existing read-client
+    test only asserts the empty case)."""
+
+    @unittest.skipUnless(_NODE_AVAILABLE, "node not available in this environment")
+    def test_real_contradiction_group_surfaces_in_context_read(self):
+        store_dir = mkdtemp()
+        store_path = str(Path(store_dir) / "memory.db")
+        project_key = "mp.v1.project.c0c0c0c0-2222-4222-8222-c0c0c0c0c0c0"
+        create = subprocess_run_scope_create(project_key, store_path=store_path)
+        self.assertEqual(create.returncode, 0, create.stderr)
+
+        first = subprocess_run_record_add(
+            project_key, store_path=store_path, subject="Disputed subject", content="claim A",
+        )
+        self.assertEqual(first.returncode, 0, first.stderr)
+        second = subprocess_run_record_add(
+            project_key, store_path=store_path, subject="Disputed subject", content="claim B",
+        )
+        self.assertEqual(second.returncode, 0, second.stderr)
+        import json as _json
+        record_a_id = _json.loads(first.stdout)["recordId"]
+        record_b_id = _json.loads(second.stdout)["recordId"]
+
+        registered = subprocess_run_contradiction_register(
+            project_key, store_path=store_path, subject="Disputed subject",
+            record_ids=[record_a_id, record_b_id],
+        )
+        self.assertEqual(registered.returncode, 0, registered.stderr)
+        group_id = _json.loads(registered.stdout)["groupId"]
+
+        result = read_performance_context(project_key, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(result.available)
+        record_a = next(r for r in result.records if r["record"]["recordId"] == record_a_id)
+        self.assertEqual(record_a["contradiction"]["groupId"], group_id)
+        self.assertEqual(record_a["contradiction"]["status"], "open")
+        self.assertEqual(record_a["contradiction"]["groupSize"], 2)
+
+
+class MemoryBridgeProjectIsolationTests(unittest.TestCase):
+    """Task 20: two projects sharing one store file must be fully isolated
+    over the bridge — a scope-boundary property, not a file-boundary one."""
+
+    @unittest.skipUnless(_NODE_AVAILABLE, "node not available in this environment")
+    def test_two_projects_are_fully_isolated_over_the_bridge(self):
+        store_dir = mkdtemp()
+        store_path = str(Path(store_dir) / "memory.db")
+        project_a = "mp.v1.project.a1a1a1a1-3333-4333-8333-a1a1a1a1a1a1"
+        project_b = "mp.v1.project.b2b2b2b2-3333-4333-8333-b2b2b2b2b2b2"
+        for key in (project_a, project_b):
+            created = subprocess_run_scope_create(key, store_path=store_path)
+            self.assertEqual(created.returncode, 0, created.stderr)
+
+        added = subprocess_run_record_add(
+            project_a, store_path=store_path, subject="Project A only", content="content",
+        )
+        self.assertEqual(added.returncode, 0, added.stderr)
+
+        lesson = lesson_from_sealed_envelope(_sealed_test_envelope(), subject="Project A candidate", content="c")
+        propose_response = call_memory_cli(
+            build_propose_envelope(project_a, [lesson]),
+            memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path,
+        )
+        self.assertTrue(propose_response["ok"])
+
+        result_a = read_performance_context(project_a, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(result_a.available)
+        self.assertEqual(len(result_a.records), 1)
+
+        result_b = read_performance_context(project_b, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(result_b.available)
+        self.assertEqual(result_b.records, ())
+
+        candidates_a = call_memory_cli(
+            {"contractVersion": MEMORY_CONTRACT_VERSION, "operation": "memory.candidates",
+             "request": {"scope": project_a, "status": "open"}},
+            memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path,
+        )
+        candidates_b = call_memory_cli(
+            {"contractVersion": MEMORY_CONTRACT_VERSION, "operation": "memory.candidates",
+             "request": {"scope": project_b, "status": "open"}},
+            memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path,
+        )
+        self.assertEqual(len(candidates_a["result"]["candidates"]), 1)
+        self.assertEqual(candidates_b["result"]["candidates"], [])
+
+
+class CrossEngineLineageTests(unittest.TestCase):
+    """Task 19: one Performance identity walked end to end across both
+    engines — Performance evidence -> lesson proposal -> Memory candidate ->
+    promoted record -> contradiction/supersession -> later Memory retrieval
+    -> later Performance analysis/graph — asserting the same stable
+    references match at every hop, without querying either engine's
+    private store."""
+
+    @unittest.skipUnless(_NODE_AVAILABLE, "node not available in this environment")
+    def test_full_lineage_chain_from_evidence_to_analysis_is_traceable(self):
+        store_dir = mkdtemp()
+        store_path = str(Path(store_dir) / "memory.db")
+        project_key = "mp.v1.project.d1d1d1d1-4444-4444-8444-d1d1d1d1d1d1"
+        create = subprocess_run_scope_create(project_key, store_path=store_path)
+        self.assertEqual(create.returncode, 0, create.stderr)
+
+        # Hop 1-2: Performance evidence -> lesson proposal -> Memory candidate.
+        # The Performance identity is preserved verbatim as the accepted
+        # candidate's evidenceRef.
+        sealed = _sealed_test_envelope()
+        performance_identity = sealed.observation.identity.canonical
+        lesson = lesson_from_sealed_envelope(sealed, subject="Lineage subject", content="Original finding")
+        propose_response = call_memory_cli(
+            build_propose_envelope(project_key, [lesson]),
+            memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path,
+        )
+        self.assertTrue(propose_response["ok"])
+        accepted = propose_response["result"]["accepted"][0]
+        self.assertEqual(accepted["evidenceRefs"][0]["ref"], performance_identity)
+        candidate_id = accepted["candidateId"]
+
+        # Hop 3: Memory candidate -> promoted record.
+        promote_response = call_memory_cli(
+            {
+                "contractVersion": MEMORY_CONTRACT_VERSION,
+                "operation": "memory.promote",
+                "request": {
+                    "candidateId": candidate_id,
+                    "actor": {"kind": "human", "name": "kim"},
+                    "policy": "explicit_user_decision",
+                },
+            },
+            memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path,
+        )
+        self.assertTrue(promote_response["ok"])
+        record_id = promote_response["result"]["record"]["recordId"]
+        self.assertEqual(promote_response["result"]["record"]["status"], "active")
+
+        # Hop 4: a later conflicting record is grouped and resolved in the
+        # promoted record's favor — the chain must survive contradiction
+        # handling, not just the plain promote path.
+        import json as _json
+
+        conflicting = subprocess_run_record_add(
+            project_key, store_path=store_path, subject="Lineage subject", content="Conflicting later claim",
+        )
+        self.assertEqual(conflicting.returncode, 0, conflicting.stderr)
+        loser_id = _json.loads(conflicting.stdout)["recordId"]
+
+        registered = subprocess_run_contradiction_register(
+            project_key, store_path=store_path, subject="Lineage subject",
+            record_ids=[record_id, loser_id],
+        )
+        self.assertEqual(registered.returncode, 0, registered.stderr)
+        group_id = _json.loads(registered.stdout)["groupId"]
+        resolved = subprocess_run_contradiction_resolve(
+            group_id, store_path=store_path, winner=record_id, reason="original finding stands",
+        )
+        self.assertEqual(resolved.returncode, 0, resolved.stderr)
+
+        # Hop 5: later Memory retrieval surfaces the resolved contradiction
+        # on the still-active winning record.
+        read = read_performance_context(project_key, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(read.available)
+        winning_record = next(r for r in read.records if r["record"]["recordId"] == record_id)
+        self.assertEqual(winning_record["contradiction"]["groupId"], group_id)
+        self.assertEqual(winning_record["contradiction"]["status"], "resolved")
+        self.assertEqual(winning_record["record"]["status"], "active")
+
+        # Hop 6: later Performance analysis cites the record by stable
+        # reference and reifies it into the relationship graph.
+        citation = citation_from_memory_record(winning_record)
+        self.assertEqual(citation.value, f"{record_id}#rev1")
+        analysis_result = Reprocessor().run(
+            AnalysisDescriptor("cites-lineage", "1", "k", {}), (), lambda inputs: {"summary": "ok"},
+            memory_references=(citation,),
+        )
+        self.assertEqual(analysis_result.memory_references, (citation,))
+
+        prompt_run = PromptRun(prompt_run_id="lineage-pr-1", prompt_version_id="v1")
+        graph = build_graph(prompt_run, memory_references=(citation,))
+        prompt_run_node = deterministic_identity(EntityKind.PROMPT_RUN, "lineage-pr-1")
+        neighbors = memory_neighbors(graph, prompt_run_node)
+        expected_memory_node = deterministic_identity(
+            EntityKind.MEMORY_RECORD, f"{citation.provider}:{citation.kind}:{citation.value}",
+        )
+        self.assertIn(expected_memory_node, neighbors)
+
+    @unittest.skipUnless(_NODE_AVAILABLE, "node not available in this environment")
+    def test_graph_citation_is_pinned_and_supersession_requires_a_fresh_read(self):
+        store_dir = mkdtemp()
+        store_path = str(Path(store_dir) / "memory.db")
+        project_key = "mp.v1.project.e2e2e2e2-5555-4555-8555-e2e2e2e2e2e2"
+        create = subprocess_run_scope_create(project_key, store_path=store_path)
+        self.assertEqual(create.returncode, 0, create.stderr)
+        added = subprocess_run_record_add(
+            project_key, store_path=store_path, subject="Pinned subject", content="rev1 content",
+        )
+        self.assertEqual(added.returncode, 0, added.stderr)
+        import json as _json
+
+        record_id = _json.loads(added.stdout)["recordId"]
+
+        read_before = read_performance_context(project_key, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(read_before.available)
+        record_before = next(r for r in read_before.records if r["record"]["recordId"] == record_id)
+        citation = citation_from_memory_record(record_before)
+        self.assertEqual(citation.value, f"{record_id}#rev1")
+
+        prompt_run = PromptRun(prompt_run_id="pinned-pr-1", prompt_version_id="v1")
+        graph = build_graph(prompt_run, memory_references=(citation,))
+        pinned_node = deterministic_identity(
+            EntityKind.MEMORY_RECORD, f"{citation.provider}:{citation.kind}:{citation.value}",
+        )
+        self.assertIn(pinned_node, graph.nodes)
+
+        revised = subprocess_run_record_revise(
+            record_id, store_path=store_path, content="rev2 content", reason="correction",
+        )
+        self.assertEqual(revised.returncode, 0, revised.stderr)
+
+        # The already-built graph and the citation it was built from still
+        # name rev1 — no silent rewrite of what a historical citation points at.
+        self.assertEqual(citation.value, f"{record_id}#rev1")
+        self.assertIn(pinned_node, graph.nodes)
+
+        # Staleness is discoverable only by re-querying: a fresh read +
+        # fresh citation names rev2.
+        read_after = read_performance_context(project_key, memory_repo_path=_MEMORY_REPO_PATH, store_path=store_path)
+        self.assertTrue(read_after.available)
+        record_after = next(r for r in read_after.records if r["record"]["recordId"] == record_id)
+        fresh_citation = citation_from_memory_record(record_after)
+        self.assertEqual(fresh_citation.value, f"{record_id}#rev2")
 
 
 if __name__ == "__main__":

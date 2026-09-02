@@ -77,6 +77,14 @@ Lesson text also carries a structural privacy backstop (Task 17, Execution
 caller-authored text is caught even though the lesson was never supposed
 to carry payload text in the first place.
 
+`Memory/docs/CROSS_ENGINE_LINEAGE.md` (Task 19) walks one identity through
+the full loop — evidence, lesson, candidate, promoted/contradicted record,
+later retrieval, later Performance analysis — proven end to end in
+`tests/test_memory_bridge.py`'s `CrossEngineLineageTests`. Bridge-boundary
+recovery/restart/backup/evidence-expiry behavior (Task 21) is qualified in
+`tests/test_memory_bridge_recovery.py`; see `Memory/docs/PERFORMANCE.md`'s
+"Recovery, restart, and backup semantics across the boundary" section.
+
 ## Memory ownership migration (Execution 04, Tasks 10-12)
 
 `memory.py`/`memory_retrieval.py`/`evaluation_memory_qualification.py`
@@ -112,4 +120,13 @@ contract-version mismatch, and policy denial all return a typed, honest
 silently fabricating success. A degraded result is never treated as a
 promotion — only Memory's own accepted candidate is durable knowledge.
 
-Run the verification suite with `python -m unittest discover -s tests -v`.
+Run the verification suite with `python -m pytest tests/ -v`. Use pytest,
+not `python -m unittest discover` — several test files (including
+`test_evaluation_memory_qualification.py`, the Memory-integration
+qualification tests) use plain `assert`-based pytest-style functions rather
+than `unittest.TestCase` classes, and `unittest discover` silently collects
+**zero** tests from those files (no error, no warning) rather than failing
+loudly. `python -m pytest tests/` is the project's actual configured test
+runner (see `pyproject.toml`) and is the only command that exercises the
+full suite (245 tests + 10 subtests, confirmed by direct comparison against
+`unittest discover`'s undercount of 185).

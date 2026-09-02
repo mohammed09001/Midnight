@@ -4,7 +4,7 @@ Canonical owner of durable Midnight knowledge: validated MemoryRecords with
 provenance, scope, epistemic class, confidence, temporal validity, privacy
 class, contradiction groups, and supersession chains.
 
-- **Boundary:** docs/BOUNDARY.md (frozen, contract v1.26.0)
+- **Boundary:** docs/BOUNDARY.md (frozen, contract v1.27.0)
 - **Identities:** docs/IDENTITIES.md
 - **Canonical schema:** docs/SCHEMA.md
 - **Authority:** docs/AUTHORITY.md · **Temporal:** docs/TEMPORAL.md · **Contracts:** docs/CONTRACTS.md
@@ -15,6 +15,7 @@ class, contradiction groups, and supersession chains.
 - **Performance:** docs/PERFORMANCE.md · **Study:** docs/STUDY.md · **Analysis:** docs/ANALYSIS.md · **Search History:** docs/SEARCH_HISTORY.md · **Context:** docs/CONTEXT.md · **User Notes:** docs/USER_NOTES.md · **Evidence References:** docs/EVIDENCE_REFERENCES.md
 - **Excerpts:** docs/EXCERPTS.md · **Privacy:** docs/PRIVACY.md · **Trust:** docs/TRUST.md · **Backup:** docs/BACKUP.md · **Health:** docs/HEALTH.md · **Tools:** docs/TOOLS.md · **Permissions:** docs/PERMISSIONS.md
 - **Corpora:** docs/CORPORA.md · **Evaluation:** docs/EVALUATION.md · **Lineage Qualification:** docs/LINEAGE_QUALIFICATION.md · **Recovery Qualification:** docs/RECOVERY_QUALIFICATION.md · **V1 Gate:** docs/PRODUCT_TRUTH_GATE.md
+- **Cross-Engine Lineage:** docs/CROSS_ENGINE_LINEAGE.md · **Compatibility Gate:** docs/COMPATIBILITY_GATE.md · **Troubleshooting:** docs/TROUBLESHOOTING.md
 
 Backend/terminal-first, agent-neutral, game-independent. Zero runtime
 dependencies (Node.js ≥ 22.13 built-in `node:sqlite`).
@@ -23,7 +24,7 @@ dependencies (Node.js ≥ 22.13 built-in `node:sqlite`).
 
 ```powershell
 npm run typecheck                                   # tsc --noEmit (strict)
-npm test                                            # node --test (264 tests)
+npm test                                            # node --test (297 tests)
 npm run cli -- doctor --store data/memory-engine.db # store health
 npm run cli -- record search --scope library101 --q "rate limit"          # BM25 lexical
 npm run cli -- record current --scope library101 --subject "Rate limit"   # current view

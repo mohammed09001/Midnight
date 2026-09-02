@@ -148,6 +148,12 @@ from .memory_bridge import (
     read_memory_context_or_none,
     read_performance_context,
 )
+from .compatibility_gate import (
+    CompatibilityCheck,
+    CompatibilityClause,
+    CompatibilityGateReport,
+    run_compatibility_gate,
+)
 from .threat_model import Threat, ThreatControl, bound_untrusted_text, threat_model
 from .privacy import ContentCategory, PrivacyGuard, PrivacyPolicy, PrivacyViolation, RetentionClass, redact_sensitive_text
 
@@ -291,9 +297,10 @@ __all__ = [
     "repository_claim_contradictions", "seal", "verify", "Threat", "ThreatControl", "bound_untrusted_text", "threat_model",
     "UntrustedContext", "UntrustedContextSource",
     "identity_from_project_key", "project_key_for_identity",
-    "MEMORY_CONTRACT_VERSION", "MemoryContractError", "MemoryUnavailableError",
+    "MEMORY_CONTRACT_VERSION", "MemoryContractError", "MemoryUnavailableError", "MalformedMemoryRecordError",
     "build_context_envelope", "build_propose_envelope", "call_memory_cli", "call_memory_cli_with_retry",
     "lesson_from_sealed_envelope", "lesson_from_qualified_claim",
     "LessonDeliveryResult", "propose_lesson_or_degrade", "read_memory_context_or_none",
     "MemoryReadResult", "read_performance_context", "citation_from_memory_record",
+    "CompatibilityCheck", "CompatibilityClause", "CompatibilityGateReport", "run_compatibility_gate",
 ]
