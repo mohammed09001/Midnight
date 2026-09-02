@@ -156,6 +156,8 @@ from .compatibility_gate import (
 )
 from .threat_model import Threat, ThreatControl, bound_untrusted_text, threat_model
 from .privacy import ContentCategory, PrivacyGuard, PrivacyPolicy, PrivacyViolation, RetentionClass, redact_sensitive_text
+from .desktop_bridge import DESKTOP_BRIDGE_VERSION, prompt_run_activity
+from .prompt_capture import record_prompt_run
 
 __all__ = [
     "ClaimKind",
@@ -298,6 +300,7 @@ __all__ = [
     "UntrustedContext", "UntrustedContextSource",
     "identity_from_project_key", "project_key_for_identity",
     "MEMORY_CONTRACT_VERSION", "MemoryContractError", "MemoryUnavailableError", "MalformedMemoryRecordError",
+    "DESKTOP_BRIDGE_VERSION", "prompt_run_activity", "record_prompt_run",
     "build_context_envelope", "build_propose_envelope", "call_memory_cli", "call_memory_cli_with_retry",
     "lesson_from_sealed_envelope", "lesson_from_qualified_claim",
     "LessonDeliveryResult", "propose_lesson_or_degrade", "read_memory_context_or_none",

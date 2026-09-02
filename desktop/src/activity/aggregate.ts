@@ -92,3 +92,25 @@ export function defaultActivityRange(todayKey: string): { rangeStart: string; ra
     rangeEnd: todayKey,
   };
 }
+
+/**
+ * Activity Map range for real evidence: the visible end is always the current
+ * local calendar day (`todayKey`, injected for deterministic tests), while
+ * historical Prompt Run evidence decides how far back the map reaches — the
+ * default 52-week window is extended left, week-aligned, when real events are
+ * older. Evidence beyond the bounded loaded page is a coverage fact reported
+ * by the source, not something the range may silently fabricate.
+ */
+export function activityRangeForEvents(
+  events: readonly ActivityEvent[],
+  todayKey: string,
+  timeZone: string = machineTimeZone(),
+): { rangeStart: string; rangeEnd: string } {
+  const range = defaultActivityRange(todayKey);
+  let rangeStart = range.rangeStart;
+  for (const event of events) {
+    const key = localDayKey(event.occurredAt, timeZone);
+    if (compareDayKeys(key, rangeStart) < 0) rangeStart = startOfWeek(key);
+  }
+  return { rangeStart, rangeEnd: range.rangeEnd };
+}

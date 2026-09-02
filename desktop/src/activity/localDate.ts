@@ -34,3 +34,11 @@ export function machineTimeZone(): string {
 export function localDayKey(isoInstant: string, timeZone: string = machineTimeZone()): string {
   return dayFormatter(timeZone).format(new Date(isoInstant));
 }
+
+/**
+ * The current calendar day in the viewer's timezone — the only truthful end
+ * of the real Activity Map range. Real runtime state, never a fixture anchor.
+ */
+export function todayKey(now: Date = new Date()): string {
+  return dayFormatter(machineTimeZone()).format(now);
+}

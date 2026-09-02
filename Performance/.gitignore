@@ -1,3 +1,6 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+# Local project evidence ledgers are private, machine-local data.
+data/
+

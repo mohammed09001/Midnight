@@ -50,6 +50,39 @@
   gap: var(--space-4);
 }
 
+.panel__heading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+/* Subtle data-source truth marker: real Performance vs explicit fixture mode. */
+.panel__source {
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.panel__source[data-kind="performance"] {
+  color: var(--accent);
+  border-color: var(--border-strong);
+}
+
+.panel__source[data-kind="fixture"] {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+
+.panel__source-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
 .panel__title {
   margin: 0;
   font-size: 13px;
@@ -76,9 +109,10 @@
   font-size: 11px;
 }
 
-.panel__loading {
+/* Calm, honest loading / empty / unavailable states — never fake activity. */
+.panel__status {
   margin: var(--space-8) 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 /* Day / Week / Month control */
