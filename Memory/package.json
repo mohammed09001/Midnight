@@ -1,0 +1,19 @@
+{
+  "name": "@library/memory-engine",
+  "version": "0.1.0",
+  "description": "Library Memory Engine - canonical owner of durable Library knowledge. Backend/terminal-first, agent-neutral, game-independent.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types \"test/*.test.ts\"",
+    "cli": "node --experimental-strip-types src/cli/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.9.2"
+  }
+}
