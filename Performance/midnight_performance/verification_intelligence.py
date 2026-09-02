@@ -10,6 +10,11 @@ class CoverageKind(str, Enum): POSITIVE="positive"; NEGATIVE="negative"; BOUNDAR
 class OracleSource(str, Enum): TEST="test"; EXAMPLE="example"; METAMORPHIC="metamorphic"; RUNTIME="runtime"; HUMAN="human"; UNKNOWN="unknown"
 class OracleStrength(str, Enum): STRONG="strong"; PARTIAL="partial"; HUMAN_REQUIRED="human_required"; UNKNOWN="unknown"
 @dataclass(frozen=True, slots=True)
+class RequirementVerificationLink:
+    requirement_id:str|None; clause_id:str|None; verification_id:str; source:OracleSource; specificity:float; executed:bool; coverage:CoverageKind; uncertainty:str
+    def __post_init__(self):
+        if not 0 <= self.specificity <= 1: raise ValueError("specificity must be between zero and one")
+@dataclass(frozen=True, slots=True)
 class BehaviorVerificationEvidence:
     id: str; clause_id: str|None; source: OracleSource; executed: bool; inputs: tuple[str,...]; observed_outputs: tuple[str,...]; expected_relation: str|None; passed: bool|None; provenance: tuple[str,...]; uncertainty: str
 @dataclass(frozen=True, slots=True)
@@ -36,6 +41,11 @@ def coverage_for(clause_ids: tuple[str,...], evidence: tuple[BehaviorVerificatio
     for clause in changed_clause_ids:
         if clause not in clause_ids: result.append(VerificationCoverage(clause,CoverageKind.UNKNOWN,(),False,"changed behavior surface has no behavior-contract clause"))
     return tuple(result)
+def link_verification(requirement_id:str|None, clause_id:str|None, evidence:BehaviorVerificationEvidence, *, specificity:float=1.0, coverage:CoverageKind|None=None)->RequirementVerificationLink:
+    """Keep unassigned verification visible by allowing both link targets to be None."""
+    if coverage is None:
+        coverage=CoverageKind.UNKNOWN if not evidence.executed else (CoverageKind.NEGATIVE if evidence.passed is False else CoverageKind.POSITIVE if evidence.passed is True else CoverageKind.UNKNOWN)
+    return RequirementVerificationLink(requirement_id,clause_id,evidence.id,evidence.source,specificity,evidence.executed,coverage,"reported-only verification does not establish execution" if not evidence.executed else "coverage is scoped to this explicit link")
 def detect_divergence(evidence: tuple[BehaviorVerificationEvidence,...]) -> tuple[BehavioralDivergence,...]:
     return tuple(BehavioralDivergence(item.clause_id or "unknown",(item.id,),"observed output violates explicit expected relation") for item in evidence if item.executed and item.passed is False and item.expected_relation)
 def assess_oracle(clause_id: str, evidence: tuple[BehaviorVerificationEvidence,...], *, interaction_mode: InteractionMode=InteractionMode.PASSIVE, information_gain: float=0) -> OracleAssessment:

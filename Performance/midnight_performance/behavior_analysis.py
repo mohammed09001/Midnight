@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 from .contracts import ClaimKind
 from .intent_contract import IntentContract, IntentKind
-from .traceability import TraceLink, TraceState
+from .traceability import RequirementUnit, TraceLink, TraceState, canonical_requirement_id
 
-BEHAVIOR_ANALYSIS_VERSION="1"
+BEHAVIOR_ANALYSIS_VERSION="2"
 class OracleKind(str, Enum): TEST="test"; CONTRACT="contract"; RUNTIME="runtime"; HUMAN="human"; UNKNOWN="unknown"
 class BehaviorStatus(str, Enum): SATISFIED="satisfied"; PARTIALLY_SATISFIED="partially_satisfied"; NOT_SATISFIED="not_satisfied"; CONTRADICTED="contradicted"; INSUFFICIENT_EVIDENCE="insufficient_evidence"
 @dataclass(frozen=True, slots=True)
@@ -17,7 +17,7 @@ class SpecificationHypothesis:
         if not 0<=self.confidence<=1: raise ValueError("hypothesis confidence must be between zero and one")
 @dataclass(frozen=True, slots=True)
 class BehaviorClause:
-    id: str; project_id: str; text: str; claim_kind: ClaimKind; intent_element_id: str|None; evidence: tuple[str,...]; examples: tuple[str,...]; counterexamples: tuple[str,...]; oracle: OracleKind; version: str=BEHAVIOR_ANALYSIS_VERSION
+    id: str; project_id: str; text: str; claim_kind: ClaimKind; requirement_id: str|None; intent_element_id: str|None; evidence: tuple[str,...]; examples: tuple[str,...]; counterexamples: tuple[str,...]; oracle: OracleKind; version: str=BEHAVIOR_ANALYSIS_VERSION
     def __post_init__(self):
         if not self.project_id.strip() or not self.id.strip() or not self.text.strip(): raise ValueError("behavior clause requires project identity and text")
 @dataclass(frozen=True, slots=True)
@@ -44,19 +44,28 @@ def infer_specification(project_id: str, contract: IntentContract, *, repository
 def refine_hypothesis(previous: SpecificationHypothesis, *, repository_evidence: tuple[str,...]=(), contradictions: tuple[str,...]=(), analysis_version: str) -> SpecificationHypothesis:
     evidence=previous.source_evidence+tuple(item for item in repository_evidence if item not in previous.source_evidence)
     return SpecificationHypothesis(f"{previous.id}:v:{analysis_version}",previous.project_id,previous.statement,previous.scope,evidence,previous.contradictions+contradictions,previous.unknowns, max(0, previous.confidence-.2) if contradictions else previous.confidence,previous.claim_kind,analysis_version,previous.id)
-def behavior_contract(project_id: str, hypotheses: tuple[SpecificationHypothesis,...]) -> BehaviorContract:
+def behavior_contract(project_id: str, hypotheses: tuple[SpecificationHypothesis,...], *, requirement_units: tuple[RequirementUnit, ...]=(), intent_contract_version: str|None=None) -> BehaviorContract:
+    """Create clauses with canonical requirement ids when source scope is known.
+
+    A clause without a supplied RequirementUnit remains explicitly unlinked;
+    it never guesses identity from a display id or source provenance.
+    """
+    if requirement_units and not intent_contract_version:
+        raise ValueError("intent contract version is required with requirement units")
     clauses=[]
     for hypothesis in hypotheses:
         intent_id=hypothesis.scope[0] if hypothesis.scope else None
+        requirement_id = (canonical_requirement_id(requirement_units, contract_version=intent_contract_version, intent_element_id=intent_id)
+                          if requirement_units and intent_id else None)
         oracle=OracleKind.TEST if any("test" in item.lower() for item in hypothesis.source_evidence) else OracleKind.UNKNOWN
-        clauses.append(BehaviorClause(f"behavior:{hypothesis.id}",project_id,hypothesis.statement,hypothesis.claim_kind,intent_id,hypothesis.source_evidence,(),(),oracle,hypothesis.analysis_version))
+        clauses.append(BehaviorClause(f"behavior:{hypothesis.id}",project_id,hypothesis.statement,hypothesis.claim_kind,requirement_id,intent_id,hypothesis.source_evidence,(),(),oracle,hypothesis.analysis_version))
     return BehaviorContract(project_id,BEHAVIOR_ANALYSIS_VERSION,tuple(clauses))
 def align_behavior(contract: BehaviorContract, links: tuple[TraceLink,...], *, executed_oracles: tuple[str,...]=(), contradictory_evidence: tuple[str,...]=(), analysis_version: str=BEHAVIOR_ANALYSIS_VERSION) -> tuple[BehaviorAlignment,...]:
     supported={link.requirement_id for link in links if link.state is TraceState.SUPPORTED}; candidates={link.requirement_id for link in links if link.state is TraceState.CANDIDATE}
     result=[]
     for clause in contract.clauses:
-        requirement_id=clause.id.removeprefix("behavior:spec:").split(":",2)[1] if clause.id.startswith("behavior:spec:") else None
-        evidence=tuple(link.code_element_id for link in links if link.state is TraceState.SUPPORTED)
+        requirement_id=clause.requirement_id
+        evidence=tuple(link.code_element_id for link in links if link.requirement_id == requirement_id and link.state is TraceState.SUPPORTED)
         if contradictory_evidence: status=BehaviorStatus.CONTRADICTED; confidence=.8; reason="concrete contradictory evidence supplied"
         elif requirement_id in supported and executed_oracles: status=BehaviorStatus.SATISFIED; confidence=.7; reason="structural support plus executed oracle evidence"
         elif requirement_id in supported or candidates: status=BehaviorStatus.PARTIALLY_SATISFIED; confidence=.4; reason="implementation trace exists but runtime/oracle evidence is incomplete"

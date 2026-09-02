@@ -1,6 +1,7 @@
 from midnight_performance import (
     ClaimKind, CodeElementKind, TraceState, build_requirement_units, extract_intent_contract,
     link_from_candidate, reprocess_links, resolve_code_elements, retrieve_candidates, unrequested_code_links,
+    requirement_identity_map,
 )
 
 def _fixture():
@@ -17,6 +18,9 @@ def test_requirement_units_are_stable_and_many_to_many_candidates_are_rebuildabl
     assert elements[0].kind is CodeElementKind.FUNCTION
     assert candidates == retrieve_candidates(units, contract, elements)
     assert candidates and candidates[0].code_element_id == elements[0].id
+    mapping = requirement_identity_map(units, contract_version=contract.version)
+    assert mapping.requirement_id_for_intent(units[0].intent_element_id) == units[0].id
+    assert not mapping.is_canonical_requirement_id(units[0].intent_element_id)
 
 def test_structural_retrieval_is_symbol_aware_and_privacy_or_language_fallback_is_explicit():
     _, _, elements, _ = _fixture()
@@ -35,6 +39,7 @@ def test_link_lifecycle_needs_support_and_preserves_history_for_move_or_deletion
     assert supported.state is TraceState.SUPPORTED
     moved = reprocess_links((supported,), live_code_element_ids=frozenset({"code:new"}), analysis_version="2", moved_elements={supported.code_element_id: "code:new"})
     assert moved[0].code_element_id == "code:new" and moved[0].previous_version_id == "link-1"
+    assert moved[0].requirement_id == supported.requirement_id
     stale = reprocess_links((supported,), live_code_element_ids=frozenset(), analysis_version="2")
     assert stale[0].state is TraceState.STALE
     unrequested = unrequested_code_links(elements, (supported,))

@@ -12,17 +12,38 @@ import re
 from .contracts import ClaimKind
 from .intent_contract import IntentContract, IntentKind, SourceSpan
 
-TRACEABILITY_VERSION = "1"
+TRACEABILITY_VERSION = "2"
 PARSER_VERSION = "python-ast-1"
 
 class CodeElementKind(str, Enum): MODULE="module"; CLASS="class"; FUNCTION="function"; METHOD="method"; UNKNOWN="unknown"
 class TraceState(str, Enum): CANDIDATE="candidate"; SUPPORTED="supported"; CONTRADICTED="contradicted"; STALE="stale"; SUPERSEDED="superseded"; INSUFFICIENT_EVIDENCE="insufficient_evidence"
+@dataclass(frozen=True, slots=True)
+class TraceSupportEvidence:
+    project_id:str; run_id:str; change_id:str; symbol_id:str; source:str; method:str
+    def __post_init__(self):
+        if not all((self.project_id.strip(),self.run_id.strip(),self.change_id.strip(),self.symbol_id.strip(),self.source.strip(),self.method.strip())): raise ValueError("trace support requires scoped identities")
 
 @dataclass(frozen=True, slots=True)
 class RequirementUnit:
     id: str; prompt_run_id: str; intent_element_id: str; intent_kind: IntentKind
     span: SourceSpan; parent_id: str | None; sibling_ids: tuple[str, ...]
     dependencies: tuple[str, ...]; analysis_version: str; source_reference: str
+
+@dataclass(frozen=True, slots=True)
+class RequirementIdentityMap:
+    """Versioned source-provenance to canonical-requirement mapping.
+
+    Intent element ids identify text in an IntentContract only.  Every
+    downstream relationship must use the RequirementUnit id returned here.
+    """
+    prompt_run_id: str; contract_version: str; mappings: tuple[tuple[str, str], ...]
+    version: str = TRACEABILITY_VERSION
+
+    def requirement_id_for_intent(self, intent_element_id: str) -> str | None:
+        return dict(self.mappings).get(intent_element_id)
+
+    def is_canonical_requirement_id(self, requirement_id: str | None) -> bool:
+        return requirement_id is not None and requirement_id in dict(self.mappings).values()
 
 @dataclass(frozen=True, slots=True)
 class CodeElement:
@@ -65,6 +86,26 @@ def build_requirement_units(prompt_run_id: str, contract: IntentContract, *, ana
         units.append(RequirementUnit(ids[item.id], prompt_run_id, item.id, item.kind, item.span, ids.get(item.parent_id), siblings, tuple(ids[item_id] for item_id in item.dependencies), analysis_version, source_reference))
     return tuple(units)
 
+def requirement_identity_map(units: tuple[RequirementUnit, ...], *, contract_version: str) -> RequirementIdentityMap:
+    """Expose the sole explicit provenance-to-canonical identity join."""
+    if not units:
+        raise ValueError("requirement units are required to construct an identity map")
+    prompt_run_ids = {unit.prompt_run_id for unit in units}
+    if len(prompt_run_ids) != 1:
+        raise ValueError("requirement identity map cannot cross prompt runs")
+    intent_ids = [unit.intent_element_id for unit in units]
+    requirement_ids = [unit.id for unit in units]
+    if len(set(intent_ids)) != len(intent_ids) or len(set(requirement_ids)) != len(requirement_ids):
+        raise ValueError("requirement units must have unique source and canonical identities")
+    return RequirementIdentityMap(units[0].prompt_run_id, contract_version, tuple((unit.intent_element_id, unit.id) for unit in units))
+
+def canonical_requirement_id(units: tuple[RequirementUnit, ...], *, contract_version: str, intent_element_id: str) -> str:
+    """Map source provenance to a canonical RequirementUnit id or fail closed."""
+    requirement_id = requirement_identity_map(units, contract_version=contract_version).requirement_id_for_intent(intent_element_id)
+    if requirement_id is None:
+        raise ValueError("intent element is not represented by the supplied requirement units")
+    return requirement_id
+
 def resolve_code_elements(path: str, source: str | None, *, source_permitted: bool = True) -> tuple[CodeElement, ...]:
     """Use stdlib AST only for Python source; all other cases are explicit gaps."""
     if not source_permitted or source is None:
@@ -100,11 +141,15 @@ def retrieve_candidates(units: tuple[RequirementUnit, ...], contract: IntentCont
                 result.append(TraceCandidate(requirement.id, element.id, score, tuple(sorted(f"identifier:{word}" for word in overlap)), "identifier-structure-retrieval", TRACEABILITY_VERSION, ClaimKind.INFERRED, "candidate only; identifier overlap is not trace truth"))
     return tuple(sorted(result, key=lambda item: (-item.score, item.code_element_id, item.requirement_id))[:limit])
 
-def link_from_candidate(candidate: TraceCandidate, *, support_evidence: tuple[str, ...] = (), contradictory_evidence: tuple[str, ...] = (), analysis_version: str = TRACEABILITY_VERSION, previous_version_id: str | None = None) -> TraceLink:
+def link_from_candidate(candidate: TraceCandidate, *, support_evidence: tuple[str, ...] = (), typed_support: TraceSupportEvidence|None = None, contradictory_evidence: tuple[str, ...] = (), analysis_version: str = TRACEABILITY_VERSION, previous_version_id: str | None = None) -> TraceLink:
     if contradictory_evidence:
         return TraceLink(candidate.requirement_id, candidate.code_element_id, TraceState.CONTRADICTED, analysis_version, contradictory_evidence, candidate.score, "trace-lifecycle", TRACEABILITY_VERSION, ClaimKind.DERIVED, "concrete evidence contradicts candidate", previous_version_id)
+    if typed_support:
+        if typed_support.symbol_id != candidate.code_element_id: raise ValueError("typed support symbol must match trace candidate")
+        evidence=support_evidence+(f"support:{typed_support.project_id}:{typed_support.run_id}:{typed_support.change_id}:{typed_support.source}:{typed_support.method}",)
+        return TraceLink(candidate.requirement_id, candidate.code_element_id, TraceState.SUPPORTED, analysis_version, evidence, candidate.score, "trace-lifecycle", TRACEABILITY_VERSION, ClaimKind.DERIVED, "typed scoped implementation support; behavior remains separately qualified", previous_version_id)
     if support_evidence:
-        return TraceLink(candidate.requirement_id, candidate.code_element_id, TraceState.SUPPORTED, analysis_version, support_evidence, candidate.score, "trace-lifecycle", TRACEABILITY_VERSION, ClaimKind.DERIVED, "support evidence is linked but does not prove full behavioural satisfaction", previous_version_id)
+        return TraceLink(candidate.requirement_id, candidate.code_element_id, TraceState.SUPPORTED, analysis_version, support_evidence, candidate.score, "trace-lifecycle", TRACEABILITY_VERSION, ClaimKind.DERIVED, "legacy untyped support accepted for compatibility; callers should provide typed support", previous_version_id)
     return TraceLink(candidate.requirement_id, candidate.code_element_id, TraceState.CANDIDATE, analysis_version, candidate.evidence, candidate.score, "trace-lifecycle", TRACEABILITY_VERSION, ClaimKind.INFERRED, candidate.uncertainty, previous_version_id)
 
 def reprocess_links(links: tuple[TraceLink, ...], *, live_code_element_ids: frozenset[str], analysis_version: str, moved_elements: dict[str, str] | None = None) -> tuple[TraceLink, ...]:

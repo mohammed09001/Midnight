@@ -44,18 +44,22 @@ from .feedback import Judgment, FeedbackReason, FeedbackRecord, should_request_f
 from .learning import QuestionCandidate, select_question, MultiSignalLabel
 from .prompt_analysis import RequirementType, ExtractedRequirement, PromptFeatures, PromptMetrics, analyze_prompt
 from .intent_contract import INTENT_CONTRACT_VERSION, IntentContract, IntentElement, IntentKind, SourceSpan, extract_intent_contract
-from .traceability import TRACEABILITY_VERSION, PARSER_VERSION, CodeElement, CodeElementKind, RequirementUnit, TraceCandidate, TraceLink, TraceState, build_requirement_units, resolve_code_elements, retrieve_candidates, link_from_candidate, reprocess_links, unrequested_code_links
+from .traceability import TRACEABILITY_VERSION, PARSER_VERSION, CodeElement, CodeElementKind, RequirementUnit, RequirementIdentityMap, TraceCandidate, TraceLink, TraceState, TraceSupportEvidence, build_requirement_units, canonical_requirement_id, requirement_identity_map, resolve_code_elements, retrieve_candidates, link_from_candidate, reprocess_links, unrequested_code_links
+from .parser_adapter import PARSER_ADAPTER_VERSION, MAX_SOURCE_BYTES, NO_PARSER, PYTHON_PARSER, ParseResult, ParserCapability, ParserDescriptor, parse_source
+from .link_integrity import LINK_INTEGRITY_VERSION, IntegrityMode, IntegritySeverity, LinkIntegrityFinding, LinkIntegrityReport, validate_link_integrity
 from .structural_diff import STRUCTURAL_DIFF_VERSION, BlastRadius, ChangedSurface, StructuralDiff, StructuralEdit, StructuralEditKind, StructuralElement, SurfaceKind, blast_radius, changed_surfaces, structural_diff
 from .semantic_change import SEMANTIC_CHANGE_VERSION, SemanticChangeEvent, SemanticLabel, classify_semantic_change
 from .behavior_analysis import BEHAVIOR_ANALYSIS_VERSION, BehaviorAlignment, BehaviorClause, BehaviorContract, BehaviorStatus, OracleKind, SpecificationHypothesis, align_behavior, behavior_contract, infer_specification, refine_hypothesis
-from .verification_intelligence import VERIFICATION_INTELLIGENCE_VERSION, BehaviorVerificationEvidence, BehavioralDivergence, CoverageKind, OracleAssessment, OracleSource, OracleStrength, VerificationCoverage, assess_oracle, coverage_for, detect_divergence
+from .verification_intelligence import VERIFICATION_INTELLIGENCE_VERSION, BehaviorVerificationEvidence, BehavioralDivergence, CoverageKind, OracleAssessment, OracleSource, OracleStrength, RequirementVerificationLink, VerificationCoverage, assess_oracle, coverage_for, detect_divergence, link_verification
 from .trajectory import TRAJECTORY_VERSION, ActionCategory, EventKind, JourneyFinding, JourneyPhase, Trajectory, TrajectoryEvent, build_trajectory, categorize, detect_antipatterns, segment as segment_trajectory
 from .journey_intelligence import JOURNEY_INTELLIGENCE_VERSION, FrictionMetrics, Intervention, InterventionKind, JourneyQuality, assess_journey, friction, interventions
 from .decision_intelligence import DECISION_INTELLIGENCE_VERSION, DecisionEpisode, DecisionQuality, DecisionState, SurfaceLineage, assess_decision, decision_episode, surface_lineage
 from .historical_intelligence import HISTORICAL_INTELLIGENCE_VERSION, LessonCandidate, RecurringSurface, ReworkKind, ReworkLink, lesson_candidate, recurring_surface, rework_link
 from .personal_learning import PERSONAL_LEARNING_VERSION, ExperienceRecord, MatchedExperience, NextTimeSuggestion, PerformanceProfile, match_history, profile, suggest_next_time
-from .decision_story import DECISION_STORY_VERSION, DecisionStory, RequirementEvidence, StoryFinding, StorySection, build_story
+from .decision_story import DECISION_STORY_VERSION, DecisionStory, RequirementEvidence, StoryFinding, StorySection, assemble_deep_story, build_story
+from .requirement_matrix import MATRIX_VERSION, MatrixEntry, RequirementEvidenceMatrix, build_requirement_matrix
 from .improvement_qualification import IMPROVEMENT_QUALIFICATION_VERSION, ImprovementFixture, ProductTruthCheck, ProductTruthReport, QualificationResult, final_product_truth, improvement_corpus, qualify_fixture
+from .deep_analysis import DEEP_ANALYSIS_VERSION, DeepAnalysisRequest, DeepAnalysisResult, analyze_deep
 from .ambiguity_analysis import AMBIGUITY_ANALYSIS_VERSION, AmbiguityFinding, AmbiguityKind, AmbiguityReport, MinimumInformationNeed, ResolutionStatus, analyze_ambiguity
 from .improvement_gate import IMPROVEMENT_GATE_VERSION, CapabilityEvidence, CapabilityState, ImprovementArchitectureGate, ImprovementCapabilityGap, DEFAULT_IMPROVEMENT_INVARIANTS, establish_improvement_gate
 from .prompt_lineage import PromptRevision, PromptLineageLink, build_lineage, link_revisions
@@ -126,6 +130,7 @@ from .observation_model import EvidenceSourceKind, ObservationEnvelope, Observat
 from .provenance import repository_claim_contradictions, seal, verify
 from .memory_bridge import (
     MEMORY_CONTRACT_VERSION,
+    MalformedMemoryRecordError,
     MemoryContractError,
     MemoryUnavailableError,
     build_context_envelope,
@@ -184,18 +189,22 @@ __all__ = [
     "QuestionCandidate", "select_question", "MultiSignalLabel",
     "RequirementType", "ExtractedRequirement", "PromptFeatures", "PromptMetrics", "analyze_prompt",
     "INTENT_CONTRACT_VERSION", "IntentContract", "IntentElement", "IntentKind", "SourceSpan", "extract_intent_contract",
-    "TRACEABILITY_VERSION", "PARSER_VERSION", "CodeElement", "CodeElementKind", "RequirementUnit", "TraceCandidate", "TraceLink", "TraceState", "build_requirement_units", "resolve_code_elements", "retrieve_candidates", "link_from_candidate", "reprocess_links", "unrequested_code_links",
+    "TRACEABILITY_VERSION", "PARSER_VERSION", "CodeElement", "CodeElementKind", "RequirementUnit", "RequirementIdentityMap", "TraceCandidate", "TraceLink", "TraceState", "TraceSupportEvidence", "build_requirement_units", "canonical_requirement_id", "requirement_identity_map", "resolve_code_elements", "retrieve_candidates", "link_from_candidate", "reprocess_links", "unrequested_code_links",
+    "PARSER_ADAPTER_VERSION", "MAX_SOURCE_BYTES", "NO_PARSER", "PYTHON_PARSER", "ParseResult", "ParserCapability", "ParserDescriptor", "parse_source",
+    "LINK_INTEGRITY_VERSION", "IntegrityMode", "IntegritySeverity", "LinkIntegrityFinding", "LinkIntegrityReport", "validate_link_integrity",
     "STRUCTURAL_DIFF_VERSION", "BlastRadius", "ChangedSurface", "StructuralDiff", "StructuralEdit", "StructuralEditKind", "StructuralElement", "SurfaceKind", "blast_radius", "changed_surfaces", "structural_diff",
     "SEMANTIC_CHANGE_VERSION", "SemanticChangeEvent", "SemanticLabel", "classify_semantic_change",
     "BEHAVIOR_ANALYSIS_VERSION", "BehaviorAlignment", "BehaviorClause", "BehaviorContract", "BehaviorStatus", "OracleKind", "SpecificationHypothesis", "align_behavior", "behavior_contract", "infer_specification", "refine_hypothesis",
-    "VERIFICATION_INTELLIGENCE_VERSION", "BehaviorVerificationEvidence", "BehavioralDivergence", "CoverageKind", "OracleAssessment", "OracleSource", "OracleStrength", "VerificationCoverage", "assess_oracle", "coverage_for", "detect_divergence",
+    "VERIFICATION_INTELLIGENCE_VERSION", "BehaviorVerificationEvidence", "BehavioralDivergence", "CoverageKind", "OracleAssessment", "OracleSource", "OracleStrength", "RequirementVerificationLink", "VerificationCoverage", "assess_oracle", "coverage_for", "detect_divergence", "link_verification",
     "TRAJECTORY_VERSION", "ActionCategory", "EventKind", "JourneyFinding", "JourneyPhase", "Trajectory", "TrajectoryEvent", "build_trajectory", "categorize", "detect_antipatterns", "segment_trajectory",
     "JOURNEY_INTELLIGENCE_VERSION", "FrictionMetrics", "Intervention", "InterventionKind", "JourneyQuality", "assess_journey", "friction", "interventions",
     "DECISION_INTELLIGENCE_VERSION", "DecisionEpisode", "DecisionQuality", "DecisionState", "SurfaceLineage", "assess_decision", "decision_episode", "surface_lineage",
     "HISTORICAL_INTELLIGENCE_VERSION", "LessonCandidate", "RecurringSurface", "ReworkKind", "ReworkLink", "lesson_candidate", "recurring_surface", "rework_link",
     "PERSONAL_LEARNING_VERSION", "ExperienceRecord", "MatchedExperience", "NextTimeSuggestion", "PerformanceProfile", "match_history", "profile", "suggest_next_time",
-    "DECISION_STORY_VERSION", "DecisionStory", "RequirementEvidence", "StoryFinding", "StorySection", "build_story",
+    "DECISION_STORY_VERSION", "DecisionStory", "RequirementEvidence", "StoryFinding", "StorySection", "assemble_deep_story", "build_story",
+    "MATRIX_VERSION", "MatrixEntry", "RequirementEvidenceMatrix", "build_requirement_matrix",
     "IMPROVEMENT_QUALIFICATION_VERSION", "ImprovementFixture", "ProductTruthCheck", "ProductTruthReport", "QualificationResult", "final_product_truth", "improvement_corpus", "qualify_fixture",
+    "DEEP_ANALYSIS_VERSION", "DeepAnalysisRequest", "DeepAnalysisResult", "analyze_deep",
     "AMBIGUITY_ANALYSIS_VERSION", "AmbiguityFinding", "AmbiguityKind", "AmbiguityReport", "MinimumInformationNeed", "ResolutionStatus", "analyze_ambiguity",
     "IMPROVEMENT_GATE_VERSION", "CapabilityEvidence", "CapabilityState", "ImprovementArchitectureGate", "ImprovementCapabilityGap", "DEFAULT_IMPROVEMENT_INVARIANTS", "establish_improvement_gate",
     "PromptRevision", "PromptLineageLink", "build_lineage", "link_revisions",

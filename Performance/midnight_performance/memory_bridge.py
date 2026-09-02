@@ -111,6 +111,13 @@ class MemoryContractError(Exception):
         self.message = message
 
 
+class MalformedMemoryRecordError(ValueError):
+    """A record dict handed to citation_from_memory_record is missing a
+    required field (recordId/revision). Raised instead of letting a bare
+    KeyError escape, so callers building citations from Memory responses get
+    a typed failure distinguishable from a programming bug."""
+
+
 def build_propose_envelope(project_key: str, lessons: list[dict], *, caller: dict | None = None) -> dict:
     """Build a `memory.performance.propose` request envelope. `lessons` are
     plain dicts matching Memory's PerformanceLesson shape
@@ -491,6 +498,9 @@ def citation_from_memory_record(record: dict) -> ExternalReference:
     carry `recordId`/`revision`.
     """
     memory_record = record["record"] if "record" in record else record
-    return ExternalReference(
-        provider="memory", kind="record", value=f"{memory_record['recordId']}#rev{memory_record['revision']}"
-    )
+    try:
+        return ExternalReference(
+            provider="memory", kind="record", value=f"{memory_record['recordId']}#rev{memory_record['revision']}"
+        )
+    except KeyError as exc:
+        raise MalformedMemoryRecordError(f"record dict missing required field {exc}") from exc

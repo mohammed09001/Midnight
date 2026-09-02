@@ -1,10 +1,11 @@
-from midnight_performance import ProductTruthCheck, final_product_truth, improvement_corpus, qualify_fixture
-def test_local_improvement_corpus_covers_adversarial_and_deep_analysis_cases():
-    corpus=improvement_corpus()
-    assert len(corpus)>=5 and sum(x.adversarial for x in corpus)>=3
-    result=qualify_fixture(corpus[1],("structural","not_path_proof"))
-    assert result.passed
-    assert not qualify_fixture(corpus[0],("nested",)).passed
-def test_final_gate_requires_explicit_evidence_and_keeps_failures_visible():
-    gate=final_product_truth((ProductTruthCheck("no-agent-hosting",True,("interaction_policy",),"static contract"),ProductTruthCheck("privacy",False,("missing-check",),"not exercised")))
-    assert not gate.passed
+from midnight_performance import DeepAnalysisRequest, analyze_deep, final_product_truth, improvement_corpus, qualify_fixture
+def test_executable_corpus_runs_real_pipeline_and_gate_rejects_adversarial_break():
+    results=tuple(qualify_fixture(x) for x in improvement_corpus())
+    assert all(x.passed for x in results)
+    assert final_product_truth(results[:-1]).passed
+    assert not final_product_truth(results).passed
+def test_deep_pipeline_truthfully_retains_missing_evidence_and_replays():
+    request=DeepAnalysisRequest("p","r","Build cache.",after="def cache(): pass",privacy_redacted=True)
+    first=analyze_deep(request); second=analyze_deep(request)
+    assert first == second and {"verification unavailable","trajectory unavailable"} <= set(first.gaps)
+    assert first.integrity.qualifies and first.story is not None

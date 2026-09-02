@@ -155,6 +155,21 @@ function collectAllow(parsed: ParsedArgs): string[] {
   return allow;
 }
 
+/** Collect repeatable --arg record=<id> values for contradiction registration. */
+function collectRecordIds(parsed: ParsedArgs): string[] {
+  const recordIds: string[] = [];
+  for (const pair of parsed.argPairs) {
+    if (pair.startsWith("record=")) {
+      recordIds.push(pair.slice("record=".length));
+    }
+  }
+  const single = parsed.flags.get("record");
+  if (single !== undefined && single !== "true" && !recordIds.includes(single)) {
+    recordIds.push(single);
+  }
+  return recordIds;
+}
+
 function actorFromFlags(parsed: ParsedArgs): ActorInput {
   const kind = parsed.flags.get("actor-kind") ?? "agent";
   if (!ACTOR_KINDS.includes(kind as (typeof ACTOR_KINDS)[number])) {
@@ -586,6 +601,17 @@ export function main(argv: string[]): void {
       }
       case "contradiction": {
         const sub = parsed.args[0];
+        if (sub === "register") {
+          const req = requireArgs(
+            parsed,
+            ["scope", "subject"],
+            "contradiction register --scope <key> --subject <s> --arg record=<id> --arg record=<id2> [...]",
+          );
+          const recordIds = collectRecordIds(parsed);
+          engine.open();
+          const group = engine.registerContradiction(req.get("scope"), req.get("subject"), recordIds);
+          emit(group, 0);
+        }
         if (sub === "resolve") {
           const req = requireArgs(
             parsed,
@@ -1346,6 +1372,8 @@ function usageAndExit(): never {
       "  contract call --operation <op> [--request '<json>' | --arg k=v ...] [--version X.Y.Z]",
       "  candidate add --scope K --subject S --content T",
       "  candidate promote --id ID",
+      "  contradiction register --scope K --subject S --arg record=ID --arg record=ID2 [...]   group ≥2 records as a contradiction",
+      "  contradiction resolve --id GROUPID --action supersede|retract --winner ID --reason R",
       "",
       "global: --store <path>   store location (default: data/memory-engine.db,",
       "                        override via MIDNIGHT_MEMORY_STORE; legacy",
