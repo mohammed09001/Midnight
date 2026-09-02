@@ -1,0 +1,232 @@
+.activity-map {
+  container-type: inline-size;
+}
+
+/* Semantic zoom: day = many small cells, week = fewer mid cells, month = few large cells. */
+.activity-map--day {
+  --cell: clamp(9px, calc((100cqw - 40px - 51 * var(--map-gap)) / 52), 22px);
+}
+
+.activity-map__viewport {
+  position: relative;
+}
+
+.activity-map__stack {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.activity-map--week .activity-map__stack,
+.activity-map--month .activity-map__stack {
+  justify-content: stretch;
+}
+
+.activity-map--week .activity-map__mapcol,
+.activity-map--month .activity-map__mapcol {
+  flex: 1;
+}
+
+.activity-map__mapcol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.activity-map__weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cell));
+  gap: var(--map-gap);
+  width: 30px;
+}
+
+.activity-map__weekdays span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.activity-map__axis {
+  display: grid;
+  gap: var(--map-gap);
+  margin-bottom: var(--space-2);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-tertiary);
+}
+
+.activity-map__axis span {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.activity-map__grid {
+  display: grid;
+  gap: var(--map-gap);
+}
+
+.activity-map__grid--day {
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, var(--cell));
+  grid-auto-columns: var(--cell);
+}
+
+.activity-map__grid--week {
+  grid-template-rows: 46px;
+}
+
+.activity-map__grid--month {
+  grid-template-rows: 96px;
+}
+
+/* Cells */
+.activity-cell {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  background: var(--activity-0);
+  cursor: pointer;
+}
+
+.activity-cell[data-level="1"] { background: var(--activity-1); }
+.activity-cell[data-level="2"] { background: var(--activity-2); }
+.activity-cell[data-level="3"] { background: var(--activity-3); }
+.activity-cell[data-level="4"] { background: var(--activity-4); }
+
+.activity-cell:hover {
+  box-shadow: inset 0 0 0 1px rgba(232, 236, 243, 0.28);
+}
+
+.activity-cell[data-selected] {
+  box-shadow: inset 0 0 0 1px var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.activity-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.activity-map__grid--week .activity-cell,
+.activity-map__grid--month .activity-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 var(--space-2);
+  text-align: left;
+  overflow: hidden;
+}
+
+/* Label chip keeps interior month labels readable on every intensity fill (>= 4.5:1). */
+.activity-cell__meta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgba(11, 14, 20, 0.72);
+  max-width: 100%;
+}
+
+.activity-cell__title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.activity-cell__sub {
+  font-size: 10px;
+  color: #dfe4ee;
+  white-space: nowrap;
+}
+
+/* Tooltip: period + prompt count only; hidden from AT (cells carry labels). */
+.activity-tooltip {
+  position: absolute;
+  z-index: 10;
+  transform: translate(-50%, calc(-100% - 8px));
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.activity-tooltip__period {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.activity-tooltip__count {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* Legend */
+.activity-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.activity-legend__hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin: 0 var(--space-1);
+}
+
+.activity-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--activity-0);
+}
+
+.activity-legend__swatch[data-level="1"] { background: var(--activity-1); }
+.activity-legend__swatch[data-level="2"] { background: var(--activity-2); }
+.activity-legend__swatch[data-level="3"] { background: var(--activity-3); }
+.activity-legend__swatch[data-level="4"] { background: var(--activity-4); }
+
+/* Motion: short, purposeful, fully removed under reduced-motion preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .activity-cell {
+    transition: background-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .activity-tooltip {
+    animation: activity-tooltip-in 120ms ease;
+  }
+
+  @keyframes activity-tooltip-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(-100% - 5px));
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, calc(-100% - 8px));
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .activity-map--day {
+    --map-gap: 2px;
+    --cell: clamp(8px, calc((100cqw - 40px - 51 * var(--map-gap)) / 52), 22px);
+  }
+}
