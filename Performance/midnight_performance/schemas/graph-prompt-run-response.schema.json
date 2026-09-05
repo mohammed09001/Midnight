@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/graph-prompt-run-response.schema.json",
+  "title": "graph.getPromptRun result",
+  "type": "object",
+  "required": ["version", "project", "root", "nodes", "edges", "citations", "memoryLineage", "gaps", "truncated", "truncationReasons", "cursor", "nextCursor", "bounds", "projectionIdentity", "integrity"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "root": { "type": "string", "minLength": 1 },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "layer", "priority_tier", "label", "claim_kind", "provenance", "observed_at", "project_context", "externally_referenced", "gaps", "source_claim_kind", "source_layer"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "layer": { "type": "string", "minLength": 1 },
+          "priority_tier": { "type": "string", "enum": ["primary", "on_demand"] },
+          "label": { "type": "string", "minLength": 1 },
+          "claim_kind": { "type": "string", "minLength": 1 },
+          "provenance": { "type": "array", "items": { "type": "string" } },
+          "observed_at": { "type": ["string", "null"] },
+          "project_context": { "type": ["string", "null"] },
+          "externally_referenced": { "type": "boolean" },
+          "gaps": { "type": "array", "items": { "type": "string" } },
+          "source_claim_kind": { "type": ["string", "null"] },
+          "source_layer": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "kind", "claim_kind", "evidence", "confidence", "method", "method_version", "uncertainty", "semantic_role"],
+        "additionalProperties": false,
+        "properties": {
+          "source": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "claim_kind": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "method": { "type": "string", "minLength": 1 },
+          "method_version": { "type": "string", "minLength": 1 },
+          "uncertainty": { "type": "string", "minLength": 1 },
+          "semantic_role": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reference_id", "evidence_kind", "project", "observed_at", "source", "detail_available", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "reference_id": { "type": "string", "minLength": 1 },
+          "evidence_kind": { "type": "string", "minLength": 1 },
+          "project": { "type": "string", "minLength": 1 },
+          "observed_at": { "type": ["string", "null"] },
+          "source": { "type": ["string", "null"] },
+          "detail_available": { "type": "boolean" },
+          "summary": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "memoryLineage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "nodeId", "provider", "recordId", "pinnedRevision", "currentStatusKnown", "currentRevision",
+          "currentStatus", "superseded", "supersededByRecordId", "contradictionGroupId",
+          "contradictionStatus", "contradictionGroupSize", "newerRevisionAvailable", "refreshedAt", "gaps"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "nodeId": { "type": "string", "minLength": 1 },
+          "provider": { "type": "string", "minLength": 1 },
+          "recordId": { "type": "string", "minLength": 1 },
+          "pinnedRevision": { "type": "integer", "minimum": 1 },
+          "currentStatusKnown": { "type": "boolean" },
+          "currentRevision": { "type": ["integer", "null"], "minimum": 1 },
+          "currentStatus": { "type": ["string", "null"] },
+          "superseded": { "type": ["boolean", "null"] },
+          "supersededByRecordId": { "type": ["string", "null"] },
+          "contradictionGroupId": { "type": ["string", "null"] },
+          "contradictionStatus": { "type": ["string", "null"] },
+          "contradictionGroupSize": { "type": ["integer", "null"], "minimum": 1 },
+          "newerRevisionAvailable": { "type": ["boolean", "null"] },
+          "refreshedAt": { "type": ["string", "null"] },
+          "gaps": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "gaps": { "type": "array", "items": { "type": "string" } },
+    "truncated": { "type": "boolean" },
+    "truncationReasons": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["max_depth", "layer_filter", "max_nodes", "max_edges"] }
+    },
+    "cursor": { "type": ["string", "null"] },
+    "nextCursor": { "type": ["string", "null"] },
+    "bounds": {
+      "type": "object",
+      "required": ["maxDepth", "maxNodes", "maxEdges", "allowedLayers", "focusNode"],
+      "additionalProperties": false,
+      "properties": {
+        "maxDepth": { "type": ["integer", "null"], "minimum": 1 },
+        "maxNodes": { "type": "integer", "minimum": 1 },
+        "maxEdges": { "type": "integer", "minimum": 1 },
+        "allowedLayers": { "type": ["array", "null"], "items": { "type": "string" } },
+        "focusNode": { "type": ["string", "null"] }
+      }
+    },
+    "projectionIdentity": {
+      "type": "object",
+      "required": ["project", "root", "graphSchemaVersion", "graphAlgorithmMethod", "graphAlgorithmVersion", "evidenceCheckpoint"],
+      "additionalProperties": false,
+      "properties": {
+        "project": { "type": "string", "minLength": 1 },
+        "root": { "type": "string", "minLength": 1 },
+        "graphSchemaVersion": { "const": 1 },
+        "graphAlgorithmMethod": { "type": "string", "minLength": 1 },
+        "graphAlgorithmVersion": { "type": "string", "minLength": 1 },
+        "evidenceCheckpoint": { "type": "string", "minLength": 1 }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["qualifies", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "qualifies": { "type": "boolean" },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "severity", "subject_id", "reference_id", "evidence", "uncertainty"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "type": "string", "minLength": 1 },
+              "severity": { "type": "string", "enum": ["info", "warning", "error"] },
+              "subject_id": { "type": "string", "minLength": 1 },
+              "reference_id": { "type": ["string", "null"] },
+              "evidence": { "type": "array", "items": { "type": "string" } },
+              "uncertainty": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

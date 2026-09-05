@@ -1,71 +1,51 @@
 /// <reference types="vitest" />
-import { execFile } from "node:child_process";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig, type Connect, type Plugin } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { HOST_BIND_ADDRESS, HOST_ENDPOINT_PATH, HOST_PORT, PROXY_PATH } from "./host/hostConfig";
 
-// Midnight Desktop is a Vite-served local client. The repository's only
-// existing cross-process convention (Performance -> Memory) is a versioned
-// JSON document exchanged with a subprocess CLI, so the Desktop uses the
-// same pattern: its dev/preview server spawns the read-only Performance
-// bridge (`python -m midnight_performance.desktop_bridge`) and relays the
-// bounded JSON to the browser at a single local route. No second server, no
-// ledger access from browser code, and the bridge itself has no write path.
-const performancePackageDir = fileURLToPath(new URL("../Performance", import.meta.url));
-const performanceDataDir = path.join(performancePackageDir, "data");
-const pythonExecutable = process.env.MIDNIGHT_PYTHON || "python";
-const BRIDGE_TIMEOUT_MS = 10_000;
+// Execution 03: Vite is a pure dev/preview proxy, never the product
+// authority. The Midnight Desktop Host (`desktop/host/`) is a standalone
+// process that owns project-identity resolution, the Performance bridge
+// subprocess, and contract validation — Vite no longer spawns Python or
+// resolves any path itself.
+const hostTarget = `http://${HOST_BIND_ADDRESS}:${HOST_PORT}`;
 
-function bridgeHandler(res: Connect.ServerResponse): void {
-  res.setHeader("Cache-Control", "no-store");
-  execFile(
-    pythonExecutable,
-    [
-      "-m",
-      "midnight_performance.desktop_bridge",
-      "--data-dir",
-      performanceDataDir,
-      "--project",
-      "midnight",
-    ],
-    {
-      cwd: performancePackageDir,
-      timeout: BRIDGE_TIMEOUT_MS,
-      windowsHide: true,
-      maxBuffer: 8 * 1024 * 1024,
-    },
-    (error, stdout) => {
-      res.setHeader("Content-Type", "application/json");
-      if (error) {
-        // Python missing, ledger unreadable, or timeout: an honest 503, which
-        // the Desktop renders as a calm "Performance source unavailable".
-        res.statusCode = 503;
-        res.end(JSON.stringify({ version: 1, status: "unavailable", reason: String(error.message) }));
-        return;
-      }
-      res.end(stdout);
-    },
-  );
-}
-
-function performanceActivityBridge(): Plugin {
-  const middleware: Connect.NextHandleFunction = (_req, res) => bridgeHandler(res);
-  return {
-    name: "midnight-performance-activity-bridge",
-    configureServer(server) {
-      server.middlewares.use("/api/activity/prompt-runs", middleware);
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use("/api/activity/prompt-runs", middleware);
-    },
-  };
-}
+const proxyConfig = {
+  [PROXY_PATH]: {
+    target: hostTarget,
+    changeOrigin: false,
+    rewrite: () => HOST_ENDPOINT_PATH,
+  },
+};
 
 export default defineConfig({
-  plugins: [react(), performanceActivityBridge()],
+  plugins: [react()],
+  server: { proxy: proxyConfig },
+  preview: { proxy: proxyConfig },
   test: {
-    environment: "node",
-    include: ["tests/**/*.test.ts"],
+    // Execution 07: component tests (React Flow / RTL, needing a DOM) are
+    // split into their own project so the existing node-environment unit
+    // suite keeps its current speed and behavior unchanged — the two never
+    // share an environment, matching neither set of tests' actual needs.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          environment: "node",
+          include: ["tests/**/*.test.ts"],
+          exclude: ["tests/components/**", "tests/hooks/**"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "component",
+          environment: "jsdom",
+          include: ["tests/components/**/*.test.{ts,tsx}", "tests/hooks/**/*.test.{ts,tsx}"],
+          setupFiles: ["./tests/setupTests.ts"],
+        },
+      },
+    ],
   },
 });

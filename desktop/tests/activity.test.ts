@@ -8,9 +8,9 @@ import {
   startOfWeek,
 } from "../src/activity/calendar";
 import { localDayKey } from "../src/activity/localDate";
-import { aggregateActivity, countEventsByDay, defaultActivityRange } from "../src/activity/aggregate";
+import { aggregateActivity, countEventsByDay, defaultActivityRange, eventsInBucket } from "../src/activity/aggregate";
 import { computeIntensityScale } from "../src/activity/intensity";
-import { formatBucketPeriod, formatPrompts } from "../src/activity/format";
+import { formatBucketPeriod, formatPrompts, formatTimeOfDay } from "../src/activity/format";
 import { loadFixtureEvents } from "../src/activity/fixture";
 import type { ActivityEvent } from "../src/activity/types";
 
@@ -169,6 +169,42 @@ describe("aggregation consistency", () => {
 
   it("rejects inverted ranges", () => {
     expect(() => aggregateActivity([], "day", "2026-08-10", "2026-08-01", UTC)).toThrow();
+  });
+});
+
+describe("events in a bucket (Execution 07: activity → run-select)", () => {
+  it("includes only events within the bucket's inclusive day range, newest first", () => {
+    const events = [
+      event("early", "2026-08-19T09:00:00Z"),
+      event("morning", "2026-08-20T09:00:00Z"),
+      event("evening", "2026-08-20T17:30:00Z"),
+      event("late", "2026-08-21T09:00:00Z"),
+    ];
+    const bucket = { key: "2026-08-20", granularity: "day" as const, start: "2026-08-20", end: "2026-08-20", promptCount: 2 };
+    const inBucket = eventsInBucket(events, bucket, UTC);
+    expect(inBucket.map((e) => e.promptRunId)).toEqual(["evening", "morning"]);
+  });
+
+  it("sorts by absolute instant, not lexical ISO text, across differing UTC offsets", () => {
+    const events = [
+      event("earlier-absolute", "2026-08-20T20:00:00-05:00"), // 2026-08-21T01:00:00Z
+      event("later-absolute", "2026-08-20T23:00:00+05:00"), // 2026-08-20T18:00:00Z
+    ];
+    const bucket = { key: "2026-08-20", granularity: "day" as const, start: "2026-08-20", end: "2026-08-21", promptCount: 2 };
+    const inBucket = eventsInBucket(events, bucket, UTC);
+    expect(inBucket.map((e) => e.promptRunId)).toEqual(["earlier-absolute", "later-absolute"]);
+  });
+
+  it("returns an empty list for a bucket with no events", () => {
+    const bucket = { key: "2026-08-20", granularity: "day" as const, start: "2026-08-20", end: "2026-08-20", promptCount: 0 };
+    expect(eventsInBucket([], bucket, UTC)).toEqual([]);
+  });
+});
+
+describe("time-of-day formatting", () => {
+  it("renders a short local wall-clock time", () => {
+    expect(formatTimeOfDay("2026-08-20T09:05:00Z", UTC)).toBe("9:05 AM");
+    expect(formatTimeOfDay("2026-08-20T17:30:00Z", UTC)).toBe("5:30 PM");
   });
 });
 

@@ -26,13 +26,14 @@ from .ai_provider import AI_ANALYSIS_API_VERSION, AnalysisCapability, AnalysisMo
 from .ai_accounting import AIAccountingSummary, AIAnalysisAttempt, AccountedAnalysis, execute_accounted_analysis, summarize_ai_attempts
 from .orchestration import ORCHESTRATION_CAPABILITY_VERSION, CapabilityDescriptor, OrchestrationAuthorization, PerformanceCapability, PerformanceCapabilityPlane
 from .harness import Capability, ObservationAdapter
-from .codex_adapter import CODEX_ADAPTER, CodexObservation, normalize_codex_event
+from .codex_adapter import CODEX_ADAPTER, CodexObservation, normalize_codex_event, codex_prompt_run_identity
 from .claude_adapter import CLAUDE_ADAPTER, ClaudeObservation, normalize_claude_hook
 from .opencode_adapter import OPENCODE_ADAPTER, OpenCodeObservation, OpenCodeObserver
 from .windows import ExecutionWindow, window_from_lifecycle
 from .repository_capture import RepositorySnapshot, ChangeEvidence, compare
 from .verification import VerificationEvidence, VerificationSource
 from .drift import AdapterHealth, CapabilityManifest, HealthReport, probe
+from .provider_capability_matrix import CURRENT_PROVIDER_MANIFESTS, ProviderCapabilityEntry, build_capability_matrix
 from .prompt_run import PromptRun
 from .change_intelligence import ResolvedChange, ChangeKind, ChangeClassification, resolve_change, classify
 from .change_metrics import ChangeMetrics, measure
@@ -70,11 +71,22 @@ from .semantic_similarity import EmbeddingProvider, EmbeddingVector, embed_text,
 from .repo_change_similarity import repository_change_similarity
 from .outcome_similarity import cross_domain_outcome_similarity
 from .relationship_graph import (
-    EdgeKind, GraphEdge, PerformanceGraph,
+    EdgeKind, EdgeSemanticRole, GraphEdge, PerformanceGraph, ResolvedRepositoryEntity,
     add_contradiction_edges, add_remediation_edge, add_similarity_edge, add_supersession_edges,
     build_graph, compose_graph, graph_reference_overlap, memory_neighbors, traverse,
 )
 from .relationship_graph import merge as merge_graphs
+from .structural_resolver_contract import (
+    STRUCTURAL_RESOLVER_CONTRACT_VERSION, IdentityStrategy, ResolverCapability, ResolverDescriptor,
+)
+from .repository_entity_resolution import (
+    BINARY_RESOLVER, CONFIG_RESOLVER, JAVASCRIPT_RESOLVER, PYTHON_RESOLVER, TYPESCRIPT_RESOLVER, UNKNOWN_TEXT_RESOLVER,
+    CodeRegionRecord, FileChangeRecord, FileChangeStatus, ResolvedFile, SymbolRecord,
+    classify_language, resolve_file_change, resolve_repository_entities,
+)
+from .evidence_citation import EvidenceCitation, feedback_citation, outcome_citation, verification_citation
+from .graph_integrity import GraphIntegrityFinding, GraphIntegrityReport, validate_graph_integrity
+from .graph_bridge import GRAPH_BRIDGE_VERSION, InvalidGraphCursorError, PromptRunNotFoundError, prompt_run_graph
 from .similarity import Experience, SimilarityMatch, SimilaritySignal, match, retrieve
 from .hybrid_retrieval import HybridQuery, HybridResult, RetrievalContribution, RetrievalEntry, RetrievalPath, retrieve_hybrid
 from .ml import BaselineEvidence, FeatureAvailability, FeatureInput, FeaturePipeline, FeatureSource, FeatureSpec, MLReadinessPolicy, MLReadinessReport, PartitionSplit, ReadinessCheck, ReadinessStatus, SplitExample, assess_ml_readiness, split_by_time_and_project
@@ -143,11 +155,19 @@ from .memory_bridge import (
     identity_from_project_key,
     lesson_from_qualified_claim,
     lesson_from_sealed_envelope,
+    parse_pinned_reference,
     project_key_for_identity,
     propose_lesson_or_degrade,
     read_memory_context_or_none,
     read_performance_context,
 )
+from .memory_temporal_lineage import (
+    MEMORY_LINEAGE_VERSION,
+    MemoryCitationState,
+    pinned_state,
+    refresh_state,
+)
+from .memory_lineage_bridge import MEMORY_LINEAGE_BRIDGE_VERSION, refresh_memory_citation
 from .compatibility_gate import (
     CompatibilityCheck,
     CompatibilityClause,
@@ -156,8 +176,22 @@ from .compatibility_gate import (
 )
 from .threat_model import Threat, ThreatControl, bound_untrusted_text, threat_model
 from .privacy import ContentCategory, PrivacyGuard, PrivacyPolicy, PrivacyViolation, RetentionClass, redact_sensitive_text
-from .desktop_bridge import DESKTOP_BRIDGE_VERSION, prompt_run_activity
-from .prompt_capture import record_prompt_run
+from .desktop_bridge import DESKTOP_BRIDGE_VERSION, InvalidCursorError, prompt_run_activity
+from .prompt_capture import record_prompt_run, is_occurrence_only
+from .projection_store import (
+    PROJECTION_SCHEMA_VERSION,
+    ProjectionCheckpoint,
+    ProjectionRow,
+    ProjectionStatus,
+    build as build_projection,
+    update as update_projection,
+    verify as verify_projection,
+    discard as discard_projection,
+    rebuild as rebuild_projection,
+    query_activity_page,
+    projection_path,
+)
+from .ledger_doctor import DoctorFinding, DoctorReport, run_doctor
 
 __all__ = [
     "ClaimKind",
@@ -183,10 +217,12 @@ __all__ = [
     "CODEX_ADAPTER",
     "CodexObservation",
     "normalize_codex_event",
+    "codex_prompt_run_identity",
     "CLAUDE_ADAPTER", "ClaudeObservation", "normalize_claude_hook",
     "OPENCODE_ADAPTER", "OpenCodeObservation", "OpenCodeObserver",
     "ExecutionWindow", "window_from_lifecycle", "RepositorySnapshot", "ChangeEvidence", "compare", "VerificationEvidence", "VerificationSource",
     "AdapterHealth", "CapabilityManifest", "HealthReport", "probe", "PromptRun",
+    "CURRENT_PROVIDER_MANIFESTS", "ProviderCapabilityEntry", "build_capability_matrix",
     "ResolvedChange", "ChangeKind", "ChangeClassification", "resolve_change", "classify",
     "ChangeMetrics", "measure",
     "MappingStatus", "Requirement", "EvidenceLink", "IntentMapping",
@@ -222,9 +258,16 @@ __all__ = [
     "EmbeddingProvider", "EmbeddingVector", "embed_text", "embedding_similarity",
     "repository_change_similarity",
     "cross_domain_outcome_similarity",
-    "EdgeKind", "GraphEdge", "PerformanceGraph",
+    "EdgeKind", "EdgeSemanticRole", "GraphEdge", "PerformanceGraph", "ResolvedRepositoryEntity",
     "add_contradiction_edges", "add_remediation_edge", "add_similarity_edge", "add_supersession_edges",
     "build_graph", "compose_graph", "graph_reference_overlap", "memory_neighbors", "traverse", "merge_graphs",
+    "EvidenceCitation", "feedback_citation", "outcome_citation", "verification_citation",
+    "GraphIntegrityFinding", "GraphIntegrityReport", "validate_graph_integrity",
+    "GRAPH_BRIDGE_VERSION", "InvalidGraphCursorError", "PromptRunNotFoundError", "prompt_run_graph",
+    "STRUCTURAL_RESOLVER_CONTRACT_VERSION", "IdentityStrategy", "ResolverCapability", "ResolverDescriptor",
+    "BINARY_RESOLVER", "CONFIG_RESOLVER", "JAVASCRIPT_RESOLVER", "PYTHON_RESOLVER", "TYPESCRIPT_RESOLVER", "UNKNOWN_TEXT_RESOLVER",
+    "CodeRegionRecord", "FileChangeRecord", "FileChangeStatus", "ResolvedFile", "SymbolRecord",
+    "classify_language", "resolve_file_change", "resolve_repository_entities",
     "Experience", "SimilarityMatch", "SimilaritySignal", "match", "retrieve",
     "HybridQuery", "HybridResult", "RetrievalContribution", "RetrievalEntry", "RetrievalPath", "retrieve_hybrid",
     "BaselineEvidence", "FeatureAvailability", "FeatureInput", "FeaturePipeline", "FeatureSource", "FeatureSpec", "MLReadinessPolicy", "MLReadinessReport", "PartitionSplit", "ReadinessCheck", "ReadinessStatus", "SplitExample", "assess_ml_readiness", "split_by_time_and_project",
@@ -300,10 +343,16 @@ __all__ = [
     "UntrustedContext", "UntrustedContextSource",
     "identity_from_project_key", "project_key_for_identity",
     "MEMORY_CONTRACT_VERSION", "MemoryContractError", "MemoryUnavailableError", "MalformedMemoryRecordError",
-    "DESKTOP_BRIDGE_VERSION", "prompt_run_activity", "record_prompt_run",
+    "DESKTOP_BRIDGE_VERSION", "InvalidCursorError", "prompt_run_activity", "record_prompt_run", "is_occurrence_only",
+    "PROJECTION_SCHEMA_VERSION", "ProjectionCheckpoint", "ProjectionRow", "ProjectionStatus",
+    "build_projection", "update_projection", "verify_projection", "discard_projection", "rebuild_projection",
+    "query_activity_page", "projection_path",
+    "DoctorFinding", "DoctorReport", "run_doctor",
     "build_context_envelope", "build_propose_envelope", "call_memory_cli", "call_memory_cli_with_retry",
     "lesson_from_sealed_envelope", "lesson_from_qualified_claim",
     "LessonDeliveryResult", "propose_lesson_or_degrade", "read_memory_context_or_none",
-    "MemoryReadResult", "read_performance_context", "citation_from_memory_record",
+    "MemoryReadResult", "read_performance_context", "citation_from_memory_record", "parse_pinned_reference",
+    "MEMORY_LINEAGE_VERSION", "MemoryCitationState", "pinned_state", "refresh_state",
+    "MEMORY_LINEAGE_BRIDGE_VERSION", "refresh_memory_citation",
     "CompatibilityCheck", "CompatibilityClause", "CompatibilityGateReport", "run_compatibility_gate",
 ]

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/error-response.schema.json",
+  "title": "Midnight Desktop Host typed error",
+  "type": "object",
+  "required": ["code", "message"],
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "enum": [
+        "UNSUPPORTED_CONTRACT_VERSION",
+        "UNKNOWN_OPERATION",
+        "INVALID_REQUEST",
+        "INVALID_CURSOR",
+        "INVALID_PROJECT_DESCRIPTOR",
+        "BRIDGE_UNAVAILABLE",
+        "BRIDGE_TIMEOUT",
+        "BRIDGE_MALFORMED_OUTPUT",
+        "METHOD_NOT_ALLOWED",
+        "PAYLOAD_TOO_LARGE"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

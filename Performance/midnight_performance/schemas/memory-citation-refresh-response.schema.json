@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/memory-citation-refresh-response.schema.json",
+  "title": "graph.refreshMemoryCitation result",
+  "type": "object",
+  "required": ["version", "project", "reference", "state"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "reference": {
+      "type": "object",
+      "required": ["provider", "kind", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "provider", "recordId", "pinnedRevision", "currentStatusKnown", "currentRevision",
+        "currentStatus", "superseded", "supersededByRecordId", "contradictionGroupId",
+        "contradictionStatus", "contradictionGroupSize", "newerRevisionAvailable", "refreshedAt", "gaps"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "recordId": { "type": "string", "minLength": 1 },
+        "pinnedRevision": { "type": "integer", "minimum": 1 },
+        "currentStatusKnown": { "type": "boolean" },
+        "currentRevision": { "type": ["integer", "null"], "minimum": 1 },
+        "currentStatus": { "type": ["string", "null"] },
+        "superseded": { "type": ["boolean", "null"] },
+        "supersededByRecordId": { "type": ["string", "null"] },
+        "contradictionGroupId": { "type": ["string", "null"] },
+        "contradictionStatus": { "type": ["string", "null"] },
+        "contradictionGroupSize": { "type": ["integer", "null"], "minimum": 1 },
+        "newerRevisionAvailable": { "type": ["boolean", "null"] },
+        "refreshedAt": { "type": ["string", "null"] },
+        "gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

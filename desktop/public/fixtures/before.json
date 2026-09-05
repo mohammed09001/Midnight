@@ -1,0 +1,82 @@
+{
+  "bounds": {
+    "allowedLayers": null,
+    "focusNode": null,
+    "maxDepth": null,
+    "maxEdges": 400,
+    "maxNodes": 200
+  },
+  "citations": [],
+  "cursor": null,
+  "edges": [
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "cs-fixture-1"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "produced_change",
+      "source": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "target": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    }
+  ],
+  "gaps": [
+    "unavailable:prompt_version",
+    "unavailable:sibling_outcomes"
+  ],
+  "integrity": {
+    "findings": [],
+    "qualifies": true
+  },
+  "memoryLineage": [],
+  "nextCursor": null,
+  "nodes": [
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "kind": "change_set",
+      "label": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "layer": "repository/change",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "kind": "prompt_run",
+      "label": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "layer": "prompt",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": "observed",
+      "source_layer": "normalized"
+    }
+  ],
+  "project": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+  "projectionIdentity": {
+    "evidenceCheckpoint": "45e6679c8e58e3a8",
+    "graphAlgorithmMethod": "relationship-graph",
+    "graphAlgorithmVersion": "1",
+    "graphSchemaVersion": 1,
+    "project": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+    "root": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573"
+  },
+  "root": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+  "truncated": false,
+  "truncationReasons": [],
+  "version": 1
+}

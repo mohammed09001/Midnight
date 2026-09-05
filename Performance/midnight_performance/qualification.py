@@ -191,12 +191,21 @@ def _normalize(provider: str, event: FrozenEvent, observer: OpenCodeObserver) ->
 
 
 def _paths(payload: Mapping[str, Any]) -> tuple[str, ...]:
+    # Execution 04: a current Codex `item/completed` (fileChange) payload
+    # nests its own fields under `payload["item"]` rather than at the top
+    # level (the normalizer preserves `item` verbatim, unguessed) — check
+    # both locations so file-claim reconciliation still works for it.
+    sources: list[Mapping[str, Any]] = [payload]
+    nested_item = payload.get("item")
+    if isinstance(nested_item, Mapping):
+        sources.append(nested_item)
     values: list[str] = []
-    for key in ("path", "file_path", "file", "files"):
-        value = payload.get(key)
-        if isinstance(value, str): values.append(value)
-        elif isinstance(value, (list, tuple)):
-            values.extend(item for item in value if isinstance(item, str))
+    for source in sources:
+        for key in ("path", "file_path", "file", "files"):
+            value = source.get(key)
+            if isinstance(value, str): values.append(value)
+            elif isinstance(value, (list, tuple)):
+                values.extend(item for item in value if isinstance(item, str))
     return tuple(sorted(set(values)))
 
 
@@ -205,8 +214,14 @@ def _window_for(provider: str, payload: Mapping[str, Any], prompt_run_id: str) -
     state = payload.get("state")
     if not isinstance(state, str):
         event = payload.get("type") if provider != "claude-code" else payload.get("hook_event_name")
+        # Execution 04: only the current, confirmed Codex App Server
+        # notification names (slash-separated) are mapped by name. There is
+        # no confirmed current "turn/failed"/"turn/interrupted" notification
+        # — a failed/interrupted turn must be inferred from an explicit
+        # `state` field on the payload instead (checked above), never
+        # guessed from a stale event name.
         state = {
-            "turn.started": "started", "turn.completed": "completed", "turn.failed": "failed", "turn.interrupted": "interrupted",
+            "turn/started": "started", "turn/completed": "completed",
             "SessionStart": "started", "SessionEnd": "completed", "Stop": "completed", "StopFailure": "failed",
         }.get(event) if isinstance(event, str) else None
     if state is None:

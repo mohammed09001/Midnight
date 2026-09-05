@@ -504,3 +504,18 @@ def citation_from_memory_record(record: dict) -> ExternalReference:
         )
     except KeyError as exc:
         raise MalformedMemoryRecordError(f"record dict missing required field {exc}") from exc
+
+
+_PINNED_REFERENCE_RE = re.compile(r"^(?P<record_id>.+)#rev(?P<revision>\d+)$")
+
+
+def parse_pinned_reference(value: str) -> tuple[str, int]:
+    """Execution 09 (Memory Temporal Lineage Overlay): the exact inverse of
+    `citation_from_memory_record`'s `<recordId>#rev<revision>` format. Never
+    guesses a shape Memory didn't actually produce — a value that doesn't
+    match this exact pattern raises `MalformedMemoryRecordError` rather than
+    silently returning a partial/garbage split."""
+    match = _PINNED_REFERENCE_RE.match(value)
+    if not match:
+        raise MalformedMemoryRecordError(f"'{value}' is not a pinned '<recordId>#rev<revision>' citation reference")
+    return match.group("record_id"), int(match.group("revision"))

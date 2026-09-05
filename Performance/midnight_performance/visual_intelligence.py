@@ -28,7 +28,9 @@ PROMPT_LINEAGE_VISUAL_PROJECTION_VERSION = "2"
 def _layer(kind: EntityKind) -> str:
     if kind in (EntityKind.PROMPT_RUN, EntityKind.PROMPT, EntityKind.PROMPT_VERSION): return "prompt"
     if kind in (EntityKind.AGENT_RUN, EntityKind.AGENT_SESSION, EntityKind.AGENT_TURN, EntityKind.TOOL_OBSERVATION, EntityKind.COMMAND_OBSERVATION, EntityKind.EPISODE): return "execution"
-    if kind in (EntityKind.REPOSITORY, EntityKind.REPOSITORY_SNAPSHOT, EntityKind.CHANGE_SET, EntityKind.FILE_CHANGE, EntityKind.CODE_REGION, EntityKind.SYMBOL): return "repository/change"
+    if kind in (EntityKind.REPOSITORY, EntityKind.REPOSITORY_SNAPSHOT, EntityKind.CHANGE_SET): return "repository/change"
+    if kind is EntityKind.FILE_CHANGE: return "file"
+    if kind in (EntityKind.CODE_REGION, EntityKind.SYMBOL): return "symbol"
     if kind is EntityKind.VERIFICATION_RUN: return "verification"
     if kind is EntityKind.FEEDBACK_RECORD: return "feedback"
     if kind is EntityKind.OUTCOME_OBSERVATION: return "outcome"
@@ -37,15 +39,45 @@ def _layer(kind: EntityKind) -> str:
     return "analysis"
 
 
+# Execution 10, Section E: a display-policy-only priority tier, orthogonal
+# to `layer` (a causal-domain grouping) and to `claim_kind`/`gaps` (epistemic
+# facts). This NEVER removes a node from the graph document — every node
+# Performance actually knows about is still returned, with every edge intact
+# (Section E: "Do not delete evidence") — it only tells a renderer which
+# nodes are on-screen by default vs. revealed on demand. Kinds not
+# explicitly named below default to "on_demand" (the conservative choice:
+# less visual clutter by default, never more).
+_PRIMARY_TIER_KINDS = frozenset({
+    EntityKind.PROMPT_RUN, EntityKind.PROMPT, EntityKind.PROMPT_VERSION,
+    EntityKind.AGENT_RUN, EntityKind.CHANGE_SET, EntityKind.FILE_CHANGE,
+    EntityKind.VERIFICATION_RUN, EntityKind.EPISODE, EntityKind.OUTCOME_OBSERVATION,
+})
+
+
+def _priority_tier(kind: EntityKind) -> str:
+    return "primary" if kind in _PRIMARY_TIER_KINDS else "on_demand"
+
+
 @dataclass(frozen=True, slots=True)
 class VisualNode:
-    identity: Identity; entity_kind: EntityKind; layer: str; label: str
+    identity: Identity; entity_kind: EntityKind; layer: str; priority_tier: str; label: str
     claim_kind: ClaimKind; provenance: tuple[str, ...] = (); observed_at: datetime | None = None
     project_context: str | None = None; externally_referenced: bool = False; gaps: tuple[str, ...] = ()
+    # Execution 06, Section D: `claim_kind` above is the PROJECTION's own
+    # claim strength (always derived-or-weaker — see VisualNodeMetadata's
+    # OBSERVED ban below). The underlying SOURCE evidence's claim kind is a
+    # separate concept and must not share that field: a real Prompt Run
+    # occurrence's source claim IS `OBSERVED`, even though the node
+    # representing it in this projection is not. Both default to None
+    # ("unknown source qualification stays unknown") and are populated only
+    # where real evidence supports it.
+    source_claim_kind: ClaimKind | None = None
+    source_layer: str | None = None  # an ObservationLayer value (e.g. "normalized"), or None when unknown
 
     def __post_init__(self) -> None:
         if self.identity.kind is not self.entity_kind: raise ValueError("visual node identity and kind must agree")
         if not self.layer or not self.label: raise ValueError("visual nodes require layer and safe fallback label")
+        if self.priority_tier not in ("primary", "on_demand"): raise ValueError("priority_tier must be 'primary' or 'on_demand'")
         if self.observed_at is not None and self.observed_at.tzinfo is None: raise ValueError("node timestamps must be timezone-aware")
 
 
@@ -55,6 +87,7 @@ class VisualNodeMetadata:
     label: str | None = None; claim_kind: ClaimKind = ClaimKind.DERIVED
     provenance: tuple[str, ...] = (); observed_at: datetime | None = None
     project_context: str | None = None; externally_referenced: bool = False; gaps: tuple[str, ...] = ()
+    source_claim_kind: ClaimKind | None = None; source_layer: str | None = None
 
     def __post_init__(self) -> None:
         if self.claim_kind is ClaimKind.OBSERVED:
@@ -67,6 +100,12 @@ class VisualNodeMetadata:
 class VisualEdge:
     source: Identity; target: Identity; relationship_kind: str; claim_kind: ClaimKind
     evidence: tuple[str, ...]; confidence: float | None; method: str; method_version: str; uncertainty: str
+    # Execution 06, Section C: the semantic role (why this edge exists),
+    # separate from `relationship_kind` (the restated epistemic EdgeKind —
+    # "reference"/"evidence_lineage"/etc). None only for edge kinds this
+    # execution doesn't assign a role to (similarity/contradiction/
+    # supersession/remediation) — never guessed from `target`'s entity kind.
+    semantic_role: str | None = None
 
     def __post_init__(self) -> None:
         if self.source == self.target: raise ValueError("visual edges cannot be self edges")
@@ -83,11 +122,11 @@ class PerformanceVisualMap:
 
 
 def _node_record(node: VisualNode) -> Mapping[str, object]:
-    return {"id": node.identity.canonical, "kind": node.entity_kind.value, "layer": node.layer, "label": node.label, "claim_kind": node.claim_kind.value, "provenance": node.provenance, "observed_at": node.observed_at.isoformat() if node.observed_at else None, "project_context": node.project_context, "externally_referenced": node.externally_referenced, "gaps": node.gaps}
+    return {"id": node.identity.canonical, "kind": node.entity_kind.value, "layer": node.layer, "priority_tier": node.priority_tier, "label": node.label, "claim_kind": node.claim_kind.value, "provenance": node.provenance, "observed_at": node.observed_at.isoformat() if node.observed_at else None, "project_context": node.project_context, "externally_referenced": node.externally_referenced, "gaps": node.gaps, "source_claim_kind": node.source_claim_kind.value if node.source_claim_kind else None, "source_layer": node.source_layer}
 
 
 def _edge_record(edge: VisualEdge) -> Mapping[str, object]:
-    return {"source": edge.source.canonical, "target": edge.target.canonical, "kind": edge.relationship_kind, "claim_kind": edge.claim_kind.value, "evidence": edge.evidence, "confidence": edge.confidence, "method": edge.method, "method_version": edge.method_version, "uncertainty": edge.uncertainty}
+    return {"source": edge.source.canonical, "target": edge.target.canonical, "kind": edge.relationship_kind, "claim_kind": edge.claim_kind.value, "evidence": edge.evidence, "confidence": edge.confidence, "method": edge.method, "method_version": edge.method_version, "uncertainty": edge.uncertainty, "semantic_role": edge.semantic_role}
 
 
 def build_performance_visual_map(graph: PerformanceGraph, *, project_context: str | None = None, node_labels: Mapping[Identity, str] | None = None, external_nodes: frozenset[Identity] = frozenset(), node_metadata: Mapping[Identity, VisualNodeMetadata] | None = None) -> PerformanceVisualMap:
@@ -96,8 +135,8 @@ def build_performance_visual_map(graph: PerformanceGraph, *, project_context: st
     graph_nodes = graph.nodes
     if not set(node_labels) <= graph_nodes or not external_nodes <= graph_nodes or not set(node_metadata) <= graph_nodes:
         raise ValueError("visual-map metadata may only describe graph nodes")
-    nodes = tuple(VisualNode(node, node.kind, _layer(node.kind), node_labels.get(node, metadata.label or node.canonical), metadata.claim_kind, metadata.provenance, metadata.observed_at, metadata.project_context or project_context, metadata.externally_referenced or node in external_nodes, metadata.gaps) for node in sorted(graph_nodes, key=lambda item: item.canonical) for metadata in (node_metadata.get(node, VisualNodeMetadata()),))
-    edges = tuple(VisualEdge(edge.source, edge.target, edge.kind.value, edge.claim_kind, edge.evidence, edge.confidence, edge.method, edge.method_version, edge.uncertainty) for edge in sorted(dict.fromkeys(graph.edges), key=lambda edge: (edge.source.canonical, edge.target.canonical, edge.kind.value, edge.evidence)))
+    nodes = tuple(VisualNode(node, node.kind, _layer(node.kind), _priority_tier(node.kind), node_labels.get(node, metadata.label or node.canonical), metadata.claim_kind, metadata.provenance, metadata.observed_at, metadata.project_context or project_context, metadata.externally_referenced or node in external_nodes, metadata.gaps, metadata.source_claim_kind, metadata.source_layer) for node in sorted(graph_nodes, key=lambda item: item.canonical) for metadata in (node_metadata.get(node, VisualNodeMetadata()),))
+    edges = tuple(VisualEdge(edge.source, edge.target, edge.kind.value, edge.claim_kind, edge.evidence, edge.confidence, edge.method, edge.method_version, edge.uncertainty, edge.semantic_role.value if edge.semantic_role else None) for edge in sorted(dict.fromkeys(graph.edges), key=lambda edge: (edge.source.canonical, edge.target.canonical, edge.kind.value, edge.evidence)))
     return PerformanceVisualMap(VISUAL_PROJECTION_VERSION, project_context, nodes, edges, tuple(sorted(set(graph.gaps))))
 
 

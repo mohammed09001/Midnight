@@ -10,15 +10,22 @@ def _run() -> FrozenPromptRun:
         PromptRun("run-1", "prompt-v1"),
         "Add src/widget.py\nDo not change protected.py\nTest the widget",
         "codex",
+        # Execution 04: current Codex App Server notifications are
+        # slash-separated with an `item` type discriminator (see
+        # `codex_adapter.py`). "turn/interrupted" has no confirmed current
+        # backing event, so it deliberately carries an explicit `state` field
+        # — `_window_for` must resolve the window from that, not by guessing
+        # from the event name, and `normalize_codex_event` should honestly
+        # gap it as unrecognized.
         lifecycle_events=(
-            FrozenEvent("start", {"type": "turn.started", "session_id": "s", "turn_id": "t"}),
-            FrozenEvent("interrupted", {"type": "turn.interrupted", "session_id": "s", "turn_id": "t"}),
-            FrozenEvent("resume", {"type": "turn.started", "state": "resumed", "session_id": "s", "turn_id": "t"}),
-            FrozenEvent("complete", {"type": "turn.completed", "session_id": "s", "turn_id": "t"}),
+            FrozenEvent("start", {"type": "turn/started", "session_id": "s", "turn_id": "t"}),
+            FrozenEvent("interrupted", {"type": "turn/interrupted", "state": "interrupted", "session_id": "s", "turn_id": "t"}),
+            FrozenEvent("resume", {"type": "turn/started", "state": "resumed", "session_id": "s", "turn_id": "t"}),
+            FrozenEvent("complete", {"type": "turn/completed", "session_id": "s", "turn_id": "t"}),
         ),
         tool_events=(
-            FrozenEvent("files", {"type": "item.file_change", "session_id": "s", "path": "src/widget.py"}),
-            FrozenEvent("files-again", {"type": "item.file_change", "session_id": "s", "path": "src/widget.py"}),
+            FrozenEvent("files", {"type": "item/completed", "session_id": "s", "item": {"type": "fileChange", "path": "src/widget.py"}}),
+            FrozenEvent("files-again", {"type": "item/completed", "session_id": "s", "item": {"type": "fileChange", "path": "src/widget.py"}}),
         ),
         baseline=RepositorySnapshot({"protected.py": "old"}),
         final=RepositorySnapshot({"protected.py": "old", "src/widget.py": "new", "tests/test_widget.py": "new"}),
@@ -43,8 +50,8 @@ def test_qualification_degrades_and_reconciles_native_events_to_repository_truth
     # a distinct, unreconciled native claim remains explicit.
     duplicate = FrozenPromptRun(**{name: getattr(run, name) for name in run.__dataclass_fields__} | {
         "tool_events": run.tool_events + (
-            FrozenEvent("files", {"type": "item.file_change", "session_id": "s", "path": "src/widget.py"}),
-            FrozenEvent("missing", {"type": "item.file_change", "session_id": "s", "path": "missing.py"}),
+            FrozenEvent("files", {"type": "item/completed", "session_id": "s", "item": {"type": "fileChange", "path": "src/widget.py"}}),
+            FrozenEvent("missing", {"type": "item/completed", "session_id": "s", "item": {"type": "fileChange", "path": "missing.py"}}),
         ),
     })
     manifest = CapabilityManifest("codex", frozenset({"1"}), frozenset({Capability.COMMAND, Capability.FILE_CHANGE, Capability.TRANSCRIPT}))
@@ -73,7 +80,7 @@ def test_unknown_provider_drift_is_not_silently_parsed():
 def test_each_declared_provider_surface_is_qualified_passively():
     base = _run()
     fixtures = (
-        ("codex", {"type": "item.file_change", "session_id": "s", "path": "src/widget.py"}),
+        ("codex", {"type": "item/completed", "session_id": "s", "item": {"type": "fileChange", "path": "src/widget.py"}}),
         ("claude-code", {"hook_event_name": "PostToolUse", "session_id": "s", "path": "src/widget.py"}),
         ("opencode", {"type": "file.changed", "session_id": "s", "adapter_version": "1", "path": "src/widget.py"}),
     )

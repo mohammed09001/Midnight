@@ -7,7 +7,14 @@ from typing import Any, Mapping
 from .harness import Capability, ObservationAdapter
 
 CLAUDE_ADAPTER = ObservationAdapter("claude-code", "1", frozenset({Capability.SESSION_LIFECYCLE, Capability.PROMPT, Capability.TOOL_CALL, Capability.FILE_CHANGE, Capability.SUBAGENT, Capability.PERMISSION, Capability.COMPLETION, Capability.TRANSCRIPT}), frozenset({"approved-native-hook"}))
-_KNOWN = {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "PermissionRequest", "SessionEnd", "PreCompact"}
+# Execution 04, Section B: checked against the current hooks reference
+# (code.claude.com/docs/en/hooks, researched 2026-09). All names below are
+# still current. `PostToolBatch` is a real current event this adapter was
+# previously missing; ~19 other current events (Setup, UserPromptExpansion,
+# Notification, TaskCreated, ...) remain unrecognized-but-safe gaps rather
+# than being enumerated here — they surface as an explicit
+# `unrecognized-hook` gap, never a silent drop.
+_KNOWN = {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "PostToolBatch", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "PermissionRequest", "SessionEnd", "PreCompact"}
 
 @dataclass(frozen=True, slots=True)
 class ClaudeObservation:
@@ -15,6 +22,7 @@ class ClaudeObservation:
     session_id: str | None
     payload: Mapping[str, Any]
     gaps: tuple[str, ...] = ()
+    adapter_version: str = CLAUDE_ADAPTER.version
 
 def normalize_claude_hook(raw: Mapping[str, Any], *, transcript_enabled: bool = False) -> ClaudeObservation:
     hook = raw.get("hook_event_name")

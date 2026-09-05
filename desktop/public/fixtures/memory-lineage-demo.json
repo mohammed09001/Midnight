@@ -1,0 +1,102 @@
+{
+  "bounds": {
+    "allowedLayers": null,
+    "focusNode": null,
+    "maxDepth": null,
+    "maxEdges": 400,
+    "maxNodes": 200
+  },
+  "citations": [],
+  "cursor": null,
+  "edges": [
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "memory:record:mem_00000000000000000000000000#rev1"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "cites_memory",
+      "source": "mp:v1:prompt_run:a510c425-2c0b-5a83-96c5-434d97716157",
+      "target": "mp:v1:memory_record:63235532-37f5-58b7-bf89-7cb4fbfa50fc",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    }
+  ],
+  "gaps": [
+    "unavailable:prompt_version",
+    "unavailable:sibling_outcomes"
+  ],
+  "integrity": {
+    "findings": [],
+    "qualifies": true
+  },
+  "memoryLineage": [
+    {
+      "contradictionGroupId": null,
+      "contradictionGroupSize": null,
+      "contradictionStatus": null,
+      "currentRevision": null,
+      "currentStatus": null,
+      "currentStatusKnown": false,
+      "gaps": [],
+      "newerRevisionAvailable": null,
+      "nodeId": "mp:v1:memory_record:63235532-37f5-58b7-bf89-7cb4fbfa50fc",
+      "pinnedRevision": 1,
+      "provider": "memory",
+      "recordId": "mem_00000000000000000000000000",
+      "refreshedAt": null,
+      "superseded": null,
+      "supersededByRecordId": null
+    }
+  ],
+  "nextCursor": null,
+  "nodes": [
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:memory_record:63235532-37f5-58b7-bf89-7cb4fbfa50fc",
+      "kind": "memory_record",
+      "label": "memory:mem_00000000000000000000000000#rev1",
+      "layer": "memory",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:616f6c2a-aceb-554b-bead-0b0251969576",
+      "provenance": [
+        "mem_00000000000000000000000000#rev1"
+      ],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:prompt_run:a510c425-2c0b-5a83-96c5-434d97716157",
+      "kind": "prompt_run",
+      "label": "mp:v1:prompt_run:a510c425-2c0b-5a83-96c5-434d97716157",
+      "layer": "prompt",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:616f6c2a-aceb-554b-bead-0b0251969576",
+      "provenance": [],
+      "source_claim_kind": "observed",
+      "source_layer": "normalized"
+    }
+  ],
+  "project": "mp:v1:project:616f6c2a-aceb-554b-bead-0b0251969576",
+  "projectionIdentity": {
+    "evidenceCheckpoint": "4b7b278dfe7dd4e4",
+    "graphAlgorithmMethod": "relationship-graph",
+    "graphAlgorithmVersion": "1",
+    "graphSchemaVersion": 1,
+    "project": "mp:v1:project:616f6c2a-aceb-554b-bead-0b0251969576",
+    "root": "mp:v1:prompt_run:a510c425-2c0b-5a83-96c5-434d97716157"
+  },
+  "root": "mp:v1:prompt_run:a510c425-2c0b-5a83-96c5-434d97716157",
+  "truncated": false,
+  "truncationReasons": [],
+  "version": 1
+}

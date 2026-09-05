@@ -46,3 +46,20 @@ export function formatBucketPeriod(bucket: ActivityBucket): string {
 export function formatPrompts(count: number): string {
   return `${count} ${count === 1 ? "prompt" : "prompts"}`;
 }
+
+const timeOfDayFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * Short wall-clock time for one instant, in the viewer's local timezone
+ * (unlike the day/month/year formatters above, which render UTC-anchored
+ * calendar-day keys) — e.g. "9:41 AM". Used by the run selector to
+ * distinguish same-day Prompt Runs.
+ */
+export function formatTimeOfDay(isoInstant: string, timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone): string {
+  let formatter = timeOfDayFormatterCache.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", minute: "2-digit" });
+    timeOfDayFormatterCache.set(timeZone, formatter);
+  }
+  return formatter.format(new Date(isoInstant));
+}

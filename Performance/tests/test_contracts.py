@@ -44,9 +44,10 @@ from midnight_performance import (
     CANONICAL_PROBLEM_AREAS, UNKNOWN_AREA, TaxonomyClassification, TaxonomyLabel, classify_taxonomy,
     EmbeddingProvider, EmbeddingVector, embed_text, embedding_similarity,
     repository_change_similarity, cross_domain_outcome_similarity,
-    EdgeKind, GraphEdge, PerformanceGraph,
+    EdgeKind, EdgeSemanticRole, GraphEdge, Identity, PerformanceGraph, ResolvedRepositoryEntity,
     add_contradiction_edges, add_remediation_edge, add_similarity_edge, add_supersession_edges,
-    build_graph, graph_reference_overlap, memory_neighbors, traverse, merge_graphs,
+    build_graph, compose_graph, graph_reference_overlap, memory_neighbors, traverse, merge_graphs,
+    VisualNodeMetadata, build_performance_visual_map,
     Experience, SimilarityMatch, SimilaritySignal, match, retrieve,
     HybridQuery, RetrievalEntry, RetrievalPath, retrieve_hybrid,
     BaselineEvidence, FeatureAvailability, FeatureInput, FeaturePipeline, FeatureSource, FeatureSpec, MLReadinessPolicy, ReadinessStatus, SplitExample, assess_ml_readiness, split_by_time_and_project,
@@ -91,6 +92,8 @@ from midnight_performance import (
     preferred,
     normalize_codex_event,
     normalize_claude_hook,
+    codex_prompt_run_identity,
+    is_occurrence_only,
     new_identity,
     RecommendationEvidence, OutcomeMeasure, evaluate_recommendation, suggest, suggest_prompt,
     PerformanceQueryAPI, QueryAuthorization, QueryProjection, PerformanceReadTools,
@@ -325,29 +328,63 @@ class PerformanceContractsTests(unittest.TestCase):
             ObservationAdapter("bad", "1", frozenset(), frozenset({"launch"}))
 
     def test_codex_adapter_normalizes_supplied_events_without_hosting_codex(self):
+        # Execution 04: current App Server protocol uses slash-separated
+        # names, not the previously-assumed dotted names.
         event = normalize_codex_event({
-            "type": "item.command_execution", "session_id": "thread-1", "turn_id": "turn-2",
-            "item_id": "item-3", "command": "python -m unittest", "exit_code": 0,
+            "type": "item/completed", "thread_id": "thread-1", "turn_id": "turn-2",
+            "item_id": "item-3", "item": {"type": "commandExecution", "command": "python -m unittest", "exit_code": 0},
         })
         self.assertEqual(event.session_id, "thread-1")
-        self.assertEqual(event.payload["exit_code"], 0)
+        self.assertEqual(event.item_type, "commandExecution")
         self.assertFalse(event.gaps)
+        self.assertEqual(event.adapter_version, CODEX_ADAPTER.version)
 
     def test_codex_missing_or_unknown_fields_are_gaps_not_negative_evidence(self):
-        missing = normalize_codex_event({"type": "turn.completed"})
+        missing = normalize_codex_event({"type": "turn/completed"})
         self.assertIn("unavailable:session_id", missing.gaps)
-        self.assertIn("unavailable:turn_id", missing.gaps)
-        unknown = normalize_codex_event({"type": "future.event", "session_id": "s"})
-        self.assertIn("unavailable:unrecognized-event:future.event", unknown.gaps)
+        unknown = normalize_codex_event({"type": "future/event", "session_id": "s"})
+        self.assertIn("unavailable:unrecognized-event:future/event", unknown.gaps)
+        missing_item_type = normalize_codex_event({"type": "item/started", "session_id": "s"})
+        self.assertIn("unavailable:item-type", missing_item_type.gaps)
+        unrecognized_item_type = normalize_codex_event({"type": "item/started", "session_id": "s", "item": {"type": "todoList"}})
+        self.assertIn("unavailable:unrecognized-item-type:todoList", unrecognized_item_type.gaps)
         with self.assertRaises(ValueError):
             normalize_codex_event({"type": 3})
+
+    def test_codex_prompt_capability_is_backed_by_real_user_message_evidence(self):
+        self.assertIn(Capability.PROMPT, CODEX_ADAPTER.capabilities)
+        self.assertNotIn(Capability.VERIFICATION, CODEX_ADAPTER.capabilities)
+        self.assertNotIn(Capability.NATIVE_DIFF, CODEX_ADAPTER.capabilities)
+        event = normalize_codex_event({
+            "type": "item/completed", "thread_id": "t", "turn_id": "u",
+            "item": {"type": "userMessage"}, "clientId": "client-msg-1",
+        })
+        self.assertEqual(event.item_type, "userMessage")
+        self.assertFalse(event.gaps)
+
+    def test_codex_prompt_run_identity_prefers_client_id_then_native_triple_then_none(self):
+        self.assertEqual(
+            codex_prompt_run_identity({"item": {"type": "userMessage"}, "clientId": "client-1"}),
+            "client-1",
+        )
+        self.assertEqual(
+            codex_prompt_run_identity({"item": {"type": "userMessage"}, "thread_id": "t", "turn_id": "u", "item_id": "i"}),
+            "t:u:i",
+        )
+        self.assertIsNone(codex_prompt_run_identity({"item": {"type": "userMessage"}}))
+        self.assertIsNone(codex_prompt_run_identity({"item": {"type": "commandExecution"}, "clientId": "x"}))
 
     def test_claude_hook_capture_is_passive_and_transcript_is_privacy_gated(self):
         event = normalize_claude_hook({"hook_event_name": "PostToolUse", "session_id": "s", "tool_name": "Edit", "transcript_path": "secret.jsonl"})
         self.assertEqual(event.hook, "PostToolUse")
         self.assertIn("unavailable:transcript:privacy-disabled", event.gaps)
         self.assertIsNone(CLAUDE_ADAPTER.gap(Capability.PERMISSION))
+        self.assertEqual(event.adapter_version, CLAUDE_ADAPTER.version)
         with self.assertRaises(ValueError): normalize_claude_hook({})
+
+    def test_claude_adapter_recognizes_current_post_tool_batch_event(self):
+        event = normalize_claude_hook({"hook_event_name": "PostToolBatch", "session_id": "s"})
+        self.assertFalse([gap for gap in event.gaps if "unrecognized-hook" in gap])
 
     def test_opencode_deduplicates_snapshots_and_preserves_missing_parent_as_gap(self):
         observer = OpenCodeObserver()
@@ -356,6 +393,14 @@ class PerformanceContractsTests(unittest.TestCase):
         self.assertIn("unavailable:parent_session_id", first.gaps)
         self.assertIsNone(observer.normalize(raw))
         with self.assertRaises(ValueError): observer.normalize({"type": None})
+
+    def test_opencode_refuses_mutation_capable_hook_names(self):
+        observer = OpenCodeObserver()
+        for mutation_hook in ("tool.execute.before", "shell.env", "experimental.chat.system.transform", "experimental.session.compacting", "stop"):
+            with self.assertRaises(ValueError):
+                observer.normalize({"type": mutation_hook, "session_id": "s"})
+        # The observation-only counterpart remains accepted.
+        self.assertIsNotNone(observer.normalize({"type": "tool.execute.after", "session_id": "s", "adapter_version": "1"}))
 
     def test_windows_preserve_missing_lifecycle_as_ambiguity(self):
         window = window_from_lifecycle({"state": "resumed", "session_id": "s"})
@@ -1653,6 +1698,127 @@ class PerformanceContractsTests(unittest.TestCase):
             traverse(graph, prompt_run_node, direction="sideways")
         with self.assertRaises(ValueError):
             traverse(graph, prompt_run_node, max_depth=0)
+
+    def test_compose_graph_resolved_repository_entity_backward_compatible_flat_case(self):
+        """Execution 08: bare-`Identity` `resolved_entities` callers (the
+        only shape this API accepted before Execution 08) must keep working
+        completely unchanged — the new `ResolvedRepositoryEntity` wrapper is
+        additive, never a breaking change to this existing flat behavior."""
+        run = PromptRun("run-flat", "v1", change_set_ids=("cs-1",))
+        file_entity = deterministic_identity(EntityKind.FILE_CHANGE, "src/a.py")
+        graph = compose_graph((run,), resolved_entities={"cs-1": (file_entity,)})
+        change_node = deterministic_identity(EntityKind.CHANGE_SET, "cs-1")
+        edge = next(e for e in graph.edges if e.target == file_entity)
+        self.assertEqual(edge.source, change_node)
+        self.assertEqual(edge.semantic_role, EdgeSemanticRole.CHANGED_FILE)
+
+    def test_compose_graph_and_build_graph_wire_real_hierarchy_via_resolved_repository_entity(self):
+        run = PromptRun("run-hier", "v1", change_set_ids=("cs-1",))
+        file_entity = deterministic_identity(EntityKind.FILE_CHANGE, "src/a.py")
+        symbol_entity = deterministic_identity(EntityKind.SYMBOL, "src/a.py|greet")
+        region_entity = deterministic_identity(EntityKind.CODE_REGION, "src/a.py|1-3")
+        resolved = {
+            "cs-1": (
+                ResolvedRepositoryEntity(file_entity, None),
+                ResolvedRepositoryEntity(symbol_entity, file_entity),
+                ResolvedRepositoryEntity(region_entity, file_entity),
+            )
+        }
+        change_node = deterministic_identity(EntityKind.CHANGE_SET, "cs-1")
+
+        for graph in (compose_graph((run,), resolved_entities=resolved), build_graph(run, resolved_entities=resolved)):
+            file_edge = next(e for e in graph.edges if e.target == file_entity)
+            self.assertEqual(file_edge.source, change_node)
+            symbol_edge = next(e for e in graph.edges if e.target == symbol_entity)
+            self.assertEqual(symbol_edge.source, file_entity)
+            self.assertEqual(symbol_edge.semantic_role, EdgeSemanticRole.CONTAINS_SYMBOL)
+            region_edge = next(e for e in graph.edges if e.target == region_entity)
+            self.assertEqual(region_edge.source, file_entity)
+            self.assertEqual(region_edge.semantic_role, EdgeSemanticRole.CONTAINS_REGION)
+            # No edge ever attaches the symbol/region directly to the ChangeSet.
+            self.assertFalse(any(e.source == change_node and e.target in (symbol_entity, region_entity) for e in graph.edges))
+
+    def test_resolved_repository_entity_parent_must_be_declared_in_the_same_change_set(self):
+        run = PromptRun("run-orphan", "v1", change_set_ids=("cs-1",))
+        orphan_parent = deterministic_identity(EntityKind.FILE_CHANGE, "src/never-declared.py")
+        symbol_entity = deterministic_identity(EntityKind.SYMBOL, "src/a.py|greet")
+        resolved = {"cs-1": (ResolvedRepositoryEntity(symbol_entity, orphan_parent),)}
+        with self.assertRaises(ValueError):
+            compose_graph((run,), resolved_entities=resolved)
+        with self.assertRaises(ValueError):
+            build_graph(run, resolved_entities=resolved)
+
+    def test_compose_graph_repository_hierarchy_never_produces_dependency_edges(self):
+        """Execution 08, Section G: structural materialization only — no
+        call/import/data-flow/'affected by' edge kind exists to produce,
+        and the only roles a repository entity can ever carry are the
+        containment roles wired by `_wire_repository_entities`."""
+        run = PromptRun("run-nodep", "v1", change_set_ids=("cs-1",))
+        file_entity = deterministic_identity(EntityKind.FILE_CHANGE, "src/a.py")
+        symbol_entity = deterministic_identity(EntityKind.SYMBOL, "src/a.py|greet")
+        resolved = {"cs-1": (ResolvedRepositoryEntity(file_entity, None), ResolvedRepositoryEntity(symbol_entity, file_entity))}
+        graph = compose_graph((run,), resolved_entities=resolved)
+        allowed_repository_roles = {
+            EdgeSemanticRole.PRODUCED_CHANGE, EdgeSemanticRole.CHANGED_FILE,
+            EdgeSemanticRole.CONTAINS_SYMBOL, EdgeSemanticRole.CONTAINS_REGION, EdgeSemanticRole.REPOSITORY_ENTITY,
+        }
+        repository_kinds = {EntityKind.CHANGE_SET, EntityKind.FILE_CHANGE, EntityKind.CODE_REGION, EntityKind.SYMBOL, EntityKind.REPOSITORY, EntityKind.REPOSITORY_SNAPSHOT}
+        for edge in graph.edges:
+            if edge.target.kind in repository_kinds:
+                self.assertIn(edge.semantic_role, allowed_repository_roles)
+                self.assertEqual(edge.kind, EdgeKind.REFERENCE)
+
+    def test_isolated_prompt_run_root_survives_with_zero_edges_and_edges_carry_semantic_roles(self):
+        """Execution 06, Section B/C: node membership was entirely
+        edge-derived, so a zero-edge Prompt Run vanished from `.nodes`
+        entirely — and every reference edge carried the same generic
+        EdgeKind.REFERENCE with no way to tell WHY it existed short of
+        inspecting the target's entity kind."""
+        isolated = PromptRun("isolated-run", None, gaps=("unavailable:prompt_version",))
+        isolated_graph = build_graph(isolated)
+        self.assertEqual(isolated_graph.edges, ())
+        isolated_root = deterministic_identity(EntityKind.PROMPT_RUN, "isolated-run")
+        self.assertIn(isolated_root, isolated_graph.nodes)
+        self.assertIn(isolated_root, isolated_graph.roots)
+
+        run = PromptRun("run-4", "v4", agent_run_ids=("agent-4",), change_set_ids=("cs-4",), verification_ids=("ver-4",), feedback_ids=("fb-4",), outcome_references=("out-4",), episode_id="ep-4")
+        graph = build_graph(run, tool_observation_ids={"agent-4": ("tool-4",)}, command_observation_ids={"agent-4": ("cmd-4",)})
+        prompt_run_node = deterministic_identity(EntityKind.PROMPT_RUN, "run-4")
+        self.assertIn(prompt_run_node, graph.roots)
+
+        def role_for(target: Identity) -> EdgeSemanticRole | None:
+            return next(edge.semantic_role for edge in graph.edges if edge.target == target)
+
+        self.assertEqual(role_for(deterministic_identity(EntityKind.PROMPT_VERSION, "v4")), EdgeSemanticRole.PROMPT_VERSION)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.AGENT_RUN, "agent-4")), EdgeSemanticRole.EXECUTED_BY)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.TOOL_OBSERVATION, "tool-4")), EdgeSemanticRole.USED_TOOL)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.COMMAND_OBSERVATION, "cmd-4")), EdgeSemanticRole.EXECUTED_COMMAND)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.CHANGE_SET, "cs-4")), EdgeSemanticRole.PRODUCED_CHANGE)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.VERIFICATION_RUN, "ver-4")), EdgeSemanticRole.VERIFIED_BY)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.FEEDBACK_RECORD, "fb-4")), EdgeSemanticRole.FEEDBACK_FOR)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.OUTCOME_OBSERVATION, "out-4")), EdgeSemanticRole.OUTCOME_REFERENCE)
+        self.assertEqual(role_for(deterministic_identity(EntityKind.EPISODE, "ep-4")), EdgeSemanticRole.EPISODE_MEMBERSHIP)
+
+        # merge() must union roots, not just edges — a merged graph must not
+        # lose a previously-registered isolated root.
+        merged = merge_graphs((graph, isolated_graph))
+        self.assertIn(isolated_root, merged.nodes)
+        self.assertIn(prompt_run_node, merged.roots)
+        self.assertIn(isolated_root, merged.roots)
+
+        # Section D: VisualNode's own claim_kind is the projection's claim
+        # strength (never OBSERVED); source_claim_kind/source_layer are a
+        # separate concept, populated only where real evidence supports it.
+        visual_map = build_performance_visual_map(
+            isolated_graph, project_context="mp:v1:project:x",
+            node_metadata={isolated_root: VisualNodeMetadata(source_claim_kind=ClaimKind.OBSERVED, source_layer="normalized")},
+        )
+        isolated_visual_node = next(n for n in visual_map.nodes if n.identity == isolated_root)
+        self.assertEqual(isolated_visual_node.claim_kind, ClaimKind.DERIVED)
+        self.assertEqual(isolated_visual_node.source_claim_kind, ClaimKind.OBSERVED)
+        self.assertEqual(isolated_visual_node.source_layer, "normalized")
+        with self.assertRaises(ValueError):
+            VisualNodeMetadata(claim_kind=ClaimKind.OBSERVED)
 
     def test_relationship_graph_semantic_edges_similarity_supersession_contradiction_remediation(self):
         run = PromptRun("run-3", "v3")

@@ -85,6 +85,27 @@ export function aggregateActivity(
   return buckets;
 }
 
+/**
+ * The individual Prompt Run events falling within one bucket's inclusive
+ * local calendar day range, newest first — the source list for the
+ * run-selector step between selecting an Activity Map period and opening
+ * one real Prompt Run's graph. Mirrors `countEventsByDay`'s own day-key
+ * reduction so a bucket's selector list always matches what its own count
+ * was computed from.
+ */
+export function eventsInBucket(
+  events: readonly ActivityEvent[],
+  bucket: ActivityBucket,
+  timeZone: string = machineTimeZone(),
+): ActivityEvent[] {
+  return events
+    .filter((event) => {
+      const key = localDayKey(event.occurredAt, timeZone);
+      return compareDayKeys(key, bucket.start) >= 0 && compareDayKeys(key, bucket.end) <= 0;
+    })
+    .sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+}
+
 /** Default Activity Map window: the 52 Monday-anchored weeks ending on `todayKey`. */
 export function defaultActivityRange(todayKey: string): { rangeStart: string; rangeEnd: string } {
   return {

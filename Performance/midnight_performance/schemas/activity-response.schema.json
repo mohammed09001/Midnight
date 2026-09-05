@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/activity-response.schema.json",
+  "title": "activity.listPromptRuns result",
+  "type": "object",
+  "required": ["version", "project", "events", "totalMatching", "limit", "complete", "cursor", "nextCursor", "checkpoint"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["promptRunId", "occurredAt"],
+        "additionalProperties": false,
+        "properties": {
+          "promptRunId": { "type": "string", "minLength": 1 },
+          "occurredAt": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "totalMatching": { "type": "integer", "minimum": 0 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "complete": { "type": "boolean" },
+    "cursor": { "type": ["string", "null"] },
+    "nextCursor": { "type": ["string", "null"] },
+    "checkpoint": {
+      "type": "object",
+      "required": ["schemaVersion", "ledgerByteOffset", "ledgerRecordCount", "generation"],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 1 },
+        "ledgerByteOffset": { "type": "integer", "minimum": 0 },
+        "ledgerRecordCount": { "type": "integer", "minimum": 0 },
+        "generation": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

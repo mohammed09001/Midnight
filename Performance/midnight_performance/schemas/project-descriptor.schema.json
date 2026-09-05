@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/project-descriptor.schema.json",
+  "title": "Midnight canonical project descriptor",
+  "type": "object",
+  "required": ["descriptorVersion", "projectId", "performanceDataDir"],
+  "additionalProperties": false,
+  "properties": {
+    "descriptorVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "performanceDataDir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspaceId": {
+      "type": ["string", "null"]
+    }
+  }
+}

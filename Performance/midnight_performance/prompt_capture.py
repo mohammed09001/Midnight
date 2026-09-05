@@ -1,4 +1,5 @@
-"""Performance-owned capture of Prompt Run evidence from coding-agent work.
+"""Performance-owned capture of Prompt Run OCCURRENCE evidence from
+coding-agent work.
 
 This is the BYOT write half that keeps the Desktop bridge read-only: a host
 (a hook, a script, an operator) supplies one provider event identity per real
@@ -10,6 +11,22 @@ output, diff, command, or transcript ever passes through here, so the
 Activity Map can never leak development content.  Identity is derived
 deterministically from ``provider:provider_event_id``, so replaying or
 retrying the same event never creates duplicate evidence.
+
+Execution 04, Section G — occurrence vs. full Prompt evidence: the empty
+payload is intentional and useful for Activity, but it must never be read as
+proof that full Prompt Version content exists, or that the ``PROMPT_VERSION``
+subject identity is equivalent to an observed PromptVersion record. That
+subject is a bare CORRELATION ANCHOR — it lets a future, richer Prompt
+capture pipeline reference the same stable key without inventing a second,
+conflicting identity for "the same prompt" — never evidence in itself. Every
+envelope this module writes carries an explicit
+``attributes={"occurrence_only": True}`` marker (see
+:func:`is_occurrence_only`) so a future reader/consumer can tell "occurrence,
+not full evidence" apart programmatically, without relying on the payload's
+emptiness as an implicit, easy-to-miss signal. No canonical full-Prompt
+capture pipeline exists in this repository today; when one does, it should
+route through its own ``PROMPT``/``PROMPT_VERSION`` observations, unmarked,
+without ever retracting or duplicating the occurrence records written here.
 """
 
 from __future__ import annotations
@@ -62,9 +79,17 @@ def record_prompt_run(
         provider=provider,
         provider_event_id=provider_event_id,
         source_kind=EvidenceSourceKind.PROVIDER_HOOK,
+        attributes={"occurrence_only": True},
     )
     ledger = EvidenceLedger(ledger_path, project, PrivacyGuard(PrivacyPolicy()))
     return ledger.append(envelope), observation.identity.canonical
+
+
+def is_occurrence_only(envelope: ObservationEnvelope) -> bool:
+    """True when an envelope is a bare occurrence marker (see module
+    docstring), never full Prompt evidence — check before treating a
+    PROMPT_RUN's PROMPT_VERSION subject as proof that content was observed."""
+    return envelope.attributes.get("occurrence_only") is True
 
 
 def main(argv: list[str] | None = None) -> int:

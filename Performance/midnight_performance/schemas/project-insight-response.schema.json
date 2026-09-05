@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/project-insight-response.schema.json",
+  "title": "insights.getTerminalCard result",
+  "type": "object",
+  "required": ["version", "project", "generatedAt", "card", "reason", "insight"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "minLength": 1 },
+    "card": { "type": ["string", "null"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "insight": {
+      "type": ["object", "null"],
+      "required": [
+        "identity", "exposureId", "statement", "claimKind", "confidence",
+        "uncertainty", "whyNow", "projectConnection", "nextLearningAction",
+        "externalConnection", "evidenceBundle", "lineageReceipt", "channel", "outcome"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "identity": { "type": "string", "minLength": 1 },
+        "exposureId": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 },
+        "claimKind": { "type": "string", "minLength": 1 },
+        "confidence": { "type": ["number", "null"] },
+        "uncertainty": { "type": "string", "minLength": 1 },
+        "whyNow": { "type": "string", "minLength": 1 },
+        "projectConnection": { "type": "string", "minLength": 1 },
+        "nextLearningAction": { "type": "string", "minLength": 1 },
+        "externalConnection": { "type": ["string", "null"] },
+        "evidenceBundle": { "type": "string", "minLength": 1 },
+        "lineageReceipt": { "type": ["string", "null"] },
+        "channel": { "type": "string", "minLength": 1 },
+        "outcome": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

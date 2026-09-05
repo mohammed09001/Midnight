@@ -1,0 +1,118 @@
+/* Execution 12: Repo Intelligent's single terminal insight card — draws
+   only from tokens.css's existing palette, mirroring graph.css's
+   conventions. Deliberately never a list layout: at most one card. */
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.insight-card--empty {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  border-style: dashed;
+}
+
+.insight-card__empty-reason {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.insight-card__statement {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.insight-card__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: 12px;
+}
+
+.insight-card__facts dt {
+  color: var(--text-tertiary);
+}
+
+.insight-card__facts dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.insight-card__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.insight-card__action {
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.insight-card__action:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.insight-card__action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.insight-card__action--accept {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.insight-card__action--dismiss {
+  color: var(--text-tertiary);
+}
+
+/* Header nav — a persistent way to reach the single-card Insights panel
+   alongside the Activity Map, since neither is reached through the other. */
+.desktop__nav {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.desktop__nav-button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.desktop__nav-button:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.desktop__nav-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.desktop__nav-button[aria-current="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}

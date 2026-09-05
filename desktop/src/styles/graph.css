@@ -1,0 +1,391 @@
+/* Execution 07: Actual Performance Graph — draws only from tokens.css's
+   existing palette; no new ad-hoc colors. */
+
+.prompt-run-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.prompt-run-selector__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.prompt-run-selector__back {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: var(--space-1) 0;
+  font-size: 13px;
+}
+
+.prompt-run-selector__back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.prompt-run-selector__count {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.prompt-run-selector__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.prompt-run-selector__option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.prompt-run-selector__option:hover {
+  border-color: var(--border-strong);
+}
+
+.prompt-run-selector__option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.performance-graph {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.performance-graph__canvas {
+  /* React Flow measures its container via ResizeObserver at mount and
+     needs a resolved, non-zero height — `flex: 1` alone does nothing here
+     since `.performance-graph`'s own height is otherwise just its content
+     (an auto-height flex column has no cross-axis size for a `flex: 1`
+     child to grow into). An explicit height is the reliable fix, not a
+     flex-based one. */
+  height: 480px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.performance-graph__truncated {
+  color: var(--status-warning);
+  font-size: 12px;
+  margin: 0;
+}
+
+.graph-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.graph-controls__layers {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.graph-controls__layer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.graph-controls__on-demand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.graph-controls__reset {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.graph-controls__reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.performance-graph__canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Section G: screen-reader-only content — visually hidden, never
+   display:none (which would also hide it from assistive tech). Used for
+   the relationship-explanation list that has no on-canvas text equivalent. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.performance-node {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.performance-node:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.performance-node[data-root] {
+  border-color: var(--accent);
+}
+
+.performance-node[data-selected] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.performance-node__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.performance-node__kind {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.graph-hover-panel {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.graph-hover-panel__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.graph-hover-panel__kind {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.graph-hover-panel__gap {
+  font-size: 11px;
+  color: var(--status-warning);
+}
+
+.graph-hover-panel__lineage {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.graph-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.graph-inspector__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.graph-inspector__title {
+  font-size: 14px;
+  margin: 0;
+}
+
+.graph-inspector__close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--space-1);
+}
+
+.graph-inspector__close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.graph-inspector__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: 12px;
+}
+
+.graph-inspector__facts dt {
+  color: var(--text-tertiary);
+}
+
+.graph-inspector__facts dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.graph-inspector__section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.graph-inspector__gaps {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--status-warning);
+  font-size: 12px;
+}
+
+.graph-inspector__citations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.graph-inspector__citation {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.graph-inspector__citation-kind {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.graph-inspector__citation-note {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.graph-inspector__empty {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin: 0;
+}
+
+.graph-inspector__refresh {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.graph-inspector__refresh:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.graph-inspector__refresh:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.graph-inspector__relationships {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.graph-inspector__relationship {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.graph-inspector__relationship-detail {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.graph-inspector__expand {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.graph-inspector__expand:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

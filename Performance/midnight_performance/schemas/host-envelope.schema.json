@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midnight.local/schemas/host-envelope.schema.json",
+  "title": "Midnight Desktop Host versioned envelope",
+  "oneOf": [
+    {
+      "title": "request",
+      "type": "object",
+      "required": ["contractVersion", "operation", "request"],
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": { "type": "integer", "minimum": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "request": { "type": "object" }
+      }
+    },
+    {
+      "title": "success response",
+      "type": "object",
+      "required": ["contractVersion", "operation", "ok", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": { "type": "integer", "minimum": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "ok": { "const": true },
+        "result": { "type": "object" }
+      }
+    },
+    {
+      "title": "error response",
+      "type": "object",
+      "required": ["contractVersion", "ok", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "contractVersion": { "type": "integer", "minimum": 1 },
+        "operation": { "type": ["string", "null"] },
+        "ok": { "const": false },
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "UNSUPPORTED_CONTRACT_VERSION",
+                "UNKNOWN_OPERATION",
+                "INVALID_REQUEST",
+                "INVALID_CURSOR",
+                "INVALID_PROJECT_DESCRIPTOR",
+                "BRIDGE_UNAVAILABLE",
+                "BRIDGE_TIMEOUT",
+                "BRIDGE_MALFORMED_OUTPUT",
+                "METHOD_NOT_ALLOWED",
+                "PAYLOAD_TOO_LARGE"
+              ]
+            },
+            "message": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  ]
+}

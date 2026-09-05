@@ -1,0 +1,314 @@
+{
+  "bounds": {
+    "allowedLayers": null,
+    "focusNode": null,
+    "maxDepth": null,
+    "maxEdges": 400,
+    "maxNodes": 200
+  },
+  "citations": [],
+  "cursor": null,
+  "edges": [
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:file_change:075efea1-f032-5bb5-af9f-558def83abfe"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "changed_file",
+      "source": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "target": "mp:v1:file_change:075efea1-f032-5bb5-af9f-558def83abfe",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:file_change:610fc98f-148c-50c8-9ab3-adcedd573cc3"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "changed_file",
+      "source": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "target": "mp:v1:file_change:610fc98f-148c-50c8-9ab3-adcedd573cc3",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "changed_file",
+      "source": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "target": "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:code_region:93e0c416-58ed-5020-80ff-026319dbd793"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "contains_region",
+      "source": "mp:v1:file_change:075efea1-f032-5bb5-af9f-558def83abfe",
+      "target": "mp:v1:code_region:93e0c416-58ed-5020-80ff-026319dbd793",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:code_region:d3cbd97b-c2d0-55a0-b332-687adb352b65"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "contains_region",
+      "source": "mp:v1:file_change:075efea1-f032-5bb5-af9f-558def83abfe",
+      "target": "mp:v1:code_region:d3cbd97b-c2d0-55a0-b332-687adb352b65",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:symbol:3d0028b4-bc8d-5ddd-a2d3-c0084f5efc11"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "contains_symbol",
+      "source": "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1",
+      "target": "mp:v1:symbol:3d0028b4-bc8d-5ddd-a2d3-c0084f5efc11",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:symbol:bb512cbb-c421-53f0-acce-4c38e8674087"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "contains_symbol",
+      "source": "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1",
+      "target": "mp:v1:symbol:bb512cbb-c421-53f0-acce-4c38e8674087",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "mp:v1:symbol:f6d3fdb6-3430-59cf-a6bc-334fcf1ac979"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "contains_symbol",
+      "source": "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1",
+      "target": "mp:v1:symbol:f6d3fdb6-3430-59cf-a6bc-334fcf1ac979",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    },
+    {
+      "claim_kind": "derived",
+      "confidence": null,
+      "evidence": [
+        "cs-fixture-1"
+      ],
+      "kind": "reference",
+      "method": "relationship-graph",
+      "method_version": "1",
+      "semantic_role": "produced_change",
+      "source": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "target": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "uncertainty": "direct reification of an existing typed reference; the graph is a rebuildable projection, not canonical evidence"
+    }
+  ],
+  "gaps": [
+    "unavailable:prompt_version",
+    "unavailable:sibling_outcomes"
+  ],
+  "integrity": {
+    "findings": [],
+    "qualifies": true
+  },
+  "memoryLineage": [],
+  "nextCursor": null,
+  "nodes": [
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "kind": "change_set",
+      "label": "mp:v1:change_set:6c5bcee2-9aaf-58dc-b2d7-6a4e2bd90ef1",
+      "layer": "repository/change",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:code_region:93e0c416-58ed-5020-80ff-026319dbd793",
+      "kind": "code_region",
+      "label": "src/app.ts (lines 4-7)",
+      "layer": "symbol",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:code_region:d3cbd97b-c2d0-55a0-b332-687adb352b65",
+      "kind": "code_region",
+      "label": "src/app.ts (lines 2-2)",
+      "layer": "symbol",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:file_change:075efea1-f032-5bb5-af9f-558def83abfe",
+      "kind": "file_change",
+      "label": "src/app.ts",
+      "layer": "file",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:file_change:610fc98f-148c-50c8-9ab3-adcedd573cc3",
+      "kind": "file_change",
+      "label": "src/broken.py",
+      "layer": "file",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:file_change:9b34a8a4-10a0-51a5-a613-a7ededf983d1",
+      "kind": "file_change",
+      "label": "src/greet.py \u2192 src/greet_renamed.py",
+      "layer": "file",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "kind": "prompt_run",
+      "label": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+      "layer": "prompt",
+      "observed_at": null,
+      "priority_tier": "primary",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": "observed",
+      "source_layer": "normalized"
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:symbol:3d0028b4-bc8d-5ddd-a2d3-c0084f5efc11",
+      "kind": "symbol",
+      "label": "Greeter",
+      "layer": "symbol",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:symbol:bb512cbb-c421-53f0-acce-4c38e8674087",
+      "kind": "symbol",
+      "label": "greet",
+      "layer": "symbol",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    },
+    {
+      "claim_kind": "derived",
+      "externally_referenced": false,
+      "gaps": [],
+      "id": "mp:v1:symbol:f6d3fdb6-3430-59cf-a6bc-334fcf1ac979",
+      "kind": "symbol",
+      "label": "Greeter.hello",
+      "layer": "symbol",
+      "observed_at": null,
+      "priority_tier": "on_demand",
+      "project_context": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+      "provenance": [],
+      "source_claim_kind": null,
+      "source_layer": null
+    }
+  ],
+  "project": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+  "projectionIdentity": {
+    "evidenceCheckpoint": "45e6679c8e58e3a8",
+    "graphAlgorithmMethod": "relationship-graph",
+    "graphAlgorithmVersion": "1",
+    "graphSchemaVersion": 1,
+    "project": "mp:v1:project:70af5c54-3248-58ff-974c-cfef11b2dd29",
+    "root": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573"
+  },
+  "root": "mp:v1:prompt_run:7a71fe66-03a2-5a4e-a9c3-813d24472573",
+  "truncated": false,
+  "truncationReasons": [],
+  "version": 1
+}

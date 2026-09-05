@@ -10,6 +10,7 @@ from midnight_performance import (
     ClaimKind,
     EntityKind,
     EvidenceLedger,
+    InvalidCursorError,
     Observation,
     ObservationEnvelope,
     ObservationLayer,
@@ -17,6 +18,7 @@ from midnight_performance import (
     PrivacyGuard,
     PrivacyPolicy,
     deterministic_identity,
+    is_occurrence_only,
     new_identity,
     prompt_run_activity,
     record_prompt_run,
@@ -147,6 +149,19 @@ class DesktopBridgeTests(unittest.TestCase):
         self.assertEqual(line["observation"]["payload"], {})
         self.assertEqual(line["observation"]["identity"], canonical)
 
+    def test_recorded_occurrence_is_marked_occurrence_only_not_full_prompt_evidence(self):
+        """Execution 04, Section G: the empty payload plus a machine-checked
+        `occurrence_only` marker together prove this is a bare correlation
+        anchor, never proof that a full PromptVersion was observed."""
+        record_prompt_run(self.ledger_path, PROJECT_KEY, "opencode", "evt", observed_at=datetime(2026, 9, 2, tzinfo=timezone.utc))
+        ledger = EvidenceLedger(self.ledger_path, deterministic_identity(EntityKind.PROJECT, PROJECT_KEY), PrivacyGuard(PrivacyPolicy()))
+        [envelope] = list(ledger.replay())
+        self.assertTrue(is_occurrence_only(envelope))
+        self.assertEqual(envelope.observation.subject.kind, EntityKind.PROMPT_VERSION)
+        # The PROMPT_VERSION subject is a correlation anchor only — it must
+        # never be mistaken for evidence that a PromptVersion was observed.
+        self.assertEqual(envelope.observation.payload, {})
+
     def test_repeated_reads_are_stable_and_do_not_mutate_the_ledger(self):
         self.seed_prompt_run("stable", datetime(2026, 9, 1, tzinfo=timezone.utc))
         before = self.ledger_path.read_text(encoding="utf-8")
@@ -154,6 +169,82 @@ class DesktopBridgeTests(unittest.TestCase):
         second = prompt_run_activity(self.ledger_path, PROJECT_KEY)
         self.assertEqual(first, second)
         self.assertEqual(self.ledger_path.read_text(encoding="utf-8"), before)
+
+
+class DesktopBridgeContinuationTests(unittest.TestCase):
+    """Execution 03: keyset cursor pagination over >100 Prompt Runs."""
+
+    def setUp(self) -> None:
+        self._temporary = TemporaryDirectory()
+        self.addCleanup(self._temporary.cleanup)
+        self.data_dir = Path(self._temporary.name)
+        self.ledger_path = self.data_dir / "evidence.jsonl"
+
+    def seed_prompt_run(self, project_key: str, event_id: str, observed_at: datetime) -> str:
+        appended, canonical = record_prompt_run(
+            self.ledger_path, project_key, "provider", event_id, observed_at=observed_at
+        )
+        self.assertTrue(appended)
+        return canonical
+
+    def test_cursor_pagination_covers_every_run_without_duplicates_or_gaps(self):
+        base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        total_runs = 205
+        for index in range(total_runs):
+            self.seed_prompt_run(PROJECT_KEY, f"evt-{index:04d}", base + timedelta(minutes=index))
+
+        collected: list[str] = []
+        cursor = None
+        pages = 0
+        while True:
+            document = prompt_run_activity(self.ledger_path, PROJECT_KEY, limit=100, cursor=cursor)
+            self.assertEqual(document["totalMatching"], total_runs)
+            self.assertLessEqual(len(document["events"]), 100)
+            collected.extend(event["promptRunId"] for event in document["events"])
+            pages += 1
+            if document["complete"]:
+                self.assertIsNone(document["nextCursor"])
+                break
+            self.assertIsNotNone(document["nextCursor"])
+            cursor = document["nextCursor"]
+            self.assertLess(pages, 10, "pagination did not terminate")
+
+        self.assertEqual(len(collected), total_runs)
+        self.assertEqual(len(set(collected)), total_runs, "no duplicate Prompt Runs across pages")
+        self.assertEqual(pages, 3)
+
+    def test_ordering_is_deterministic_and_independent_of_append_order(self):
+        base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        # Seed strictly out of chronological order.
+        self.seed_prompt_run(PROJECT_KEY, "later", base + timedelta(hours=2))
+        self.seed_prompt_run(PROJECT_KEY, "earliest", base)
+        self.seed_prompt_run(PROJECT_KEY, "middle", base + timedelta(hours=1))
+
+        document = prompt_run_activity(self.ledger_path, PROJECT_KEY)
+        occurred_at = [event["occurredAt"] for event in document["events"]]
+        self.assertEqual(occurred_at, sorted(occurred_at))
+
+    def test_invalid_cursor_is_rejected(self):
+        self.seed_prompt_run(PROJECT_KEY, "run", datetime(2026, 9, 1, tzinfo=timezone.utc))
+        with self.assertRaises(InvalidCursorError):
+            prompt_run_activity(self.ledger_path, PROJECT_KEY, cursor="not-a-real-cursor")
+
+    def test_cursor_minted_for_a_different_project_is_rejected(self):
+        base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        for index in range(3):
+            self.seed_prompt_run(PROJECT_KEY, f"evt-{index}", base + timedelta(minutes=index))
+        first_page = prompt_run_activity(self.ledger_path, PROJECT_KEY, limit=1)
+        foreign_cursor = first_page["nextCursor"]
+        self.assertIsNotNone(foreign_cursor)
+
+        # A ledger file is project-isolated (it fails closed on any foreign
+        # line), so the other project needs its own ledger file/directory.
+        other_ledger_path = self.data_dir / "other" / "evidence.jsonl"
+        appended, _ = record_prompt_run(other_ledger_path, OTHER_PROJECT_KEY, "provider", "own-run", observed_at=base)
+        self.assertTrue(appended)
+
+        with self.assertRaises(InvalidCursorError):
+            prompt_run_activity(other_ledger_path, OTHER_PROJECT_KEY, cursor=foreign_cursor)
 
 
 class DesktopBridgeSubprocessTests(unittest.TestCase):

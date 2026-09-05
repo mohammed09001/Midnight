@@ -1,0 +1,56 @@
+name: Cross-Platform Qualification
+
+# Execution 11, Section G: minimum automated qualification strategy across
+# Windows/macOS/Linux. Previously this repository had no CI at all, so every
+# prior "cross-platform" claim rested on a single Windows machine. This
+# matrix does not prove parity by itself — it only starts catching platform
+# divergence going forward (file locking, path separators, subprocess/python
+# discovery, SQLite WAL, native/tree-sitter packages, shutdown) on every
+# push/PR instead of never.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  performance:
+    name: Performance (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install pytest
+        working-directory: Performance
+      - name: Run Performance test suite
+        run: python -m pytest -q
+        working-directory: Performance
+
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+        working-directory: desktop
+      - name: Type-check
+        run: npm run typecheck
+        working-directory: desktop
+      - name: Run desktop test suite
+        run: npm test
+        working-directory: desktop
