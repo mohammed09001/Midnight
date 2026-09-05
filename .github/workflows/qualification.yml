@@ -1,12 +1,11 @@
 name: Cross-Platform Qualification
 
-# Execution 11, Section G: minimum automated qualification strategy across
-# Windows/macOS/Linux. Previously this repository had no CI at all, so every
-# prior "cross-platform" claim rested on a single Windows machine. This
-# matrix does not prove parity by itself — it only starts catching platform
-# divergence going forward (file locking, path separators, subprocess/python
-# discovery, SQLite WAL, native/tree-sitter packages, shutdown) on every
-# push/PR instead of never.
+# Cross-platform qualification across the supported runtime boundaries.
+# Desktop integration tests invoke the real Memory CLI. Memory requires
+# Node >=22.13 and its current SQLite schema requires FTS5, so CI probes that
+# capability explicitly rather than failing later with an ambiguous bridge
+# error. Node 24.15+ uses the current bundled SQLite build expected by this
+# qualification path.
 
 on:
   push:
@@ -44,7 +43,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24.15.0"
+      - name: Verify Memory SQLite capability
+        run: node -e "const { DatabaseSync } = require('node:sqlite'); const db = new DatabaseSync(':memory:'); db.exec('CREATE VIRTUAL TABLE __fts5_probe USING fts5(x)'); db.close(); console.log('FTS5 available')"
       - name: Install dependencies
         run: npm ci
         working-directory: desktop

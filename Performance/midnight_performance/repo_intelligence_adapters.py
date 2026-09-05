@@ -1,21 +1,15 @@
 """Real port adapters wiring Midnight Repo Intelligent to canonical Performance systems.
 
 ``repo_intelligence/ports.py`` defines provider-neutral Protocols and ships
-no adapter code in the core ("no adapter code lives in the core... Fixture-
-backed fakes for tests live with the tests, not here"). This module is the
-one place those Protocols meet real Performance systems: ``query_api``,
-``memory_bridge``, ``repository_entity_resolution``, ``ai_accounting``, and
-this package's own :mod:`repo_intelligence_store`. Nothing here opens
-Memory's or Performance's storage directly beyond the same bounded,
-canonical read/write surfaces every other Performance module already uses.
+no adapter code in the core. This module is the one place those Protocols
+meet real Performance systems: ``query_api``, ``memory_bridge``, repository
+entity resolution, accounting, and Repo Intelligent's own derived-state
+store. Nothing here opens Memory or Performance storage behind those
+canonical surfaces.
 
-External network/model providers (``ExternalDiscoveryPort``,
-``FetchParsePort``, ``EmbeddingPort``, ``ModelGenerationPort``) are
-deliberately not implemented here this pass; production wiring
-(:func:`production_providers`) leaves those four unset so the pipeline runs
-internal-only, which ``repo_intelligence``'s own ports/discovery code
-already treats as an honest, first-class configuration rather than an
-error.
+External network/model providers remain deliberately unconfigured in this
+Execution; Repo Intelligent 02/03 owns production external-intelligence
+wiring. The internal runtime must remain useful without them.
 """
 
 from __future__ import annotations
@@ -40,7 +34,7 @@ from .repo_intelligence_store import RepoIntelligenceStore
 
 
 class PerformanceReadsAdapter:
-    """Satisfies ``PerformanceReadsPort`` over Performance's canonical read facade."""
+    """Performance's canonical bounded read facade, including explicit paging."""
 
     def __init__(self, api: PerformanceQueryAPI) -> None:
         self._api = api
@@ -54,8 +48,26 @@ class PerformanceReadsAdapter:
         claim_kinds: frozenset | None = None,
         limit: int = 50,
     ) -> QueryPage:
+        # Compatibility surface for callers that intentionally need one page.
         return self._api.query_evidence(
-            authorization, kinds=kinds, subject=subject, claim_kinds=claim_kinds, limit=limit
+            authorization, kinds=kinds, subject=subject, claim_kinds=claim_kinds,
+            limit=limit, offset=0,
+        )
+
+    def query_page(
+        self,
+        authorization: QueryAuthorization,
+        *,
+        kinds: frozenset | None = None,
+        subject: Identity | None = None,
+        claim_kinds: frozenset | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> QueryPage:
+        """Read one explicit slice; the orchestrator owns coverage policy."""
+        return self._api.query_evidence(
+            authorization, kinds=kinds, subject=subject, claim_kinds=claim_kinds,
+            limit=limit, offset=offset,
         )
 
     def projection(self, authorization: QueryAuthorization, name: str) -> QueryProjection:
@@ -63,13 +75,7 @@ class PerformanceReadsAdapter:
 
 
 class MemoryBridgeAdapter:
-    """Satisfies ``MemoryBridgePort`` strictly through the supported Memory bridge calls.
-
-    ``memory_repo_path`` is required by ``call_memory_cli`` with no default;
-    when it is unset or does not exist, this degrades to an honest
-    unavailable ``MemoryReadResult`` rather than raising -- a missing Memory
-    installation is a real "no internal knowledge found" state, not a bug.
-    """
+    """Memory access strictly through the supported Memory bridge calls."""
 
     def __init__(self, memory_repo_path: Path | None = None) -> None:
         self._memory_repo_path = memory_repo_path
@@ -85,18 +91,17 @@ class MemoryBridgeAdapter:
         )
 
     def propose_lesson(self, envelope) -> LessonDeliveryResult:
-        return memory_bridge.propose_lesson_or_degrade(envelope, memory_repo_path=self._memory_repo_path)
+        return memory_bridge.propose_lesson_or_degrade(
+            envelope, memory_repo_path=self._memory_repo_path
+        )
 
 
 class RepositoryIntelligenceAdapter:
-    """Satisfies ``RepositoryIntelligencePort`` via path classification.
+    """File/module/package-level live-repository rollup.
 
-    This is a file/module/package-level rollup only (:func:`classify_entity_kind`
-    plus :func:`entity_ref`); Performance's per-changeset symbol/region
-    resolver (:mod:`repository_entity_resolution`) requires before/after file
-    content for one ChangeSet and is not wired to this "resolve these paths
-    right now" query shape. Deeper symbol-level resolution remains a
-    documented follow-up.
+    Performance's deeper per-changeset symbol/region resolver needs before/
+    after file content and is not silently emulated by this path-only query.
+    The deeper integration remains an explicit later gap.
     """
 
     def __init__(self, repository_key: str, repo_root: Path, *, clock) -> None:
@@ -117,16 +122,7 @@ class RepositoryIntelligenceAdapter:
 
 
 class AIAccountingBudgetMeter:
-    """Satisfies ``BudgetMeterPort`` against Repo Intelligent's own cost ledger.
-
-    Per the addendum ("use Performance's AI accounting rather than a
-    disconnected cost system"): ``ai_accounting.summarize_ai_attempts`` is
-    the shared accounting vocabulary this meter's ``usage()`` mirrors
-    (attempts/latency/failure summarization), while authorize/record are
-    backed by :class:`RepoIntelligenceStore`'s own ``CostRecord`` ledger --
-    Repo Intelligent's own derived-state cache, never a second Performance
-    ledger.
-    """
+    """Repo Intelligent cost ledger using Performance-compatible accounting vocabulary."""
 
     def __init__(self, store: RepoIntelligenceStore) -> None:
         self._store = store
@@ -147,22 +143,21 @@ class AIAccountingBudgetMeter:
 
     def usage(self, project: Identity) -> BudgetUsage:
         records = self._store.list_cost_records(project)
-        model_calls = sum(1 for r in records if r.resource.value in ("model_inference", "embedding", "rerank"))
-        network_requests = sum(1 for r in records if r.resource.value in ("external_search", "external_fetch"))
+        model_calls = sum(
+            1 for r in records if r.resource.value in ("model_inference", "embedding", "rerank")
+        )
+        network_requests = sum(
+            1 for r in records if r.resource.value in ("external_search", "external_fetch")
+        )
         cost_micros = sum(r.cost_micros or 0 for r in records)
         return BudgetUsage(
-            project=project, model_calls=model_calls, network_requests=network_requests, cost_micros=cost_micros
+            project=project, model_calls=model_calls,
+            network_requests=network_requests, cost_micros=cost_micros,
         )
 
 
 class GraphProjectionAdapter:
-    """Satisfies ``GraphProjectionPort`` for Repo Intelligent's own rebuildable overlay.
-
-    The overlay itself is built deterministically and locally by
-    ``repo_intelligence.project_graph.build_project_graph`` -- this adapter's
-    job is only to report a stable rebuild generation digest and persist the
-    link count, never to re-derive graph structure.
-    """
+    """Persist Repo Intelligent's own rebuildable graph overlay."""
 
     def __init__(self, store: RepoIntelligenceStore) -> None:
         self._store = store
@@ -174,7 +169,9 @@ class GraphProjectionAdapter:
         digest_material = "|".join(sorted(link.identity.canonical for link in links)) or "empty"
         generation = hashlib.sha256(digest_material.encode("utf-8")).hexdigest()
         self._store.replace_graph_links(project, links)
-        return GraphProjectionResult(project=project, link_count=len(links), generation=generation)
+        return GraphProjectionResult(
+            project=project, link_count=len(links), generation=generation
+        )
 
 
 def production_providers(
@@ -185,18 +182,17 @@ def production_providers(
     repo_root: Path,
     memory_repo_path: Path | None = None,
 ) -> RepoIntelligenceProviders:
-    """Production provider bundle: real internal adapters, no external network/model ports.
-
-    The pipeline is required to run usefully with this configuration alone
-    (no external discovery/fetch/embedding/model-generation provider) -- see
-    ``discover()``'s honest "external discovery provider unavailable" path.
-    """
+    """Real internal providers; external/model ports are intentionally optional."""
     from .repo_intelligence.ports import SystemClock
 
     clock = SystemClock()
-    resolved_memory_path = memory_repo_path if memory_repo_path is not None else (repo_root / "Memory")
+    resolved_memory_path = (
+        memory_repo_path if memory_repo_path is not None else (repo_root / "Memory")
+    )
     return RepoIntelligenceProviders(
-        repository_intelligence=RepositoryIntelligenceAdapter(repository_key, repo_root, clock=clock),
+        repository_intelligence=RepositoryIntelligenceAdapter(
+            repository_key, repo_root, clock=clock
+        ),
         performance_reads=PerformanceReadsAdapter(query_api),
         memory_bridge=MemoryBridgeAdapter(resolved_memory_path),
         external_discovery=None,

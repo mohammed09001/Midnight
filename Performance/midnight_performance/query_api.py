@@ -63,6 +63,17 @@ class QueryPage:
     items: tuple[ObservationEnvelope, ...]
     total_matching: int
     limit: int
+    offset: int = 0
+
+    def __post_init__(self) -> None:
+        if self.total_matching < 0 or self.limit < 1 or self.offset < 0:
+            raise ValueError("query page counts, limit, and offset must be bounded")
+        if len(self.items) > self.limit:
+            raise ValueError("query page cannot contain more items than its limit")
+
+    @property
+    def has_more(self) -> bool:
+        return self.offset + len(self.items) < self.total_matching
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,10 +115,21 @@ class PerformanceQueryAPI:
         subject: Identity | None = None,
         claim_kinds: frozenset[ClaimKind] | None = None,
         limit: int = 50,
+        offset: int = 0,
     ) -> QueryPage:
+        """Read one stable slice of matching evidence.
+
+        ``offset`` is deliberately explicit rather than a hidden cursor because
+        the underlying append-only ledger is replayed locally.  Callers that
+        need more than one page must compare ``total_matching`` between pages
+        and report truncation/staleness if the matching set changes while they
+        paginate.
+        """
         self._authorize(authorization)
         if not 1 <= limit <= _MAX_LIMIT:
             raise ValueError(f"limit must be between 1 and {_MAX_LIMIT}")
+        if offset < 0:
+            raise ValueError("offset must not be negative")
         selected_kinds = authorization.allowed_kinds if kinds is None else kinds
         if not selected_kinds <= authorization.allowed_kinds:
             raise PermissionError("requested evidence kind is not authorized")
@@ -117,7 +139,14 @@ class PerformanceQueryAPI:
             and (subject is None or envelope.observation.subject == subject)
             and (claim_kinds is None or envelope.observation.claim_kind in claim_kinds)
         )
-        return QueryPage(QUERY_API_VERSION, self.project, matching[:limit], len(matching), limit)
+        return QueryPage(
+            QUERY_API_VERSION,
+            self.project,
+            matching[offset:offset + limit],
+            len(matching),
+            limit,
+            offset,
+        )
 
     def episodes(self, authorization: QueryAuthorization, *, limit: int = 50) -> tuple[Episode, ...]:
         self._authorize(authorization)
