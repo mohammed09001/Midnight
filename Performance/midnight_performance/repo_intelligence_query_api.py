@@ -139,9 +139,22 @@ class RepoIntelligenceQueryAPI:
         return self._store.get_lineage_receipt(self._project, receipt_id)
 
     def internal_knowledge_sufficiency(self, authorization: RepoIntelligenceAuthorization) -> InternalAnswerStatus | None:
-        """The Memory/internal-sufficiency status recorded by the most recent pipeline pass; ``None`` if never run."""
+        """The latest coarse internal/Memory status; ``None`` only before the first pipeline pass.
+
+        Historical callers treat a completed degraded pass with no Memory
+        status as ``ABSENT``. Execution 02/01 preserves that stable public
+        contract while the canonical runtime's separate ``StageOutcome``
+        records *why* Memory could not be qualified (provider unavailable,
+        internal error, etc.). This avoids turning an established API value
+        into ``None`` while still keeping operational uncertainty explicit.
+        """
         self._authorize(authorization)
-        return self._store.last_memory_status(self._project)
+        status = self._store.last_memory_status(self._project)
+        if status is not None:
+            return status
+        if self._store.last_pipeline_run(self._project) is not None:
+            return InternalAnswerStatus.ABSENT
+        return None
 
     def research_jobs_for_pressure(
         self, authorization: RepoIntelligenceAuthorization, signal_identity_canonical: str
