@@ -1,10 +1,10 @@
 """Machine-readable ownership and execution contract for Repo Intelligent runtime.
 
 Execution 02/01 consolidates production orchestration without pretending every
-existing library module is already a production owner.  The inventory below is
-therefore deliberately explicit about canonical, library-only and deferred
-paths.  Runtime stage outcomes are content-free diagnostics: they carry reason
-codes and counts, never prompt/source text.
+existing library module is already a production owner. The inventory below is
+deliberately explicit about canonical, library-only and deferred paths.
+Runtime stage outcomes are content-free diagnostics: they carry reason codes
+and counts, never prompt/source text.
 """
 
 from __future__ import annotations
@@ -42,6 +42,7 @@ class StageOwnershipStatus(str, Enum):
 
 class StageExecutionStatus(str, Enum):
     COMPLETED = "completed"
+    DEGRADED = "degraded"
     SKIPPED = "skipped"
     FAILED = "failed"
 
@@ -99,9 +100,9 @@ class StageOutcome:
 
     def __post_init__(self) -> None:
         if self.status is StageExecutionStatus.COMPLETED and self.reason_code is not None:
-            raise ValueError("completed runtime stages must not carry a failure/skip reason")
+            raise ValueError("completed runtime stages must not carry a failure/degradation/skip reason")
         if self.status is not StageExecutionStatus.COMPLETED and self.reason_code is None:
-            raise ValueError("skipped/failed runtime stages require an explicit reason code")
+            raise ValueError("degraded/skipped/failed runtime stages require an explicit reason code")
         if not self.owner.strip():
             raise ValueError("runtime stage outcomes require an owner")
 
@@ -153,7 +154,7 @@ class PerformanceEvidenceCoverage:
         }
 
 
-# One production owner per user-visible concern.  Alternate engines remain
+# One production owner per user-visible concern. Alternate engines remain
 # reusable libraries until a later Execution deliberately migrates ownership.
 CANONICAL_STAGE_INVENTORY: tuple[StageInventoryEntry, ...] = (
     StageInventoryEntry(RuntimeStage.OBSERVE, "repo_intelligence_pipeline._read_performance_evidence", "repo_intelligence_pipeline.run_pipeline", "Performance ledger remains canonical; coverage only in run result", "StageOutcome + PerformanceEvidenceCoverage", "runtime consolidation + query API tests", None, StageOwnershipStatus.CANONICAL),
