@@ -86,7 +86,7 @@ class EnvelopeReads:
 
 
 class EmptyMemory:
-    def read_context(self, project_key, *, size=20):
+    def read_context(self, project_key, *, size=20, query=None):
         return MemoryReadResult(available=True, records=())
 
     def propose_lesson(self, envelope):
@@ -94,7 +94,7 @@ class EmptyMemory:
 
 
 class BrokenMemory:
-    def read_context(self, project_key, *, size=20):
+    def read_context(self, project_key, *, size=20, query=None):
         raise RuntimeError("fixture failure whose body must not become telemetry")
 
     def propose_lesson(self, envelope):
@@ -267,7 +267,7 @@ class RuntimePipelineTests(unittest.TestCase):
         stages = {stage.stage: stage for stage in result.stage_outcomes}
         self.assertIs(
             stages[RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY].reason_code,
-            StageReasonCode.POLICY_DENIAL,
+            StageReasonCode.AUTHORIZATION_DENIED,
         )
 
     def test_memory_failure_is_explicit_and_blocks_external_escalation(self):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import re
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -17,6 +18,10 @@ from .sources import EXTERNAL_SOURCE_CLASSES, EvidenceSide, SourceClass, TrustCl
 
 @dataclass(frozen=True, slots=True)
 class SourcePolicy:
+    """`allowed_github_repositories={"*"}` explicitly opts into trusting any
+    repository a configured GitHub provider discovers, instead of requiring a
+    pre-approved per-repository allowlist."""
+
     allowed_domains: frozenset[str]
     denied_domains: frozenset[str] = frozenset()
     allowed_github_repositories: frozenset[str] = frozenset()
@@ -53,6 +58,7 @@ class IsolatedModelEvidence:
     encoded_untrusted_content: str
     content_digest: str
     source_class: SourceClass
+    detected_injection_markers: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,7 +121,8 @@ def authorize_source(locator: str, source_class: SourceClass, trust: TrustClass,
         raise PermissionError("source trust is below policy minimum")
     if source_class is SourceClass.GITHUB_REPOSITORY:
         repository = canonical_github_repository(locator)
-        if repository not in {item.lower().removesuffix(".git") for item in policy.allowed_github_repositories}:
+        allowed_repositories = {item.lower().removesuffix(".git") for item in policy.allowed_github_repositories}
+        if "*" not in allowed_repositories and repository not in allowed_repositories:
             raise PermissionError(f"GitHub repository is not explicitly allowed: {repository}")
     return canonical_locator(locator)
 
@@ -153,6 +160,25 @@ def validate_fetched_document(document: FetchedDocument, metadata: FetchMetadata
     return document
 
 
+_INJECTION_MARKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("ignore_previous_instructions", re.compile(r"(?i)ignore\s+(all\s+)?(previous|prior)\s+instructions")),
+    ("disregard_system_prompt", re.compile(r"(?i)disregard\s+(the\s+)?(system|prior)\s+prompt")),
+    ("persona_override", re.compile(r"(?i)you\s+are\s+now\s+(an?\s+)?\w")),
+    ("reveal_instructions", re.compile(r"(?i)reveal\s+(your|the)\s+(system\s+prompt|instructions)")),
+    ("unrestricted_roleplay", re.compile(r"(?i)act\s+as\s+an?\s+unrestricted")),
+    ("elevate_access", re.compile(r"(?i)grant\s+(admin|root|elevated)\s+access")),
+)
+
+
+def screen_for_injection_markers(text: str) -> tuple[str, ...]:
+    """Detect (never strip) common prompt-injection phrasing in untrusted text.
+
+    Content stays inert regardless of what this finds — screening exists so
+    an injection attempt is provably recorded, not to gate or edit evidence.
+    """
+    return tuple(name for name, pattern in _INJECTION_MARKERS if pattern.search(text))
+
+
 def isolate_for_model(text: UntrustedText) -> IsolatedModelEvidence:
     """Encode hostile content so it cannot splice into model instructions."""
     encoded = base64.b64encode(text.content.encode("utf-8")).decode("ascii")
@@ -161,6 +187,7 @@ def isolate_for_model(text: UntrustedText) -> IsolatedModelEvidence:
         encoded,
         text.content_digest,
         text.source_class,
+        screen_for_injection_markers(text.content),
     )
 
 
@@ -184,4 +211,4 @@ def provenance_for(insight: ProjectInsight, bundle: EvidenceBundle, receipt: Lin
     return ProvenanceReport(insight.identity.canonical, tuple(sorted(item.captured_at for item in bundle.items)), internal, external, f"{insight.method}@{insight.method_version}", unavailable, contradictions)
 
 
-__all__ = ["FetchLimits", "FetchMetadata", "IsolatedModelEvidence", "ProvenanceReport", "SourcePolicy", "authorize_source", "canonical_github_repository", "isolate_for_model", "prepare_outbound_query", "provenance_for", "qualify_external_memory_proposal", "validate_fetched_document"]
+__all__ = ["FetchLimits", "FetchMetadata", "IsolatedModelEvidence", "ProvenanceReport", "SourcePolicy", "authorize_source", "canonical_github_repository", "isolate_for_model", "prepare_outbound_query", "provenance_for", "qualify_external_memory_proposal", "screen_for_injection_markers", "validate_fetched_document"]

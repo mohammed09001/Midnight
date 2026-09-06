@@ -71,8 +71,9 @@ from .repo_intelligence.runtime_contract import (
     StageOutcome,
     StageReasonCode,
 )
-from .repo_intelligence.signals import ScoredSignal, SignalScanResult, scan_signals
+from .repo_intelligence.signals import PressureFactorName, ScoredSignal, SignalScanResult, scan_signals
 from .repo_intelligence.sources import DEFAULT_SOURCE_TRUST, SourceClass, TrustClass
+from .repo_intelligence.sufficiency import SufficiencyDecision, evaluate_sufficiency
 from .repo_intelligence.synthesis import ClaimCandidate, synthesize
 from .repo_intelligence.terminal_learning import (
     TerminalCandidate,
@@ -109,6 +110,8 @@ class PipelineRunResult:
     stage_outcomes: tuple[StageOutcome, ...] = ()
     performance_coverage: PerformanceEvidenceCoverage | None = None
     retrieval_plans: tuple[RetrievalPlan, ...] = ()
+    sufficiency_decisions: tuple[SufficiencyDecision, ...] = ()
+    injection_markers_detected: tuple[str, ...] = ()
 
 
 def _outcome(
@@ -295,6 +298,43 @@ def _memory_answer_status(
     ), True
 
 
+def _question_sufficiency(
+    scored: ScoredSignal,
+    *,
+    repository_key: str,
+    providers: RepoIntelligenceProviders,
+    project_key: str,
+    now: datetime,
+    internal_check_safe: bool,
+    cache: dict[str, SufficiencyDecision],
+) -> tuple[InternalAnswerStatus, SufficiencyDecision | None]:
+    """Execution 02: real per-question sufficiency, replacing the coarse
+    project-wide broadcast. Falls back to ABSENT (never SUFFICIENT) whenever
+    the concept can't be derived or the coarse Memory check already failed
+    closed, so external escalation is never enabled by a shortcut here.
+    """
+    if not internal_check_safe:
+        return InternalAnswerStatus.ABSENT, None
+    try:
+        concept = abstract_concept(scored.paths[0], repository_key=repository_key)
+        template_kind = "coupling" if scored.signal.signal_kind == "coupling" else scored.signal.signal_kind
+    except (ValueError, IndexError):
+        return InternalAnswerStatus.ABSENT, None
+    cache_key = f"{template_kind}|{concept}"
+    decision = cache.get(cache_key)
+    if decision is None:
+        decision = evaluate_sufficiency(
+            concept=concept,
+            template_kind=template_kind,
+            scored=scored,
+            memory=providers.memory_bridge,
+            project_key=project_key,
+            now=now,
+        )
+        cache[cache_key] = decision
+    return decision.status, decision
+
+
 def _build_job(
     project: Identity,
     *,
@@ -371,6 +411,9 @@ def _evidence_bundle_for_signal(
     )
 
 
+MINIMUM_FETCH_RELEVANCE = 0.35
+
+
 def _augment_with_external_evidence(
     bundle: EvidenceBundle,
     candidates: list[ClaimCandidate],
@@ -378,16 +421,56 @@ def _augment_with_external_evidence(
     discovery: DiscoveryRun | None,
     providers: RepoIntelligenceProviders,
     project: Identity,
+    job: ProjectIntelligenceJob,
     now: datetime,
-) -> EvidenceBundle:
-    """Promote only a fetched, content-digested source into evidence."""
+    concept: str,
+) -> tuple[EvidenceBundle, tuple[str, ...]]:
+    """Promote only a fetched, verified, content-digested source into evidence.
+
+    Returns the (possibly augmented) bundle plus any injection markers
+    `isolate_for_model` detected in the fetched text — detection is for audit
+    only; the text stays inert either way, never interpreted as instructions.
+    """
     if discovery is None or not discovery.ranked or providers.fetch_parse is None:
-        return bundle
+        return bundle, ()
     top = discovery.ranked[0]
+    if top.score.total < MINIMUM_FETCH_RELEVANCE:
+        # Early stopping: marginal evidence gain from a weak candidate isn't
+        # worth spending a fetch.
+        return bundle, ()
     if not providers.fetch_parse.available().available:
-        return bundle
+        return bundle, ()
     document = providers.fetch_parse.fetch(top.canonical_locator, top.source.source_class)
+
     from .repo_intelligence.contracts import ExternalSourceRef, external_source_ref_identity
+    from .repo_intelligence.external_intelligence import normalize_external, verify_external
+    from .repo_intelligence.research_security import isolate_for_model
+
+    normalized = normalize_external(
+        document, provider=top.source.provider, locator=top.canonical_locator, title=top.source.title
+    )
+    verification = verify_external(normalized, concept)
+    if not verification.verified:
+        raise ValueError(f"fetched content failed topical verification: {verification.reason}")
+    isolated = isolate_for_model(document.text)
+
+    if providers.budget_meter is not None:
+        providers.budget_meter.record(
+            CostRecord(
+                identity=deterministic_repo_identity(
+                    RepoIntelligenceKind.COST_RECORD,
+                    f"{project.canonical}|fetch|{document.text.content_digest}",
+                ),
+                project=project,
+                job=job.identity,
+                resource=CostResourceKind.EXTERNAL_FETCH,
+                provider=top.source.provider,
+                latency_ms=0.0,
+                occurred_at=now,
+                cache_status=CacheStatus.MISS,
+                budget_authorized=True,
+            )
+        )
 
     ref_identity = external_source_ref_identity(
         top.source.provider, top.canonical_locator, document.text.content_digest
@@ -425,13 +508,14 @@ def _augment_with_external_evidence(
             supports=True,
         )
     )
-    return EvidenceBundle(
+    augmented = EvidenceBundle(
         identity=evidence_bundle_identity(project, items),
         project=project,
         items=items,
         created_at=now,
         gaps=bundle.gaps,
     )
+    return augmented, isolated.detected_injection_markers
 
 
 def _terminal_candidate(
@@ -460,6 +544,12 @@ def _terminal_candidate(
         novelty=1.0 if dismissal_count == 0 else max(0.0, 1.0 - 0.34 * dismissal_count),
         expected_learning_value=confidence,
         interruption_cost=0.2,
+        learning_pressure=scored.pressure.score if scored.pressure.score is not None else 0.0,
+        timing_fit=(scored.pressure.factor(PressureFactorName.FRESHNESS).value
+                    if scored.pressure.factor(PressureFactorName.FRESHNESS) is not None
+                    and scored.pressure.factor(PressureFactorName.FRESHNESS).value is not None else 0.5),
+        uncertainty=1.0 - confidence,
+        stale_risk=1.0 if insight.is_superseded() else 0.0,
     )
 
 
@@ -584,19 +674,34 @@ def run_pipeline(
     insight_bundles: list[tuple[ProjectInsight, EvidenceBundle]] = []
     insight_context: dict[str, tuple[ScoredSignal, ResearchQuestion | None]] = {}
     open_questions = 0
+    answered_internal_count = 0
     discovery_attempted = 0
     discovery_budget_stops = 0
     discovery_failures = 0
     verification_degraded = False
     synthesis_failures = 0
 
-    compile_status = memory_status or InternalAnswerStatus.ABSENT
+    sufficiency_cache: dict[str, SufficiencyDecision] = {}
+    sufficiency_decisions: list[SufficiencyDecision] = []
+    injection_markers_detected: list[str] = []
     for scored in scan_result.signals:
         store.upsert_signal(scored.signal)
         store.upsert_lineage_receipt(scored.receipt)
         store.link_signal_receipt(
             project, scored.signal.identity, scored.receipt.identity
         )
+
+        compile_status, decision = _question_sufficiency(
+            scored,
+            repository_key=repository_key,
+            providers=providers,
+            project_key=project_key,
+            now=now,
+            internal_check_safe=internal_check_safe,
+            cache=sufficiency_cache,
+        )
+        if decision is not None:
+            sufficiency_decisions.append(decision)
 
         compiled = compile_question(
             scored,
@@ -625,6 +730,8 @@ def run_pipeline(
             if question.status is QuestionStatus.OPEN:
                 open_questions += 1
                 store.record_question_job(project, question.dedup_key, job.identity)
+            elif question.status is QuestionStatus.ANSWERED_INTERNAL:
+                answered_internal_count += 1
 
         discovery: DiscoveryRun | None = None
         external_eligible = question is not None and question.status is QuestionStatus.OPEN
@@ -633,9 +740,9 @@ def run_pipeline(
             pass
         elif external_eligible and not internal_check_safe:
             pass
-        elif external_eligible and (
-            not authorization.external_access or not effective_privacy_policy.allow_export
-        ):
+        elif external_eligible and not authorization.external_access:
+            pass
+        elif external_eligible and not effective_privacy_policy.allow_export:
             pass
         elif external_eligible and providers.external_discovery is None:
             pass
@@ -665,12 +772,13 @@ def run_pipeline(
         bundle, evidence_refs = _evidence_bundle_for_signal(
             scored, project=project, now=now
         )
+        signal_concept = (
+            abstract_concept(scored.paths[0], repository_key=repository_key)
+            if scored.paths else scored.signal.signal_kind
+        )
         candidates = [
             ClaimCandidate(
-                topic=(
-                    abstract_concept(scored.paths[0], repository_key=repository_key)
-                    if scored.paths else scored.signal.signal_kind
-                ),
+                topic=signal_concept,
                 statement=scored.signal.summary,
                 claim_kind=ClaimKind.DERIVED,
                 evidence_refs=evidence_refs,
@@ -678,14 +786,17 @@ def run_pipeline(
             )
         ]
         try:
-            bundle = _augment_with_external_evidence(
+            bundle, markers = _augment_with_external_evidence(
                 bundle,
                 candidates,
                 discovery=discovery,
                 providers=providers,
                 project=project,
+                job=job,
                 now=now,
+                concept=signal_concept,
             )
+            injection_markers_detected.extend(markers)
         except Exception:
             verification_degraded = True
             # Keep the already-grounded internal bundle; do not fabricate an
@@ -729,15 +840,7 @@ def run_pipeline(
         ),
     )
 
-    if open_questions == 0:
-        external_stage = _outcome(
-            RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
-            StageExecutionStatus.SKIPPED,
-            "repo_intelligence.discovery.discover",
-            reason=StageReasonCode.ABSENCE,
-            detail="no OPEN research question required external discovery",
-        )
-    elif replayed:
+    if replayed:
         external_stage = _outcome(
             RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
             StageExecutionStatus.SKIPPED,
@@ -757,14 +860,45 @@ def run_pipeline(
             ),
             detail="internal sufficiency could not be qualified; fail-closed external escalation",
         )
-    elif not authorization.external_access or not effective_privacy_policy.allow_export:
+    elif not authorization.external_access:
+        # Checked ahead of sufficiency: a policy denial must be reported as
+        # such even when internal evidence also happens to be sufficient —
+        # never masked as StageReasonCode.INTERNAL_SUFFICIENT.
         external_stage = _outcome(
             RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
             StageExecutionStatus.SKIPPED,
             "repo_intelligence.discovery.discover",
-            reason=StageReasonCode.POLICY_DENIAL,
-            detail="project authorization or privacy policy denied external export",
+            reason=StageReasonCode.AUTHORIZATION_DENIED,
+            detail="project authorization denied external access",
         )
+    elif not effective_privacy_policy.allow_export:
+        external_stage = _outcome(
+            RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
+            StageExecutionStatus.SKIPPED,
+            "repo_intelligence.discovery.discover",
+            reason=StageReasonCode.PRIVACY_DENIED,
+            detail="privacy policy denied external export",
+        )
+    elif open_questions == 0:
+        if answered_internal_count > 0:
+            external_stage = _outcome(
+                RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
+                StageExecutionStatus.SKIPPED,
+                "repo_intelligence.discovery.discover",
+                reason=StageReasonCode.INTERNAL_SUFFICIENT,
+                detail=(
+                    f"{answered_internal_count} research question(s) already answered "
+                    "internally; no external research has justified expected value"
+                ),
+            )
+        else:
+            external_stage = _outcome(
+                RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
+                StageExecutionStatus.SKIPPED,
+                "repo_intelligence.discovery.discover",
+                reason=StageReasonCode.ABSENCE,
+                detail="no OPEN research question required external discovery",
+            )
     elif providers.external_discovery is None:
         external_stage = _outcome(
             RuntimeStage.OPTIONAL_EXTERNAL_DISCOVERY,
@@ -907,7 +1041,7 @@ def run_pipeline(
             RuntimeStage.ATTENTION_RANK,
             StageExecutionStatus.COMPLETED,
             "repo_intelligence.terminal_learning.decide_terminal_card",
-            detail="terminal_learning is the sole production attention owner in Execution 01; RI-14 attention remains library-only",
+            detail="terminal_learning delegates ranking to the canonical attention formula and rolling attention budget",
         )
         if replayed:
             stages[RuntimeStage.EXPOSE] = _outcome(
@@ -1006,6 +1140,8 @@ def run_pipeline(
         stage_outcomes=ordered,
         performance_coverage=coverage,
         retrieval_plans=tuple(retrieval_plans),
+        sufficiency_decisions=tuple(sufficiency_decisions),
+        injection_markers_detected=tuple(injection_markers_detected),
     )
 
 

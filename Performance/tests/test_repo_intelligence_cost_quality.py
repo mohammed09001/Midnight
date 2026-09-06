@@ -36,13 +36,17 @@ class RouterTests(unittest.TestCase):
     def test_quality_gate_forces_then_stops_escalation(self):
         executor = FakePricedExecutor({
             MethodTier.RETRIEVAL: MethodResult("weak", .4, .6, Spend(wall_time_ms=1)),
+            MethodTier.LIGHTWEIGHT_ML: MethodResult("weak-ml", .5, .5, Spend(wall_time_ms=1)),
             MethodTier.SMALL_MODEL: MethodResult("good", .9, .1, Spend(requests=1, tokens_in=20, tokens_out=5, wall_time_ms=2, cost_micros=7)),
             MethodTier.STRONG_MODEL: MethodResult("unused", 1, 0),
         })
         result = route(profile(), RepoIntelligenceAuthorization(PROJECT), executor, ScopedCaches(PROJECT), ledger(), now=T0)
-        self.assertEqual(executor.calls, [MethodTier.RETRIEVAL, MethodTier.SMALL_MODEL])
+        self.assertEqual(executor.calls, [MethodTier.RETRIEVAL, MethodTier.LIGHTWEIGHT_ML, MethodTier.SMALL_MODEL])
         self.assertEqual(result.final_spend.cost_micros, 7)
         self.assertEqual(sum(item.cost_micros or 0 for item in result.costs), 7)
+        self.assertEqual(result.outcome.value, "accepted")
+        self.assertEqual(len(result.attempted_results), 3)
+        self.assertTrue(all(c.status.value == "observed" for c in result.counterfactuals))
 
     def test_cache_hit_avoids_duplicate_spend_and_stale_cache_recomputes(self):
         executor = FakePricedExecutor({MethodTier.DETERMINISTIC: MethodResult("answer", 1, 0, Spend(cost_micros=3))})

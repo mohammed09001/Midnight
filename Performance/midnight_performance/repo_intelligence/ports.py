@@ -132,6 +132,7 @@ class BudgetUsage:
     model_calls: int = 0
     network_requests: int = 0
     cost_micros: int = 0
+    fetched_documents: int = 0
 
     def __post_init__(self) -> None:
         if self.project.kind.value != "project":
@@ -140,6 +141,7 @@ class BudgetUsage:
             ("model_calls", self.model_calls),
             ("network_requests", self.network_requests),
             ("cost_micros", self.cost_micros),
+            ("fetched_documents", self.fetched_documents),
         ):
             if value < 0:
                 raise ValueError(f"{label} must not be negative")
@@ -203,7 +205,7 @@ class PerformanceReadsPort(Protocol):
 class MemoryBridgePort(Protocol):
     """Qualified Memory context strictly through the supported bridge types."""
 
-    def read_context(self, project_key: str, *, size: int = 20) -> MemoryReadResult: ...
+    def read_context(self, project_key: str, *, size: int = 20, query: str | None = None) -> MemoryReadResult: ...
 
     def propose_lesson(self, envelope: Mapping[str, object]) -> LessonDeliveryResult: ...
 

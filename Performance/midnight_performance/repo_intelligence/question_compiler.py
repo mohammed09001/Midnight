@@ -260,6 +260,21 @@ def compile_question(
     elif internal_answer_status is InternalAnswerStatus.PARTIAL:
         status = QuestionStatus.OPEN
         what_is_known = "partial internal context exists; the specific gap is unresolved"
+    elif internal_answer_status is InternalAnswerStatus.STALE:
+        status = QuestionStatus.OPEN
+        what_is_known = (
+            "internal/Memory knowledge previously answered this need but freshness "
+            "requirements are no longer met"
+        )
+    elif internal_answer_status is InternalAnswerStatus.CONTRADICTED:
+        status = QuestionStatus.OPEN
+        what_is_known = (
+            "internal evidence materially conflicts; contradiction requires resolution "
+            "before this can be treated as answered"
+        )
+    elif internal_answer_status is InternalAnswerStatus.UNKNOWN:
+        status = QuestionStatus.OPEN
+        what_is_known = "internal sufficiency could not be evaluated reliably"
     else:
         status = QuestionStatus.OPEN
         what_is_known = "no internal knowledge found; recorded as an honest gap, not reconstructed"

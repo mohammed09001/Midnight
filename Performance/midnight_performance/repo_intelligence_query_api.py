@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .repo_intelligence.attention import AttentionBudgetLimits, AttentionSpend, attention_budget_allows, attention_spend
+from .repo_intelligence.attention import RankedAttentionCandidate, rank_attention_candidates as _rank_attention_candidates
 from .repo_intelligence.authorization import RepoIntelligenceAuthorization, ensure_same_project
 from .repo_intelligence.contracts import (
     AnalogyRecord,
@@ -201,6 +202,13 @@ class RepoIntelligenceQueryAPI:
         self._authorize(authorization)
         spend = attention_spend(self._store.list_exposures(self._project), now=now, window=limits.window)
         return spend, attention_budget_allows(spend, limits)
+
+    def rank_attention_candidates(
+        self, authorization: RepoIntelligenceAuthorization, candidates: tuple[RankedAttentionCandidate, ...]
+    ) -> tuple[RankedAttentionCandidate, ...]:
+        """Expose the exact production ranking used by terminal presentation."""
+        self._authorize(authorization)
+        return _rank_attention_candidates(candidates)
 
     def release_metric(self, authorization: RepoIntelligenceAuthorization) -> ReleaseMetric:
         """``useful_project_learning / (user_attention_cost + normalized_compute_cost)`` (Execution RI-14)."""

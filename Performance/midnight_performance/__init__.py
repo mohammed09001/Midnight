@@ -96,6 +96,7 @@ from .model_registry import ApprovalState, CohortPerformance, DeploymentState, M
 from .champion_challenger import ChallengePolicy, ChallengerReport, CohortComparison, DatasetComparison, EvaluationDataset, evaluate_challenger
 from .evaluation import DeterministicEvaluator, EvaluationResult, EvaluatorKind, JudgeConfiguration, JudgeResponse, deterministic_evaluators, evaluate_deterministically, evaluate_with_judge
 from .qualification import EvaluationCorpus, FrozenEvent, FrozenPromptRun, CorpusResult, evaluate_frozen_run, QualificationState, HarnessQualification, qualify_harness
+from .repo_intelligence_qualification import BaselineSnapshot, EconomicVerdict, EconomicsMetrics, IntegratedQualificationReport, QualificationStatus, ScenarioResult, WorkloadComparison, build_integrated_report, compare_workload
 from .watch_qualification import DataFailure, DataQualification, RuntimeFailure, RuntimeQualification, RuntimeQualificationInput, WatchDataEvidence, WatchQualificationState, qualify_data, qualify_runtime
 from .security_feedback_qualification import FeedbackFailure, FeedbackQualification, SecurityFeedbackQualificationState, SecurityDevelopmentContext, SecurityFailure, SecurityQualification, SecurityQualificationInput, bounded_security_context, qualify_feedback, qualify_security
 from .analytics_ml_qualification import AnalyticsQualification, MLQualification, MLQualificationEvidence, qualify_analytics, qualify_ml
@@ -277,6 +278,7 @@ __all__ = [
     "ChallengePolicy", "ChallengerReport", "CohortComparison", "DatasetComparison", "EvaluationDataset", "evaluate_challenger",
     "DeterministicEvaluator", "EvaluationResult", "EvaluatorKind", "JudgeConfiguration", "JudgeResponse", "deterministic_evaluators", "evaluate_deterministically", "evaluate_with_judge",
     "EvaluationCorpus", "FrozenEvent", "FrozenPromptRun", "CorpusResult", "evaluate_frozen_run", "QualificationState", "HarnessQualification", "qualify_harness",
+    "BaselineSnapshot", "EconomicVerdict", "EconomicsMetrics", "IntegratedQualificationReport", "QualificationStatus", "ScenarioResult", "WorkloadComparison", "build_integrated_report", "compare_workload",
     "DataFailure", "DataQualification", "RuntimeFailure", "RuntimeQualification", "RuntimeQualificationInput", "WatchDataEvidence", "WatchQualificationState", "qualify_data", "qualify_runtime",
     "FeedbackFailure", "FeedbackQualification", "SecurityFeedbackQualificationState", "SecurityDevelopmentContext", "SecurityFailure", "SecurityQualification", "SecurityQualificationInput", "bounded_security_context", "qualify_feedback", "qualify_security",
     "AnalyticsQualification", "MLQualification", "MLQualificationEvidence", "qualify_analytics", "qualify_ml",

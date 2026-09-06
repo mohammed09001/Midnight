@@ -137,7 +137,7 @@ def _content_digest_of(*parts: str) -> str:
 
 
 _BUDGET_FIELDS = frozenset(
-    {"max_model_calls", "max_network_requests", "max_cost_micros", "max_seconds"}
+    {"max_model_calls", "max_network_requests", "max_cost_micros", "max_seconds", "max_fetched_documents"}
 )
 
 
@@ -163,6 +163,7 @@ class BudgetCeiling:
     max_network_requests: int | None = None
     max_cost_micros: int | None = None
     max_seconds: float | None = None
+    max_fetched_documents: int | None = None
 
     def __post_init__(self) -> None:
         for label, bound in (
@@ -170,6 +171,7 @@ class BudgetCeiling:
             ("max_network_requests", self.max_network_requests),
             ("max_cost_micros", self.max_cost_micros),
             ("max_seconds", self.max_seconds),
+            ("max_fetched_documents", self.max_fetched_documents),
         ):
             if bound is not None and bound < 0:
                 raise ValueError(f"{label} must not be negative")
@@ -180,6 +182,7 @@ class BudgetCeiling:
                 self.max_network_requests,
                 self.max_cost_micros,
                 self.max_seconds,
+                self.max_fetched_documents,
             )
         ):
             raise ValueError("budget ceilings require at least one bound")
@@ -190,6 +193,7 @@ class BudgetCeiling:
             "max_network_requests": self.max_network_requests,
             "max_cost_micros": self.max_cost_micros,
             "max_seconds": self.max_seconds,
+            "max_fetched_documents": self.max_fetched_documents,
         }
 
     @classmethod
@@ -200,6 +204,7 @@ class BudgetCeiling:
             max_network_requests=raw.get("max_network_requests"),
             max_cost_micros=raw.get("max_cost_micros"),
             max_seconds=raw.get("max_seconds"),
+            max_fetched_documents=raw.get("max_fetched_documents"),
         )
 
 
@@ -740,6 +745,9 @@ class InternalAnswerStatus(str, Enum):
     SUFFICIENT = "sufficient"
     PARTIAL = "partial"
     ABSENT = "absent"
+    STALE = "stale"
+    CONTRADICTED = "contradicted"
+    UNKNOWN = "unknown"
 
 
 class QuestionStatus(str, Enum):
@@ -1962,6 +1970,142 @@ _COST_FIELDS = frozenset(
 
 
 @dataclass(frozen=True, slots=True)
+class LearnedDecisionRecord:
+    """One lightweight-ML decision event (Repo Intelligent 02, Execution 04).
+
+    A minimal, project-scoped record that references source evidence rather
+    than copying it: features are bounded floats derived from local metadata
+    (never raw source code, secrets, prompt text, or full Memory records),
+    and the record exists to make one learned routing/estimation decision
+    replayable and evaluable offline. It is never a new truth authority: an
+    insight, claim, or Memory record cannot cite this as evidence, and the
+    decision it records may be advisory-only (shadow mode) or the actual
+    action taken, per ``action_chosen``.
+    """
+
+    identity: RepoIdentity
+    project: Identity
+    decision_type: str
+    feature_schema_version: int
+    features: tuple[tuple[str, float], ...]
+    prediction: float
+    uncertainty: float
+    action_chosen: str
+    model_name: str
+    model_version: str
+    occurred_at: datetime
+    evidence_ids: tuple[str, ...] = ()
+    cost_micros: int | None = None
+    latency_ms: float | None = None
+    outcome_label: bool | None = None
+    label_recorded_at: datetime | None = None
+    schema_version: int = REPO_INTELLIGENCE_CONTRACT_VERSION
+
+    def __post_init__(self) -> None:
+        _require_kind(self.identity, RepoIntelligenceKind.LEARNED_DECISION_RECORD, "identity")
+        _require_performance_project(self.project, "project")
+        _require_non_blank(self.decision_type, "decision_type")
+        if self.feature_schema_version < 1:
+            raise ValueError("feature_schema_version must be positive")
+        names = [name for name, _ in self.features]
+        if not self.features or len(names) != len(set(names)):
+            raise ValueError("features require at least one entry with unique names")
+        for name, value in self.features:
+            _require_non_blank(name, "feature name")
+            if not isinstance(value, float) or value != value or value in (float("inf"), float("-inf")):
+                raise ValueError(f"feature {name!r} must be a finite float")
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"feature {name!r} must be between zero and one")
+        if not 0.0 <= self.prediction <= 1.0:
+            raise ValueError("prediction must be between zero and one")
+        if not 0.0 <= self.uncertainty <= 1.0:
+            raise ValueError("uncertainty must be between zero and one")
+        _require_non_blank(self.action_chosen, "action_chosen")
+        _require_non_blank(self.model_name, "model_name")
+        _require_non_blank(self.model_version, "model_version")
+        _require_tz_aware(self.occurred_at, "occurred_at")
+        for ref in self.evidence_ids:
+            _require_canonical(ref, "evidence_ids entry")
+        if self.cost_micros is not None and self.cost_micros < 0:
+            raise ValueError("cost_micros must not be negative")
+        if self.latency_ms is not None and self.latency_ms < 0:
+            raise ValueError("latency_ms must not be negative")
+        if self.label_recorded_at is not None:
+            _require_tz_aware(self.label_recorded_at, "label_recorded_at")
+            if self.outcome_label is None:
+                raise ValueError("label_recorded_at requires an outcome_label")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "identity": self.identity.canonical,
+            "project": self.project.canonical,
+            "decision_type": self.decision_type,
+            "feature_schema_version": self.feature_schema_version,
+            "features": [[name, value] for name, value in self.features],
+            "prediction": self.prediction,
+            "uncertainty": self.uncertainty,
+            "action_chosen": self.action_chosen,
+            "model_name": self.model_name,
+            "model_version": self.model_version,
+            "occurred_at": _dump_datetime(self.occurred_at),
+            "evidence_ids": list(self.evidence_ids),
+            "cost_micros": self.cost_micros,
+            "latency_ms": self.latency_ms,
+            "outcome_label": self.outcome_label,
+            "label_recorded_at": _dump_datetime(self.label_recorded_at),
+            "schema_version": self.schema_version,
+        }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "LearnedDecisionRecord":
+        _require_schema_version(raw, "LearnedDecisionRecord")
+        _reject_unknown_fields(raw, _LEARNED_DECISION_FIELDS, "LearnedDecisionRecord")
+        return cls(
+            identity=RepoIdentity.parse(raw["identity"]),
+            project=Identity.parse(raw["project"]),
+            decision_type=raw["decision_type"],
+            feature_schema_version=raw["feature_schema_version"],
+            features=tuple((name, value) for name, value in raw["features"]),
+            prediction=raw["prediction"],
+            uncertainty=raw["uncertainty"],
+            action_chosen=raw["action_chosen"],
+            model_name=raw["model_name"],
+            model_version=raw["model_version"],
+            occurred_at=_parse_datetime(raw["occurred_at"], "occurred_at"),
+            evidence_ids=tuple(raw.get("evidence_ids", ())),
+            cost_micros=raw.get("cost_micros"),
+            latency_ms=raw.get("latency_ms"),
+            outcome_label=raw.get("outcome_label"),
+            label_recorded_at=_parse_datetime(raw["label_recorded_at"], "label_recorded_at")
+            if raw.get("label_recorded_at") else None,
+            schema_version=raw["schema_version"],
+        )
+
+
+_LEARNED_DECISION_FIELDS = frozenset(
+    {
+        "identity",
+        "project",
+        "decision_type",
+        "feature_schema_version",
+        "features",
+        "prediction",
+        "uncertainty",
+        "action_chosen",
+        "model_name",
+        "model_version",
+        "occurred_at",
+        "evidence_ids",
+        "cost_micros",
+        "latency_ms",
+        "outcome_label",
+        "label_recorded_at",
+        "schema_version",
+    }
+)
+
+
+@dataclass(frozen=True, slots=True)
 class LineageReceipt:
     """Performance Lineage Receipt: provenance for one derived intelligence artifact.
 
@@ -2153,6 +2297,7 @@ __all__ = [
     "InternalSignal",
     "JobStatus",
     "JobTrigger",
+    "LearnedDecisionRecord",
     "LearningOutcome",
     "LineageReceipt",
     "PressureDimension",

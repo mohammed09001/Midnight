@@ -38,6 +38,7 @@ from .repo_intelligence.contracts import (
     ExposureOutcome,
     GraphLink,
     InternalAnswerStatus,
+    LearnedDecisionRecord,
     LearningOutcome,
     LineageReceipt,
     ProjectInsight,
@@ -115,6 +116,20 @@ CREATE TABLE IF NOT EXISTS analogy_records (
     project TEXT NOT NULL, identity TEXT NOT NULL, internal_entity_ref TEXT NOT NULL,
     confidence REAL NOT NULL, document_json TEXT NOT NULL,
     PRIMARY KEY (project, identity)
+);
+CREATE TABLE IF NOT EXISTS learned_decisions (
+    project TEXT NOT NULL, identity TEXT NOT NULL, decision_type TEXT NOT NULL,
+    occurred_at TEXT NOT NULL, document_json TEXT NOT NULL,
+    PRIMARY KEY (project, identity)
+);
+CREATE TABLE IF NOT EXISTS online_learning_events (
+    project TEXT NOT NULL, event_id TEXT NOT NULL, decision_id TEXT NOT NULL,
+    disposition TEXT NOT NULL, document_json TEXT NOT NULL,
+    PRIMARY KEY (project, event_id)
+);
+CREATE TABLE IF NOT EXISTS online_model_checkpoints (
+    project TEXT NOT NULL, decision_type TEXT NOT NULL, checkpoint_json TEXT NOT NULL,
+    PRIMARY KEY (project, decision_type)
 );
 """
 
@@ -309,6 +324,106 @@ class RepoIntelligenceStore:
             "SELECT document_json FROM cost_records WHERE project = ? ORDER BY identity", (project.canonical,)
         ).fetchall()
         return tuple(CostRecord.from_dict(json.loads(row[0])) for row in rows)
+
+    # -- learned decisions + disposable online state ----------------------
+    def append_learned_decision(self, decision: LearnedDecisionRecord) -> None:
+        with self._locked():
+            self._conn.execute(
+                "INSERT OR REPLACE INTO learned_decisions (project, identity, decision_type, occurred_at, document_json) VALUES (?, ?, ?, ?, ?)",
+                (decision.project.canonical, decision.identity.canonical, decision.decision_type,
+                 decision.occurred_at.isoformat(), json.dumps(decision.to_dict())),
+            )
+            self._conn.commit()
+
+    def get_learned_decision(self, project: Identity, identity: str) -> LearnedDecisionRecord | None:
+        row = self._conn.execute(
+            "SELECT document_json FROM learned_decisions WHERE project = ? AND identity = ?",
+            (project.canonical, identity),
+        ).fetchone()
+        return LearnedDecisionRecord.from_dict(json.loads(row[0])) if row else None
+
+    def list_learned_decisions(self, project: Identity) -> tuple[LearnedDecisionRecord, ...]:
+        rows = self._conn.execute(
+            "SELECT document_json FROM learned_decisions WHERE project = ? ORDER BY occurred_at, identity",
+            (project.canonical,),
+        ).fetchall()
+        return tuple(LearnedDecisionRecord.from_dict(json.loads(row[0])) for row in rows)
+
+    def online_event_exists(self, project: Identity, event_id: str) -> bool:
+        row = self._conn.execute(
+            "SELECT 1 FROM online_learning_events WHERE project = ? AND event_id = ?",
+            (project.canonical, event_id),
+        ).fetchone()
+        return row is not None
+
+    def record_online_no_update(self, label: object, disposition: object) -> bool:
+        """Persist a rejected/no-label event so replay remains idempotent."""
+        document = label.to_dict()  # type: ignore[attr-defined]
+        with self._locked():
+            cursor = self._conn.execute(
+                "INSERT OR IGNORE INTO online_learning_events (project, event_id, decision_id, disposition, document_json) VALUES (?, ?, ?, ?, ?)",
+                (label.project.canonical, label.event_id, label.decision_id, disposition.value, json.dumps(document)),  # type: ignore[attr-defined]
+            )
+            self._conn.commit()
+            return cursor.rowcount == 1
+
+    def apply_online_update(self, label: object, decision: LearnedDecisionRecord, checkpoint: object) -> bool:
+        """Atomically claim the event, attach its label, and replace the checkpoint."""
+        from dataclasses import replace
+
+        labeled = replace(decision, outcome_label=label.value, label_recorded_at=label.occurred_at)  # type: ignore[attr-defined]
+        with self._locked():
+            try:
+                self._conn.execute("BEGIN IMMEDIATE")
+                cursor = self._conn.execute(
+                    "INSERT OR IGNORE INTO online_learning_events (project, event_id, decision_id, disposition, document_json) VALUES (?, ?, ?, ?, ?)",
+                    (label.project.canonical, label.event_id, label.decision_id, "updated", json.dumps(label.to_dict())),  # type: ignore[attr-defined]
+                )
+                if cursor.rowcount != 1:
+                    self._conn.rollback()
+                    return False
+                self._conn.execute(
+                    "UPDATE learned_decisions SET document_json = ? WHERE project = ? AND identity = ?",
+                    (json.dumps(labeled.to_dict()), label.project.canonical, label.decision_id),  # type: ignore[attr-defined]
+                )
+                self._conn.execute(
+                    "INSERT OR REPLACE INTO online_model_checkpoints (project, decision_type, checkpoint_json) VALUES (?, ?, ?)",
+                    (label.project.canonical, decision.decision_type, json.dumps(checkpoint.to_dict())),  # type: ignore[attr-defined]
+                )
+                self._conn.commit()
+                return True
+            except Exception:
+                self._conn.rollback()
+                raise
+
+    def load_online_checkpoint(self, project: Identity, decision_type: str) -> object | None:
+        from .repo_intelligence.online_learning import ModelCheckpoint
+
+        row = self._conn.execute(
+            "SELECT checkpoint_json FROM online_model_checkpoints WHERE project = ? AND decision_type = ?",
+            (project.canonical, decision_type),
+        ).fetchone()
+        if not row:
+            return None
+        try:
+            checkpoint = ModelCheckpoint.from_dict(json.loads(row[0]))
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return None
+        return checkpoint if checkpoint.project == project else None
+
+    def save_online_checkpoint(self, checkpoint: object) -> None:
+        with self._locked():
+            self._conn.execute(
+                "INSERT OR REPLACE INTO online_model_checkpoints (project, decision_type, checkpoint_json) VALUES (?, ?, ?)",
+                (checkpoint.project.canonical, checkpoint.decision_type, json.dumps(checkpoint.to_dict())),  # type: ignore[attr-defined]
+            )
+            self._conn.commit()
+
+    def discard_online_learning_state(self, project: Identity) -> None:
+        """Delete disposable parameters/checkpoints; canonical evidence is untouched."""
+        with self._locked():
+            self._conn.execute("DELETE FROM online_model_checkpoints WHERE project = ?", (project.canonical,))
+            self._conn.commit()
 
     # -- graph links -----------------------------------------------------
     def replace_graph_links(self, project: Identity, links: tuple[GraphLink, ...]) -> None:

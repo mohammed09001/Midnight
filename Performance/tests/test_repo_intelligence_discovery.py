@@ -10,6 +10,7 @@ from midnight_performance.repo_intelligence.contracts import BudgetCeiling, JobS
 from midnight_performance.repo_intelligence.discovery import canonical_locator, discover, rank_discoveries
 from midnight_performance.repo_intelligence.identities import RepoIntelligenceKind, deterministic_repo_identity
 from midnight_performance.repo_intelligence.ports import BudgetGrant, BudgetUsage, DiscoveredSource, PortAvailability, RepoIntelligenceProviders
+from midnight_performance.repo_intelligence.runtime_contract import StageReasonCode
 from midnight_performance.repo_intelligence.sources import SourceClass
 
 T0 = datetime(2026, 9, 4, tzinfo=timezone.utc)
@@ -71,6 +72,20 @@ class DiscoveryTests(unittest.TestCase):
         self.assertFalse(result.costs)
         self.assertEqual(search.calls, 0)
         self.assertIn("no external research", result.stopped_reason)
+        self.assertIs(result.reason_code, StageReasonCode.INTERNAL_SUFFICIENT)
+
+    def test_privacy_denied_export_never_calls_provider_and_is_distinguishable(self):
+        # allow_export=False must surface PRIVACY_DENIED, never a code that
+        # implies sufficiency, even for an OPEN question with export access.
+        search = Search()
+        result = discover(
+            question(), job(), RepoIntelligenceAuthorization(project=PROJECT, external_access=True),
+            RepoIntelligenceProviders(external_discovery=search), privacy_policy=PrivacyPolicy(allow_export=False),
+        )
+        self.assertFalse(result.costs)
+        self.assertEqual(search.calls, 0)
+        self.assertIs(result.reason_code, StageReasonCode.PRIVACY_DENIED)
+        self.assertNotEqual(result.reason_code, StageReasonCode.INTERNAL_SUFFICIENT)
 
     def test_proactive_job_without_lineage_receipt_is_denied(self):
         """Critical invariant (RI-13): no proactive research without a receipt."""

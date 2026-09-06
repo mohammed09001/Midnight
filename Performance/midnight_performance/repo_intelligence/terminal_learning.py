@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from .authorization import RepoIntelligenceAuthorization, ensure_same_project
 from .contracts import Exposure, ExposureChannel, ExposureOutcome, ProjectInsight, new_event_identity
 from .identities import RepoIntelligenceKind
+from .attention import AttentionBudgetLimits, attention_budget_allows, attention_spend, AttentionFactors
 
 
 def _safe_text(value: str, limit: int = 280) -> str:
@@ -33,6 +34,11 @@ class TerminalCandidate:
     expected_learning_value: float
     interruption_cost: float
     external_connection: str | None = None
+    learning_pressure: float = 1.0
+    timing_fit: float = 1.0
+    redundancy: float = 0.0
+    uncertainty: float = 0.0
+    stale_risk: float = 0.0
 
     def __post_init__(self) -> None:
         for label, value in (
@@ -41,13 +47,23 @@ class TerminalCandidate:
         ):
             if not value.strip():
                 raise ValueError(f"terminal candidates require {label}")
-        for value in (self.relevance, self.evidence_quality, self.novelty, self.expected_learning_value, self.interruption_cost):
+        for value in (self.relevance, self.evidence_quality, self.novelty, self.expected_learning_value, self.interruption_cost, self.learning_pressure, self.timing_fit, self.redundancy, self.uncertainty, self.stale_risk):
             if not 0.0 <= value <= 1.0:
                 raise ValueError("terminal candidate scores must be between zero and one")
 
     @property
     def priority(self) -> float:
-        return round(self.relevance + self.evidence_quality + self.novelty + self.expected_learning_value - self.interruption_cost, 6)
+        return AttentionFactors(
+            learning_pressure=self.learning_pressure,
+            evidence_strength=self.evidence_quality,
+            novelty=self.novelty,
+            expected_learning_value=self.expected_learning_value,
+            timing_fit=self.timing_fit,
+            redundancy=self.redundancy,
+            interruption_cost=self.interruption_cost,
+            uncertainty=self.uncertainty,
+            stale_risk=self.stale_risk,
+        ).score
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +76,7 @@ class TerminalContext:
     novelty_threshold: float = 0.4
     cooldown: timedelta = timedelta(hours=8)
     dismissal_limit: int = 3
+    attention_limits: AttentionBudgetLimits | None = AttentionBudgetLimits(timedelta(hours=24), 3, 10)
 
     def __post_init__(self) -> None:
         if self.cooldown < timedelta(0) or self.dismissal_limit < 1:
@@ -102,6 +119,10 @@ def _suppressed(candidate: TerminalCandidate, now: datetime, context: TerminalCo
         return "terminal is in protected focus"
     if not context.budget_allowed:
         return "attention or compute budget is unavailable"
+    if context.attention_limits is not None:
+        spend = attention_spend(history, now=now, window=context.attention_limits.window)
+        if not attention_budget_allows(spend, context.attention_limits):
+            return "rolling attention budget is exhausted"
     if candidate.relevance < context.relevance_threshold or candidate.evidence_quality < context.evidence_threshold:
         return "relevance or evidence quality is below proactive threshold"
     if candidate.novelty < context.novelty_threshold or candidate.expected_learning_value <= candidate.interruption_cost:

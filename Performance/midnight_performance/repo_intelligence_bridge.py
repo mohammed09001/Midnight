@@ -71,7 +71,9 @@ def get_terminal_card(
     store = RepoIntelligenceStore.open_for_project(data_dir, project)
     try:
         authorization = RepoIntelligenceAuthorization(project=project, external_access=False, model_access=False)
-        providers = production_providers(query_api=api, store=store, repository_key=project_key, repo_root=repo_root)
+        providers = production_providers(
+            project=project, query_api=api, store=store, repository_key=project_key, repo_root=repo_root
+        )
         result = run_pipeline(
             project, project_key, repo_root, providers, authorization, store, now=moment, user_pull=user_pull
         )

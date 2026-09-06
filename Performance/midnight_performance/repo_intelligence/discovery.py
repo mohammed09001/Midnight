@@ -26,8 +26,9 @@ from .contracts import (
 )
 from .identities import RepoIntelligenceKind, deterministic_repo_identity
 from .ports import DiscoveredSource, RepoIntelligenceProviders, require_budget_grant
+from .runtime_contract import StageReasonCode
 from .sources import SourceClass, TrustClass
-from ..privacy import PrivacyPolicy, PrivacyViolation, redact_sensitive_text
+from ..privacy import PrivacyPolicy, PrivacyViolation
 
 
 _AUTHORITY = {
@@ -115,6 +116,7 @@ class DiscoveryRun:
     ranked: tuple[RankedDiscovery, ...]
     costs: tuple[CostRecord, ...]
     stopped_reason: str
+    reason_code: StageReasonCode | None = None
 
 
 def score_discovery(hit: DiscoveredSource, *, seen_locators: frozenset[str] = frozenset()) -> RelevanceScore:
@@ -185,10 +187,25 @@ def discover(
     if lineage_receipt is not None and lineage_receipt.project != question.project:
         raise PermissionError("cross-project lineage receipt denied")
     if question.status is not QuestionStatus.OPEN:
-        return DiscoveryRun((), (), f"question is {question.status.value}; no external research is eligible")
+        code = (
+            StageReasonCode.INTERNAL_SUFFICIENT
+            if question.status is QuestionStatus.ANSWERED_INTERNAL
+            else StageReasonCode.NOT_APPLICABLE
+        )
+        return DiscoveryRun(
+            (), (), f"question is {question.status.value}; no external research is eligible", reason_code=code
+        )
     require_external_access(authorization, now=providers.clock_or_default().now())
-    if privacy_policy is None or not privacy_policy.allow_export:
-        raise PrivacyViolation("external query export is disabled by policy")
+    # Local import: research_security.py imports canonical_locator from this
+    # module, so a module-level import here would be circular.
+    from .research_security import prepare_outbound_query
+
+    try:
+        safe_query_text = prepare_outbound_query(
+            question.question_text, authorization, privacy_policy or PrivacyPolicy()
+        )
+    except PrivacyViolation as exc:
+        return DiscoveryRun((), (), str(exc), reason_code=StageReasonCode.PRIVACY_DENIED)
     if providers.external_discovery is None:
         return DiscoveryRun((), (), "external discovery provider unavailable")
     if not providers.external_discovery.available().available:
@@ -200,7 +217,7 @@ def discover(
         return DiscoveryRun((), (), f"budget denied: {grant.reason}")
 
     started = perf_counter()
-    safe_question = replace(question, question_text=redact_sensitive_text(question.question_text))
+    safe_question = replace(question, question_text=safe_query_text)
     hits = providers.external_discovery.search(safe_question, limit=limit)
     elapsed = round((perf_counter() - started) * 1000, 3)
     now: datetime = providers.clock_or_default().now()

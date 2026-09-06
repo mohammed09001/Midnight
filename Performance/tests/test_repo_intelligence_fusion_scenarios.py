@@ -169,7 +169,10 @@ class FusionScenarioTests(unittest.TestCase):
         self.store.upsert_research_question(answered)
 
         discovery.search_calls = 0
-        second = run_pipeline(PROJECT_ALPHA, "alpha", self.repo_root, providers, self.authorization, self.store, now=NOW)
+        second = run_pipeline(
+            PROJECT_ALPHA, "alpha", self.repo_root, providers, self.authorization, self.store, now=NOW,
+            privacy_policy=PrivacyPolicy(allow_export=True),
+        )
         self.assertFalse(
             any(q.dedup_key == open_question.dedup_key and q.status is QuestionStatus.OPEN for q in second.questions_compiled),
             "an already internally-answered recurring need must not reopen research",

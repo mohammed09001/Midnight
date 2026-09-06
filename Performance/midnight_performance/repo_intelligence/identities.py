@@ -41,6 +41,7 @@ class RepoIntelligenceKind(str, Enum):
     CONCEPT = "concept"
     MEMORY_REF = "memory_ref"
     ANALOGY_RECORD = "analogy_record"
+    LEARNED_DECISION_RECORD = "learned_decision_record"
 
 
 @dataclass(frozen=True, slots=True)

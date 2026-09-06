@@ -26,6 +26,7 @@ class WorkClass(str, Enum):
 class MethodTier(str, Enum):
     DETERMINISTIC = "deterministic_local"
     RETRIEVAL = "lexical_graph_retrieval"
+    LIGHTWEIGHT_ML = "lightweight_ml"
     EMBEDDING = "embedding"
     SMALL_MODEL = "small_model"
     EXTERNAL = "targeted_external"
@@ -166,6 +167,31 @@ class ScopedCaches:
         self._entries[kind][key] = CacheEntry(project, value, now, now + ttl, evidence_set_hash)
 
 
+class RouteOutcome(str, Enum):
+    """The typed cascade outcome, distinguishing quality failure from budget failure."""
+
+    ACCEPTED = "accepted"
+    ABSTAINED = "abstained"
+    BUDGET_INSUFFICIENT = "budget_insufficient"
+
+
+class CounterfactualEvidenceStatus(str, Enum):
+    """Never pretend a historical run tells us how every alternative would have performed."""
+
+    OBSERVED = "observed"
+    REPLAYED = "replayed"
+    ESTIMATED = "estimated"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True, slots=True)
+class CounterfactualComparison:
+    tier: MethodTier
+    status: CounterfactualEvidenceStatus
+    result: MethodResult | None
+    note: str
+
+
 @dataclass(frozen=True, slots=True)
 class RouteResult:
     output: str | None
@@ -175,14 +201,72 @@ class RouteResult:
     cache_hit: bool
     gap: str | None
     final_spend: Spend
+    outcome: RouteOutcome = RouteOutcome.ACCEPTED
+    attempted_results: tuple[MethodResult, ...] = ()
+    counterfactuals: tuple[CounterfactualComparison, ...] = ()
 
 
+@dataclass(frozen=True, slots=True)
+class QualityFloor:
+    """A decision class's non-negotiable quality constraint.
+
+    ``hard=True`` means budget/cost pressure can never relax this floor:
+    ``route()`` rejects (at construction time, not at runtime) any
+    ``TaskProfile`` whose own ``required_quality`` undercuts it, rather than
+    silently returning a substandard result under cost pressure.
+    """
+
+    minimum_quality: float
+    maximum_uncertainty: float
+    hard: bool
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.minimum_quality <= 1.0 or not 0.0 <= self.maximum_uncertainty <= 1.0:
+            raise ValueError("quality floor bounds must be between zero and one")
+
+
+# Per decision-class quality floors (spec: "quality floors are constraints,
+# not variables to sacrifice"). Classification/routing may tolerate a
+# calibrated, abstention-eligible floor; evidence synthesis and deep
+# cross-source reasoning require stronger provenance/coverage and are hard
+# floors -- no budget pressure can relax them.
+QUALITY_FLOORS: dict[WorkClass, QualityFloor] = {
+    WorkClass.DETERMINISTIC: QualityFloor(0.0, 1.0, hard=False),
+    WorkClass.RETRIEVAL_ONLY: QualityFloor(0.5, 0.5, hard=False),
+    WorkClass.CLASSIFICATION_RANKING: QualityFloor(0.5, 0.5, hard=False),
+    WorkClass.SEMANTIC_MATCHING: QualityFloor(0.6, 0.4, hard=False),
+    WorkClass.BOUNDED_SYNTHESIS: QualityFloor(0.8, 0.2, hard=True),
+    WorkClass.DEEP_CROSS_SOURCE_REASONING: QualityFloor(0.85, 0.15, hard=True),
+}
+
+_PRIVACY_RISK_HARD_FLOOR_THRESHOLD = 0.5
+
+
+def effective_quality_floor(profile: TaskProfile) -> QualityFloor:
+    """The decision-class floor, hardened further when privacy risk is elevated.
+
+    Security and privacy decisions cannot be relaxed for cost regardless of
+    which ``WorkClass`` they nominally belong to.
+    """
+    floor = QUALITY_FLOORS[profile.work_class]
+    if profile.privacy_risk >= _PRIVACY_RISK_HARD_FLOOR_THRESHOLD:
+        return QualityFloor(
+            max(floor.minimum_quality, 0.9), min(floor.maximum_uncertainty, 0.1), hard=True
+        )
+    return floor
+
+
+# Lexical/graph retrieval remains the entry rung for RETRIEVAL_ONLY (no model
+# tier exists for pure retrieval work). DEEP_CROSS_SOURCE_REASONING
+# deliberately carries no lightweight-ML shortcut: full verification across
+# sources is the point of that class, so a cheap statistical rung would
+# undercut its (hard) quality floor rather than serve it.
 _LADDERS = {
     WorkClass.DETERMINISTIC: (MethodTier.DETERMINISTIC,),
     WorkClass.RETRIEVAL_ONLY: (MethodTier.RETRIEVAL, MethodTier.EMBEDDING),
-    WorkClass.CLASSIFICATION_RANKING: (MethodTier.DETERMINISTIC, MethodTier.SMALL_MODEL, MethodTier.STRONG_MODEL),
-    WorkClass.SEMANTIC_MATCHING: (MethodTier.RETRIEVAL, MethodTier.EMBEDDING, MethodTier.SMALL_MODEL),
-    WorkClass.BOUNDED_SYNTHESIS: (MethodTier.RETRIEVAL, MethodTier.SMALL_MODEL, MethodTier.STRONG_MODEL),
+    WorkClass.CLASSIFICATION_RANKING: (MethodTier.DETERMINISTIC, MethodTier.LIGHTWEIGHT_ML, MethodTier.SMALL_MODEL, MethodTier.STRONG_MODEL),
+    WorkClass.SEMANTIC_MATCHING: (MethodTier.RETRIEVAL, MethodTier.LIGHTWEIGHT_ML, MethodTier.EMBEDDING, MethodTier.SMALL_MODEL),
+    WorkClass.BOUNDED_SYNTHESIS: (MethodTier.RETRIEVAL, MethodTier.LIGHTWEIGHT_ML, MethodTier.SMALL_MODEL, MethodTier.STRONG_MODEL),
     WorkClass.DEEP_CROSS_SOURCE_REASONING: (MethodTier.RETRIEVAL, MethodTier.SMALL_MODEL, MethodTier.EXTERNAL, MethodTier.STRONG_MODEL),
 }
 
@@ -203,29 +287,161 @@ def _cache_kind(profile: TaskProfile) -> CacheKind:
 
 def route(profile: TaskProfile, authorization: RepoIntelligenceAuthorization, executor: PricedExecutor, caches: ScopedCaches, budget: BudgetLedger, *, now: datetime, ttl: timedelta = timedelta(hours=1)) -> RouteResult:
     ensure_same_project(authorization, project=profile.project)
+    floor = effective_quality_floor(profile)
+    if floor.hard and (profile.required_quality < floor.minimum_quality or profile.uncertainty > floor.maximum_uncertainty):
+        raise ValueError(
+            f"{profile.work_class.value} carries a hard quality floor (minimum_quality="
+            f"{floor.minimum_quality}, maximum_uncertainty={floor.maximum_uncertainty}) that this task "
+            "profile undercuts; a hard floor can never be relaxed for cost"
+        )
     material = hashlib.sha256(f"{profile.task_key}|{profile.evidence_set_hash}|{profile.template_version}|{profile.model_family}".encode()).hexdigest()
     key = cache_key(_cache_kind(profile).value, profile.project, material)
     cached = caches.get(_cache_kind(profile), key, project=profile.project, now=now, evidence_set_hash=profile.evidence_set_hash)
     if cached is not None and cached.evidence_coverage >= profile.required_quality and cached.uncertainty <= profile.uncertainty:
-        return RouteResult(cached.output, None, (), (), True, None, budget.used)
+        return RouteResult(cached.output, None, (), (), True, None, budget.used, RouteOutcome.ACCEPTED)
 
     attempted: list[MethodTier] = []
+    attempted_results: list[MethodResult] = []
     costs: list[CostRecord] = []
     for index, tier in enumerate(_LADDERS[profile.work_class]):
         estimate = executor.estimate(tier, profile)
         if not budget.allows(estimate):
-            return RouteResult(None, None, tuple(attempted), tuple(costs), False, f"hard budget prevented {tier.value}; quality gap remains", budget.used)
+            counterfactuals = tuple(
+                CounterfactualComparison(t, CounterfactualEvidenceStatus.OBSERVED, r, "executed during this route() call")
+                for t, r in zip(attempted, attempted_results)
+            )
+            return RouteResult(
+                None, None, tuple(attempted), tuple(costs), False,
+                f"hard budget prevented {tier.value}; quality gap remains", budget.used,
+                RouteOutcome.BUDGET_INSUFFICIENT, tuple(attempted_results), counterfactuals,
+            )
         result = executor.execute(tier, profile)
         if not budget.allows(result.spend):
             raise RuntimeError("provider exceeded its authorized preflight estimate")
         budget.consume(result.spend)
         attempted.append(tier)
+        attempted_results.append(result)
         cost = CostRecord(deterministic_repo_identity(RepoIntelligenceKind.COST_RECORD, f"{profile.job.canonical}|{tier.value}|{index}"), profile.project, profile.job, _resource(tier), "cost-quality-router", result.spend.wall_time_ms, now, CacheStatus.MISS, tokens_in=result.spend.tokens_in, tokens_out=result.spend.tokens_out, cost_micros=result.spend.cost_micros)
         costs.append(cost)
         if result.evidence_coverage >= profile.required_quality and result.uncertainty <= profile.uncertainty:
             caches.put(_cache_kind(profile), key, result, project=profile.project, now=now, ttl=ttl, evidence_set_hash=profile.evidence_set_hash)
-            return RouteResult(result.output, tier, tuple(attempted), tuple(costs), False, None, budget.used)
-    return RouteResult(None, None, tuple(attempted), tuple(costs), False, "all allowed methods failed the evidence coverage or uncertainty gate", budget.used)
+            counterfactuals = tuple(
+                CounterfactualComparison(t, CounterfactualEvidenceStatus.OBSERVED, r, "executed during this route() call")
+                for t, r in zip(attempted, attempted_results)
+            )
+            return RouteResult(
+                result.output, tier, tuple(attempted), tuple(costs), False, None, budget.used,
+                RouteOutcome.ACCEPTED, tuple(attempted_results), counterfactuals,
+            )
+    counterfactuals = tuple(
+        CounterfactualComparison(t, CounterfactualEvidenceStatus.OBSERVED, r, "executed during this route() call")
+        for t, r in zip(attempted, attempted_results)
+    )
+    return RouteResult(
+        None, None, tuple(attempted), tuple(costs), False,
+        "all allowed methods failed the evidence coverage or uncertainty gate", budget.used,
+        RouteOutcome.ABSTAINED, tuple(attempted_results), counterfactuals,
+    )
+
+
+def bounded_replay(
+    profile: TaskProfile,
+    tiers: tuple[MethodTier, ...],
+    executor: PricedExecutor,
+    budget: BudgetLedger,
+    *,
+    now: datetime,
+) -> tuple[CounterfactualComparison, ...]:
+    """Execute specific tiers once each, purely for offline comparison.
+
+    This spends real budget against the caller-supplied ledger -- it is an
+    opt-in replay/qualification tool, never called from the production
+    routing hot path, mirroring how external-provider live qualification
+    stays a separate, explicit opt-in command elsewhere in Repo Intelligent.
+    """
+    comparisons = []
+    for tier in tiers:
+        estimate = executor.estimate(tier, profile)
+        if not budget.allows(estimate):
+            comparisons.append(
+                CounterfactualComparison(tier, CounterfactualEvidenceStatus.UNKNOWN, None, "replay budget insufficient for this tier")
+            )
+            continue
+        result = executor.execute(tier, profile)
+        if not budget.allows(result.spend):
+            raise RuntimeError("provider exceeded its authorized preflight estimate")
+        budget.consume(result.spend)
+        comparisons.append(
+            CounterfactualComparison(tier, CounterfactualEvidenceStatus.REPLAYED, result, f"replayed at {now.isoformat()}")
+        )
+    return tuple(comparisons)
+
+
+@dataclass(frozen=True, slots=True)
+class RouterReplayRecord:
+    """One paired (adaptive vs. deterministic-baseline) replay observation."""
+
+    work_class: WorkClass
+    adaptive: MethodResult | None
+    baseline: MethodResult | None
+    adaptive_spend: Spend
+    baseline_spend: Spend
+    quality_floor: QualityFloor
+
+
+@dataclass(frozen=True, slots=True)
+class RouterPromotionEvaluation:
+    quality_preserved: bool
+    mean_cost_delta_micros: float | None
+    mean_latency_delta_ms: float | None
+    sample_count: int
+
+
+def evaluate_router_promotion(records: tuple[RouterReplayRecord, ...]) -> RouterPromotionEvaluation:
+    """Compare adaptive routing against a deterministic-only baseline on replay data.
+
+    ``quality_preserved`` is true only when every adaptive result meets its
+    own record's quality floor -- a single floor violation fails the whole
+    evaluation, since the promotion gate must never trade quality for cost.
+    """
+    usable = tuple(r for r in records if r.adaptive is not None and r.baseline is not None)
+    if not usable:
+        return RouterPromotionEvaluation(False, None, None, 0)
+    quality_preserved = all(
+        r.adaptive.evidence_coverage >= r.quality_floor.minimum_quality
+        and r.adaptive.uncertainty <= r.quality_floor.maximum_uncertainty
+        for r in usable
+    )
+    cost_deltas = [
+        (r.adaptive_spend.cost_micros - r.baseline_spend.cost_micros) for r in usable
+    ]
+    latency_deltas = [
+        (r.adaptive_spend.wall_time_ms - r.baseline_spend.wall_time_ms) for r in usable
+    ]
+    return RouterPromotionEvaluation(
+        quality_preserved=quality_preserved,
+        mean_cost_delta_micros=sum(cost_deltas) / len(cost_deltas),
+        mean_latency_delta_ms=sum(latency_deltas) / len(latency_deltas),
+        sample_count=len(usable),
+    )
+
+
+def router_promotion_reason(evaluation: RouterPromotionEvaluation) -> str:
+    """A real negative result is valid: adaptive routing stays in shadow mode
+    unless replay evidence shows lower cost/latency at preserved quality."""
+    if evaluation.sample_count == 0:
+        return "ADAPTIVE ROUTING NOT PROMOTED — no paired replay evidence available"
+    if not evaluation.quality_preserved:
+        return "ADAPTIVE ROUTING NOT PROMOTED — quality floor violated on at least one replay record"
+    cost_improved = (evaluation.mean_cost_delta_micros or 0) < 0
+    latency_improved = (evaluation.mean_latency_delta_ms or 0) < 0
+    if cost_improved or latency_improved:
+        return (
+            f"adaptive routing promotion-eligible: mean cost delta {evaluation.mean_cost_delta_micros:.3f} micros, "
+            f"mean latency delta {evaluation.mean_latency_delta_ms:.3f} ms, quality preserved across "
+            f"{evaluation.sample_count} replay record(s)"
+        )
+    return "ADAPTIVE ROUTING NOT PROMOTED — quality preserved but no cost/latency improvement observed"
 
 
 def prune_communities(communities: tuple[tuple[str, float], ...], *, relevance_threshold: float, maximum: int) -> tuple[str, ...]:
@@ -236,4 +452,10 @@ def prune_communities(communities: tuple[tuple[str, float], ...], *, relevance_t
     return tuple(name for name, _ in sorted(eligible, key=lambda item: (-item[1], item[0]))[:maximum])
 
 
-__all__ = ["BudgetLedger", "BudgetLimits", "CacheKind", "MethodResult", "MethodTier", "RouteResult", "ScopedCaches", "Spend", "TaskProfile", "WorkClass", "prune_communities", "route"]
+__all__ = [
+    "BudgetLedger", "BudgetLimits", "CacheKind", "CounterfactualComparison", "CounterfactualEvidenceStatus",
+    "MethodResult", "MethodTier", "QUALITY_FLOORS", "QualityFloor", "RouteOutcome", "RouteResult",
+    "RouterPromotionEvaluation", "RouterReplayRecord", "ScopedCaches", "Spend", "TaskProfile", "WorkClass",
+    "bounded_replay", "effective_quality_floor", "evaluate_router_promotion", "prune_communities", "route",
+    "router_promotion_reason",
+]

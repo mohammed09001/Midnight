@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import Enum
 
@@ -58,6 +58,8 @@ class RetrievalPlan:
     stages: tuple[str, ...]
     external_expansion_eligible: bool
     stop_condition: str
+    sources_queried: tuple[str, ...] = ("repository_graph", "performance_projection", "memory_overlay")
+    query_purpose: str = "answer project-scoped question from canonical internal evidence"
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +100,11 @@ class FederatedRetrievalResult:
     external_lookup_required: bool
     gaps: tuple[str, ...]
     truncated: bool
+    coverage: float = 0.0
+    freshness: float = 0.0
+    contradictions: tuple[str, ...] = ()
+    stop_reason: str = "bounded retrieval completed"
+    cost_micros: int = 0
 
 
 def classify_query(query: RetrievalQuery) -> QueryClass:
@@ -175,6 +182,10 @@ def retrieve(graph: ProjectKnowledgeGraph, query: RetrievalQuery, authorization:
     if graph.project != authorization.project.canonical:
         raise PermissionError("cross-project federated graph access denied")
     plan = plan_retrieval(query)
+    queried_sources = tuple(source for source in plan.sources_queried if memory_available or source != "memory_overlay")
+    if authorization.external_access and plan.external_expansion_eligible and information_gain > controls.minimum_information_gain:
+        queried_sources += ("external_evidence",)
+    plan = replace(plan, sources_queried=queried_sources)
     nodes = {node.identity: node for node in graph.nodes}
     active_graph = ProjectKnowledgeGraph(graph.project, graph.repository_key, graph.nodes, tuple(link for link in graph.links if not link.is_stale(now)), graph.generation, graph.built_at, graph.gaps, graph.schema_version)
     hits: dict[str, RetrievalHit] = {}
@@ -230,7 +241,10 @@ def retrieve(graph: ProjectKnowledgeGraph, query: RetrievalQuery, authorization:
     if information_gain > controls.minimum_information_gain and plan.query_class in (QueryClass.PROJECT_GLOBAL, QueryClass.LEARNING_PATH, QueryClass.EXTERNAL_ANALOGUE):
         templates = ("which high-value component best explains this theme?", "which contradictory or stale edge would change this answer?")
         followups = templates[:controls.maximum_follow_up_questions]
-    return FederatedRetrievalResult(plan, ordered, path, selected_communities, followups, external_required, tuple(sorted(set(gaps))), truncated)
+    coverage = round(len(ordered) / max(1, controls.maximum_nodes), 6)
+    freshness = 1.0 if not graph.gaps else 0.5
+    stop_reason = "external expansion deferred by internal sufficiency/policy gate" if plan.external_expansion_eligible and not external_required else ("node/hop/community ceiling reached" if truncated else "internal evidence path exhausted")
+    return FederatedRetrievalResult(plan, ordered, path, selected_communities, followups, external_required, tuple(sorted(set(gaps))), truncated, coverage, freshness, (), stop_reason, 0)
 
 
 __all__ = ["ExplainedHop", "FederatedRetrievalResult", "KnowledgePath", "QueryClass", "RetrievalControls", "RetrievalHit", "RetrievalPlan", "RetrievalQuery", "classify_query", "plan_retrieval", "retrieve"]
